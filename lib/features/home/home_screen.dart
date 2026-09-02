@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
-import 'package:my_games_list/features/games/widgets/anticipated_games_carousel.dart';
-import 'package:my_games_list/features/games/widgets/discovery_games_widget.dart';
-import 'package:my_games_list/features/games/widgets/featured_banners_carousel.dart';
-import 'package:my_games_list/features/games/widgets/collections_widget.dart';
-import 'package:my_games_list/features/games/widgets/recommendations_widget.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/widgets/anticipated_games_carousel.dart';
+import 'package:picklog/features/games/widgets/discovery_games_widget.dart';
+import 'package:picklog/features/games/widgets/featured_banners_carousel.dart';
+import 'package:picklog/features/games/widgets/collections_widget.dart';
+import 'package:picklog/features/games/widgets/recommendations_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

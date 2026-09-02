@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:share_plus/share_plus.dart';
-import 'package:my_games_list/features/settings/services/account_export_saver.dart';
+import 'package:picklog/features/settings/services/account_export_saver.dart';
 
 AccountExportSaver createAccountExportSaver() => _IoAccountExportSaver();
 

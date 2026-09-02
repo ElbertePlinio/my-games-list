@@ -1,9 +1,9 @@
-import 'package:my_games_list/features/games/anticipated_game_model.dart';
-import 'package:my_games_list/features/games/collection_model.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
-import 'package:my_games_list/features/games/featured_banner_model.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
+import 'package:picklog/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/collection_model.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/featured_banner_model.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/search_game_model.dart';
 
 /// Interface for fetching game-related data from the API.
 /// This abstraction allows for easy swapping of repository implementations

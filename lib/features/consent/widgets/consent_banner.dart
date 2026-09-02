@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/widgets/bottom_nav_bar.dart';
-import 'package:my_games_list/features/consent/bloc/consent_cubit.dart';
-import 'package:my_games_list/features/consent/bloc/consent_state.dart';
-import 'package:my_games_list/features/consent/widgets/consent_customize_sheet.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/bottom_nav_bar.dart';
+import 'package:picklog/features/consent/bloc/consent_cubit.dart';
+import 'package:picklog/features/consent/bloc/consent_state.dart';
+import 'package:picklog/features/consent/widgets/consent_customize_sheet.dart';
 
 /// Wraps the whole app and shows a non-modal first-run consent banner pinned to
 /// the bottom until the user makes an explicit choice.

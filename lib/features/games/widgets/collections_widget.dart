@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/features/games/bloc/collections_bloc.dart';
-import 'package:my_games_list/features/games/bloc/collections_state.dart';
-import 'package:my_games_list/features/games/collection_model.dart';
-import 'package:my_games_list/features/games/widgets/discovery_game_tile.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
+import 'package:picklog/features/games/bloc/collections_bloc.dart';
+import 'package:picklog/features/games/bloc/collections_state.dart';
+import 'package:picklog/features/games/collection_model.dart';
+import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
+import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
 
 const double _rowHeight = 200;
 const double _tileAspectRatio = 0.7;

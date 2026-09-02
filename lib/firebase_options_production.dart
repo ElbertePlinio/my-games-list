@@ -72,6 +72,6 @@ class ProductionFirebaseOptions {
     storageBucket: 'mygameslist-production.firebasestorage.app',
     iosClientId:
         '119889981446-h1pdtt4fnfupcv6f20qhurhaq6bahjce.apps.googleusercontent.com',
-    iosBundleId: 'com.elberte.mygameslist',
+    iosBundleId: 'app.picklog',
   );
 }

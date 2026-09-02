@@ -58,7 +58,7 @@ class StagingFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDCwdZhBFQS4NXo7LIYvaTao3zq_EVtxlo',
-    appId: '1:916696334729:android:041ab40e9756cf8f93e158',
+    appId: '1:916696334729:android:2c18b023b2aeb8ea93e158',
     messagingSenderId: '916696334729',
     projectId: 'mygameslist-staging',
     storageBucket: 'mygameslist-staging.firebasestorage.app',
@@ -72,6 +72,6 @@ class StagingFirebaseOptions {
     storageBucket: 'mygameslist-staging.firebasestorage.app',
     iosClientId:
         '916696334729-q9j8ogeuukcmcp2adr0l62bvce0smtsq.apps.googleusercontent.com',
-    iosBundleId: 'com.elberte.mygameslist',
+    iosBundleId: 'app.picklog',
   );
 }

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/bloc/game_search_filters.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
+import 'package:picklog/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/search_game_model.dart';
 
 enum GameSearchStatus { initial, loading, success, failure, loadingMore }
 

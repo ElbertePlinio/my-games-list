@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/features/games/bloc/game_details_event.dart';
-import 'package:my_games_list/features/games/bloc/game_details_state.dart';
-import 'package:my_games_list/features/games/i_games_repository.dart';
+import 'package:picklog/features/games/bloc/game_details_event.dart';
+import 'package:picklog/features/games/bloc/game_details_state.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
 
 /// BLoC for managing game details state.
 class GameDetailsBloc extends Bloc<GameDetailsEvent, GameDetailsState> {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/consent/bloc/consent_cubit.dart';
-import 'package:my_games_list/features/consent/consent_category_l10n.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/consent/bloc/consent_cubit.dart';
+import 'package:picklog/features/consent/consent_category_l10n.dart';
 
 /// First-run "Customize" sheet: a per-category switch list that returns the
 /// chosen map to the caller on Save. It does not call the service directly so

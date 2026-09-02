@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/features/games/i_games_repository.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_event.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_state.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
+import 'package:picklog/features/games/bloc/discovery_games_event.dart';
+import 'package:picklog/features/games/bloc/discovery_games_state.dart';
 
 class DiscoveryGamesBloc
     extends Bloc<DiscoveryGamesEvent, DiscoveryGamesState> {

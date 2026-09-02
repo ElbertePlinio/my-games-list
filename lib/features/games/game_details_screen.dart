@@ -8,23 +8,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:my_games_list/core/utils/env.dart';
-import 'package:my_games_list/core/utils/image_utils.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/utils/messages_extensions.dart';
-import 'package:my_games_list/core/widgets/visibility_hero.dart';
-import 'package:my_games_list/core/utils/website_category.dart';
-import 'package:my_games_list/features/games/bloc/game_details_bloc.dart';
-import 'package:my_games_list/features/games/bloc/game_details_state.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/game_details_skeleton.dart';
-import 'package:my_games_list/features/games/widgets/video_thumbnail_card.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
-import 'package:my_games_list/features/library/bloc/library_event.dart';
-import 'package:my_games_list/features/library/bloc/library_state.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
-import 'package:my_games_list/features/library/widgets/add_to_library_bottom_sheet.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/utils/env.dart';
+import 'package:picklog/core/utils/image_utils.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/messages_extensions.dart';
+import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/core/utils/website_category.dart';
+import 'package:picklog/features/games/bloc/game_details_bloc.dart';
+import 'package:picklog/features/games/bloc/game_details_state.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/widgets/skeletons/game_details_skeleton.dart';
+import 'package:picklog/features/games/widgets/video_thumbnail_card.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/widgets/add_to_library_bottom_sheet.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,26 +41,34 @@ class GameDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GameDetailsBloc, GameDetailsState>(
-      builder: (context, state) {
-        if (state.status == GameDetailsStatus.loading) {
-          return const GameDetailsSkeleton();
-        }
+    // A shared-element Hero flight into/out of this screen renders in the root
+    // navigator overlay and visibly paints over the app bar and bottom
+    // navigation bar during the transition. Disable Hero participation for the
+    // whole details screen so it simply slides in. The cover Hero tags are
+    // kept intact, so a non-overlaying transition can be reintroduced later.
+    return HeroMode(
+      enabled: false,
+      child: BlocBuilder<GameDetailsBloc, GameDetailsState>(
+        builder: (context, state) {
+          if (state.status == GameDetailsStatus.loading) {
+            return const GameDetailsSkeleton();
+          }
 
-        if (state.status == GameDetailsStatus.failure) {
-          return _ErrorScreen(message: state.errorMessage);
-        }
+          if (state.status == GameDetailsStatus.failure) {
+            return _ErrorScreen(message: state.errorMessage);
+          }
 
-        if (state.game == null) {
-          return const GameDetailsSkeleton();
-        }
+          if (state.game == null) {
+            return const GameDetailsSkeleton();
+          }
 
-        return _GameDetailsContent(
-          game: state.game!,
-          gameId: gameId,
-          heroTagPrefix: heroTagPrefix,
-        );
-      },
+          return _GameDetailsContent(
+            game: state.game!,
+            gameId: gameId,
+            heroTagPrefix: heroTagPrefix,
+          );
+        },
+      ),
     );
   }
 }
@@ -184,8 +192,6 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final game = widget.game;
-    final theme = Theme.of(context);
-    final scaffoldColor = theme.scaffoldBackgroundColor;
 
     // On web Flutter ignores decode caps (the browser decodes), so request a
     // smaller server size for the header instead of the full 1080p.
@@ -209,6 +215,11 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
               SliverAppBar(
                 expandedHeight: 300,
                 pinned: true,
+                // The header sits over a screenshot in both themes, so keep the
+                // title and action icons white and rely on the scrim below for
+                // contrast (the theme default would render a dark, unreadable
+                // title over the image in light mode).
+                foregroundColor: Colors.white,
                 actions: [
                   // Favorite button (only if in library)
                   if (isInLibrary)
@@ -230,15 +241,29 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
+                  // Reserve room on the trailing edge so the collapsed title
+                  // never slides under the action icons.
+                  titlePadding: const EdgeInsetsDirectional.only(
+                    start: 16,
+                    bottom: 16,
+                    end: 72,
+                  ),
                   title: Text(
                     game.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
                       shadows: [
                         Shadow(
                           offset: Offset(0, 1),
-                          blurRadius: 4,
+                          blurRadius: 6,
                           color: Colors.black87,
                         ),
+                        // Tight second shadow keeps the title crisp over bright
+                        // screenshot regions when the bar is collapsed.
+                        Shadow(blurRadius: 2, color: Colors.black),
                       ],
                     ),
                   ),
@@ -277,17 +302,21 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
                                     Container(color: Colors.grey[900]),
                               ),
                             ),
-                            // Gradient overlay that fades to scaffold background
-                            DecoratedBox(
+                            // Scrim for legibility: darken the top (status-bar
+                            // icons + collapsed title) and the bottom (expanded
+                            // title) so the white text stays readable over any
+                            // screenshot, in both light and dark themes.
+                            const DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  stops: const [0.0, 0.5, 1.0],
+                                  stops: [0.0, 0.35, 0.6, 1.0],
                                   colors: [
+                                    Color(0xB3000000),
                                     Colors.transparent,
                                     Colors.transparent,
-                                    scaffoldColor,
+                                    Color(0xCC000000),
                                   ],
                                 ),
                               ),
@@ -368,8 +397,11 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
                       if (game.websites.isNotEmpty)
                         _WebsitesSection(websites: game.websites, l10n: l10n),
 
-                      // Extra padding for FAB
-                      const SizedBox(height: 80),
+                      // Extra space so the last content and the FAB clear the
+                      // Android system navigation bar under edge-to-edge.
+                      SizedBox(
+                        height: 80 + MediaQuery.viewPaddingOf(context).bottom,
+                      ),
                     ],
                   ),
                 ),

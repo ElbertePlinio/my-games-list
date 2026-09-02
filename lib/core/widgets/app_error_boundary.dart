@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/theme/app_colors.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/theme/app_colors.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 /// Fallback rendered by [ErrorWidget.builder] when a widget fails to build, so
 /// users see a friendly message instead of a raw error screen. The build error

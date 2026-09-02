@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
-import 'package:my_games_list/features/browse/bloc/browse_genres_bloc.dart';
-import 'package:my_games_list/features/browse/bloc/browse_genres_event.dart';
-import 'package:my_games_list/features/browse/bloc/browse_genres_state.dart';
-import 'package:my_games_list/features/browse/widgets/browse_status_views.dart';
-import 'package:my_games_list/features/games/bloc/collections_bloc.dart';
-import 'package:my_games_list/features/games/bloc/collections_event.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_bloc.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_event.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
-import 'package:my_games_list/features/games/widgets/collections_widget.dart';
-import 'package:my_games_list/features/games/widgets/discovery_games_widget.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/features/browse/bloc/browse_genres_bloc.dart';
+import 'package:picklog/features/browse/bloc/browse_genres_event.dart';
+import 'package:picklog/features/browse/bloc/browse_genres_state.dart';
+import 'package:picklog/features/browse/widgets/browse_status_views.dart';
+import 'package:picklog/features/games/bloc/collections_bloc.dart';
+import 'package:picklog/features/games/bloc/collections_event.dart';
+import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
+import 'package:picklog/features/games/bloc/discovery_games_event.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/widgets/collections_widget.dart';
+import 'package:picklog/features/games/widgets/discovery_games_widget.dart';
 
 /// Public discovery hub: browse the catalogue by genre, then explore new
 /// releases and curated collections. Genres, releases and collections each

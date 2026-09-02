@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/features/auth/auth_response.dart';
-import 'package:my_games_list/features/auth/domain/social_auth_request.dart';
-import 'package:my_games_list/features/auth/sign_in/sign_in_request.dart';
-import 'package:my_games_list/features/auth/sign_up/sign_up_request.dart';
-import 'package:my_games_list/core/data/services/storage/token_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/features/auth/auth_response.dart';
+import 'package:picklog/features/auth/domain/social_auth_request.dart';
+import 'package:picklog/features/auth/sign_in/sign_in_request.dart';
+import 'package:picklog/features/auth/sign_up/sign_up_request.dart';
+import 'package:picklog/core/data/services/storage/token_storage.dart';
 
 /// Implementation of AuthRepository that handles authentication operations
 /// using the HTTP client and local storage.
@@ -45,23 +47,68 @@ class AuthRepository {
     return _persistAuthResponse(AuthResponse.fromJson(response.dataOrThrow));
   }
 
+  /// google_sign_in 7.x requires initialize() to run exactly once before use.
+  static Future<void>? _googleSignInInit;
+
   /// Authenticates with Google. [consentVersion] is the Privacy Policy / Terms
   /// version the user accepted on the auth screen; the API requires it on
   /// `/auth/social` for account creation.
+  ///
+  /// Mobile uses the native account picker (google_sign_in) — reliable, and it
+  /// avoids the flaky web-redirect sign-in page. Web keeps Firebase's popup
+  /// provider flow, since google_sign_in's authenticate() isn't supported there.
   Future<AuthResponse> signInWithGoogle({
     required String consentVersion,
   }) async {
     try {
-      final userCredential = await FirebaseAuth.instance.signInWithProvider(
-        GoogleAuthProvider(),
+      final firebaseIdToken = kIsWeb
+          ? await _firebaseIdTokenViaPopup()
+          : await _firebaseIdTokenViaNativeGoogle();
+      return await _exchangeFirebaseToken(
+        'google',
+        firebaseIdToken,
+        consentVersion,
       );
-      final idToken = await userCredential.user?.getIdToken();
-      if (idToken == null) throw Exception('Failed to get Firebase ID token');
-
-      return await _exchangeFirebaseToken('google', idToken, consentVersion);
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        throw Exception('Sign-in cancelled.');
+      }
+      throw Exception('Google sign-in failed. Please try again.');
     } catch (e) {
       throw Exception('Google sign-in failed. Please try again.');
     }
+  }
+
+  /// Native Android/iOS account picker → Google ID token → Firebase credential.
+  /// The server (web) client id is read from google-services.json's
+  /// `default_web_client_id`, so the ID token's audience is one Firebase accepts.
+  Future<String> _firebaseIdTokenViaNativeGoogle() async {
+    _googleSignInInit ??= GoogleSignIn.instance.initialize();
+    await _googleSignInInit;
+
+    final account = await GoogleSignIn.instance.authenticate();
+    final googleIdToken = account.authentication.idToken;
+    if (googleIdToken == null) {
+      throw Exception('Failed to get Google ID token');
+    }
+
+    final credential = GoogleAuthProvider.credential(idToken: googleIdToken);
+    final userCredential = await FirebaseAuth.instance.signInWithCredential(
+      credential,
+    );
+    final idToken = await userCredential.user?.getIdToken();
+    if (idToken == null) throw Exception('Failed to get Firebase ID token');
+    return idToken;
+  }
+
+  /// Web: Firebase popup-based Google provider flow.
+  Future<String> _firebaseIdTokenViaPopup() async {
+    final userCredential = await FirebaseAuth.instance.signInWithProvider(
+      GoogleAuthProvider(),
+    );
+    final idToken = await userCredential.user?.getIdToken();
+    if (idToken == null) throw Exception('Failed to get Firebase ID token');
+    return idToken;
   }
 
   /// Exchanges a Firebase ID token for an app JWT by calling POST /auth/social.

@@ -1,4 +1,4 @@
-import 'package:my_games_list/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
 
 /// Mockable seam over the concrete data collectors (Firebase Crashlytics, FCM,
 /// analytics). [ConsentService] talks only to this interface so consent logic

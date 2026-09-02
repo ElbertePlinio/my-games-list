@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/core/domain/models/api_error.dart';
+import 'package:picklog/core/domain/models/api_error.dart';
 
 /// Generic API response wrapper that handles both success and error cases.
 /// This provides type safety and consistent error handling across the application.

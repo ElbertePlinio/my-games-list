@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
 
 /// Profile screen displaying user information.
 ///

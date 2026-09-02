@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_bloc.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_event.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_state.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
-import 'package:my_games_list/features/games/widgets/discovery_game_tile.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
+import 'package:picklog/features/games/bloc/discovery_games_event.dart';
+import 'package:picklog/features/games/bloc/discovery_games_state.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
+import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 /// A horizontal scrollable widget displaying discovery games on the home screen

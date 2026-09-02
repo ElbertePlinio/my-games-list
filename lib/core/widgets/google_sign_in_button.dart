@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/google_logo.dart';
+import 'package:picklog/core/widgets/google_logo.dart';
 
 /// A Google-branding-compliant sign-in button: the four-color "G" mark, a
 /// neutral surface (white in light mode, Google's dark `#131314` in dark mode)

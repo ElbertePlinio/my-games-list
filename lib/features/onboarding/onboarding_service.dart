@@ -1,4 +1,4 @@
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
 
 /// Persists the one-time "first run onboarding" flag.
 ///

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/anticipated_game_model.dart';
 
 /// Enum representing the status of anticipated games loading
 enum AnticipatedGamesStatus { initial, loading, success, failure }

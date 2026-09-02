@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
 
 /// Skeleton mirroring [GameSearchCard] (Card 8/6 margin, 16px radius, 12px
 /// padding, 90x120 cover + stacked info lines) so search results swap in

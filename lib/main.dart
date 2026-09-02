@@ -10,27 +10,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/services/connectivity_cubit.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/core/services/consent/push_registration_coordinator.dart';
-import 'package:my_games_list/core/services/notification_service.dart';
-import 'package:my_games_list/core/theme/app_theme.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/env.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/utils/service_locator.dart';
-import 'package:my_games_list/core/widgets/app_error_boundary.dart';
-import 'package:my_games_list/core/widgets/offline_banner.dart';
-import 'package:my_games_list/features/consent/bloc/consent_cubit.dart';
-import 'package:my_games_list/features/consent/widgets/consent_banner.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_event.dart';
-import 'package:my_games_list/features/settings/bloc/settings_bloc.dart';
-import 'package:my_games_list/features/settings/bloc/settings_event.dart';
-import 'package:my_games_list/features/settings/bloc/settings_state.dart';
-import 'package:my_games_list/firebase_options_production.dart';
-import 'package:my_games_list/firebase_options_staging.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/services/connectivity_cubit.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/core/services/consent/push_registration_coordinator.dart';
+import 'package:picklog/core/services/notification_service.dart';
+import 'package:picklog/core/theme/app_theme.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/env.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/service_locator.dart';
+import 'package:picklog/core/widgets/app_error_boundary.dart';
+import 'package:picklog/core/widgets/offline_banner.dart';
+import 'package:picklog/features/consent/bloc/consent_cubit.dart';
+import 'package:picklog/features/consent/widgets/consent_banner.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_event.dart';
+import 'package:picklog/features/settings/bloc/settings_bloc.dart';
+import 'package:picklog/features/settings/bloc/settings_event.dart';
+import 'package:picklog/features/settings/bloc/settings_state.dart';
+import 'package:picklog/firebase_options_production.dart';
+import 'package:picklog/firebase_options_staging.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 /// Firebase options for the active build flavor.
 FirebaseOptions get _firebaseOptions => Env.isProduction
@@ -82,17 +82,17 @@ void main() async {
   }
 
   // Run the app
-  runApp(const MyGamesListApp());
+  runApp(const PicklogApp());
 }
 
-class MyGamesListApp extends StatefulWidget {
-  const MyGamesListApp({super.key});
+class PicklogApp extends StatefulWidget {
+  const PicklogApp({super.key});
 
   @override
-  State<MyGamesListApp> createState() => _MyGamesListAppState();
+  State<PicklogApp> createState() => _PicklogAppState();
 }
 
-class _MyGamesListAppState extends State<MyGamesListApp> {
+class _PicklogAppState extends State<PicklogApp> {
   late final AuthBloc authBloc;
   late final SettingsBloc settingsBloc;
   late final ConsentCubit consentCubit;

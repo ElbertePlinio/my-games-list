@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
 
 /// Skeleton placeholder mirroring [DiscoveryGameTile]'s rounded cover.
 ///

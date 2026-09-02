@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/features/auth/auth_repository.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_event.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_state.dart';
-import 'package:my_games_list/features/auth/sign_up/sign_up_request.dart';
-import 'package:my_games_list/features/legal/legal_constants.dart';
+import 'package:picklog/features/auth/auth_repository.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_event.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_state.dart';
+import 'package:picklog/features/auth/sign_up/sign_up_request.dart';
+import 'package:picklog/features/legal/legal_constants.dart';
 
 /// BLoC that handles sign-up business logic.
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {

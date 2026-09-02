@@ -1,6 +1,6 @@
 {
-    "appTitle": "My Games List",
-    "welcomeMessage": "Welcome to My Games List",
+    "appTitle": "Picklog",
+    "welcomeMessage": "Welcome to Picklog",
     "@appTitle": {
       "description": "The title of the application"
     },
@@ -141,6 +141,14 @@
     "recommendationsTitle": "Recommended for You",
     "signInWithGoogle": "Continue with Google",
     "orContinueWith": "or continue with",
+    "signInWithEmail": "Sign in with email",
+    "@signInWithEmail": {
+      "description": "Toggle button label that expands the secondary email/password sign-in form"
+    },
+    "recommended": "Recommended",
+    "@recommended": {
+      "description": "Badge marking Google as the preferred sign-in option"
+    },
     "browseTitle": "Browse",
     "browseGenresError": "Couldn't load genres. Please try again.",
     "browseGenresEmpty": "No genres available right now.",
@@ -252,7 +260,7 @@
     "statusOnHold": "On Hold",
     "mostAnticipated": "Most Anticipated",
     "noUpcomingGames": "No upcoming games found",
-    "shareGameMessage": "Check out {gameName} on MyGamesList!\n{url}",
+    "shareGameMessage": "Check out {gameName} on Picklog!\n{url}",
     "@shareGameMessage": {
       "placeholders": {
         "gameName": {

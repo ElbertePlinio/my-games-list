@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 
 /// Localized labels for each [ConsentCategory], shared by the first-run
 /// customize sheet and the settings toggles so the copy stays in one place.

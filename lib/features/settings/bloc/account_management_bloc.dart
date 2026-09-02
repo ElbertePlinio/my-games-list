@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/features/auth/auth_repository.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_event.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_state.dart';
-import 'package:my_games_list/features/settings/services/account_export_saver.dart';
+import 'package:picklog/features/auth/auth_repository.dart';
+import 'package:picklog/features/settings/bloc/account_management_event.dart';
+import 'package:picklog/features/settings/bloc/account_management_state.dart';
+import 'package:picklog/features/settings/services/account_export_saver.dart';
 
 /// Handles the LGPD account actions: exporting the user's data and permanently
 /// deleting the account. Deletion only clears state on the backend; the local

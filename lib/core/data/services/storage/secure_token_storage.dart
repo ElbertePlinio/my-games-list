@@ -1,5 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:my_games_list/core/data/services/storage/token_storage.dart';
+import 'package:picklog/core/data/services/storage/token_storage.dart';
 
 /// [TokenStorage] backed by platform-secure storage: Keychain on iOS,
 /// Keystore-encrypted storage on Android, and Web Crypto on web.

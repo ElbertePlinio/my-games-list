@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:my_games_list/features/settings/services/account_export_saver_stub.dart'
-    if (dart.library.io) 'package:my_games_list/features/settings/services/account_export_saver_io.dart'
-    if (dart.library.js_interop) 'package:my_games_list/features/settings/services/account_export_saver_web.dart';
+import 'package:picklog/features/settings/services/account_export_saver_stub.dart'
+    if (dart.library.io) 'package:picklog/features/settings/services/account_export_saver_io.dart'
+    if (dart.library.js_interop) 'package:picklog/features/settings/services/account_export_saver_web.dart';
 
 /// Delivers an exported-data JSON payload to the user in a platform-appropriate
 /// way: a browser download on web, and a shareable file on mobile/desktop.

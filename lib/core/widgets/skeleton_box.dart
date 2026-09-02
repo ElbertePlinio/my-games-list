@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/shimmer_loading.dart';
+import 'package:picklog/core/widgets/shimmer_loading.dart';
 
 /// A theme-aware, shimmering rounded rectangle used as the building block for
 /// skeleton placeholders. Give it a size via the parent's constraints (e.g.

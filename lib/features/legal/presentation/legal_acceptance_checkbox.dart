@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 
 /// Required Privacy Policy / Terms acceptance control used at sign-up.
 ///

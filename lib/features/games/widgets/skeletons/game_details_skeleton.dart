@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
 
 /// Full-screen skeleton for the game details screen. Mirrors the real layout's
 /// pinned 300px [SliverAppBar] header (so the back affordance stays visible and

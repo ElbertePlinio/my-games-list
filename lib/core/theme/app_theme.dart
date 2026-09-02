@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/theme/app_colors.dart';
+import 'package:picklog/core/theme/app_colors.dart';
 
-/// Builds the branded light and dark [ThemeData] for MyGamesList.
+/// Builds the branded light and dark [ThemeData] for Picklog.
 ///
 /// Both themes share a single brand seed ([AppColors.brandSeed]) so primary
 /// accents stay consistent, with refined surfaces and cohesive component

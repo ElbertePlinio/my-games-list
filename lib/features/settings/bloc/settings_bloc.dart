@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/features/settings/bloc/settings_event.dart';
-import 'package:my_games_list/features/settings/bloc/settings_state.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/features/settings/bloc/settings_event.dart';
+import 'package:picklog/features/settings/bloc/settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   SettingsBloc(this._storageService) : super(const SettingsState()) {

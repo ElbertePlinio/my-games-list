@@ -5,7 +5,7 @@ abstract class Env {
   );
   static const String webBaseUrl = String.fromEnvironment(
     'WEB_BASE_URL',
-    defaultValue: 'https://mygameslist.com',
+    defaultValue: 'https://picklog.app',
   );
   static const String environment = String.fromEnvironment(
     'ENVIRONMENT',

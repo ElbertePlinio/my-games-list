@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/games/bloc/game_search_filters.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/search_game_model.dart';
 
 /// Localized label for a [GameSearchSort] option.
 String sortLabel(BuildContext context, GameSearchSort sort) {

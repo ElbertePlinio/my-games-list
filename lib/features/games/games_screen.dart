@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/widgets/visibility_hero.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/library_entry_skeleton.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
-import 'package:my_games_list/features/library/bloc/library_event.dart';
-import 'package:my_games_list/features/library/bloc/library_state.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/features/games/widgets/skeletons/library_entry_skeleton.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Games screen - displays user's game library with filtering and management.
 ///

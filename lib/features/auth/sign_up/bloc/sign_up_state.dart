@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/auth/auth_response.dart';
+import 'package:picklog/features/auth/auth_response.dart';
 
 /// Base class for SignUp states.
 sealed class SignUpState extends Equatable {

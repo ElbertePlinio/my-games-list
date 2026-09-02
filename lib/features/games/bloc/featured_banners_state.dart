@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/featured_banner_model.dart';
+import 'package:picklog/features/games/featured_banner_model.dart';
 
 enum FeaturedBannersStatus { initial, loading, success, failure }
 

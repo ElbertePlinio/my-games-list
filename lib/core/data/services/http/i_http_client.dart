@@ -1,4 +1,4 @@
-import 'package:my_games_list/core/domain/models/api_response.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
 
 /// Interface for HTTP client operations.
 /// This abstraction allows for easy swapping of HTTP implementations

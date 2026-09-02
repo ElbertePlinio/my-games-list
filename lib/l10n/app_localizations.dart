@@ -101,13 +101,13 @@ abstract class AppLocalizations {
   /// The title of the application
   ///
   /// In en, this message translates to:
-  /// **'My Games List'**
+  /// **'Picklog'**
   String get appTitle;
 
   /// No description provided for @welcomeMessage.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to My Games List'**
+  /// **'Welcome to Picklog'**
   String get welcomeMessage;
 
   /// No description provided for @errorTitle.
@@ -686,6 +686,18 @@ abstract class AppLocalizations {
   /// **'or continue with'**
   String get orContinueWith;
 
+  /// Toggle button label that expands the secondary email/password sign-in form
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with email'**
+  String get signInWithEmail;
+
+  /// Badge marking Google as the preferred sign-in option
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get recommended;
+
   /// No description provided for @browseTitle.
   ///
   /// In en, this message translates to:
@@ -995,7 +1007,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareGameMessage.
   ///
   /// In en, this message translates to:
-  /// **'Check out {gameName} on MyGamesList!\n{url}'**
+  /// **'Check out {gameName} on Picklog!\n{url}'**
   String shareGameMessage(String gameName, String url);
 
   /// No description provided for @removeFromLibrary.

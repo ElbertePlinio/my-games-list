@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 
 /// Enum representing the status of a game in the user's library
 enum GameStatus {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
 
 /// Skeleton mirroring the library `_LibraryEntryCard` (Card 4px vertical
 /// margin, 12px padding, 60x80 cover + name + status chip + meta line) so the

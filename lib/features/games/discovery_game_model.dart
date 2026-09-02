@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 
 /// Represents the type of discovery query
 enum DiscoveryType {

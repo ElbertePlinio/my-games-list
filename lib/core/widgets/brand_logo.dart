@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/theme/app_colors.dart';
+import 'package:picklog/core/theme/app_colors.dart';
 
-/// The MyGamesList brand mark: a game-controller glyph inside a rounded
+/// The Picklog brand mark: a game-controller glyph inside a rounded
 /// gradient badge. Reused on the splash and auth screens so the brand reads
 /// consistently. Theme-aware via the brand seed colors.
 ///

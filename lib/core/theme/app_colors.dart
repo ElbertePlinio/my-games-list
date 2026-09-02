@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette for MyGamesList.
+/// Brand palette for Picklog.
 ///
 /// The brand leans on an electric indigo/violet accent over deep charcoal
 /// surfaces — a confident, modern look for a game-library tracker rather than

@@ -1,9 +1,9 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart' show FlutterErrorDetails;
 
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/telemetry_gateway.dart';
-import 'package:my_games_list/core/services/notification_service.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/telemetry_gateway.dart';
+import 'package:picklog/core/services/notification_service.dart';
 
 /// Production [TelemetryGateway] backed by Firebase Crashlytics and the FCM
 /// [NotificationService]. Keeps every concrete SDK call behind the gateway

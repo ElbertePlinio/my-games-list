@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/core/services/session_reset_service.dart';
-import 'package:my_games_list/features/auth/bloc/auth_event.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
-import 'package:my_games_list/features/auth/user_model.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/services/session_reset_service.dart';
+import 'package:picklog/features/auth/bloc/auth_event.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/auth/user_model.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._storageService, this._sessionReset)

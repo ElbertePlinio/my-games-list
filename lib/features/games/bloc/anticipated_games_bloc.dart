@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_event.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_state.dart';
-import 'package:my_games_list/features/games/i_games_repository.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_event.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_state.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
 
 /// BLoC for managing anticipated games state
 class AnticipatedGamesBloc

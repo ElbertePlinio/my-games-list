@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/utils/messages_extensions.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
-import 'package:my_games_list/features/library/bloc/library_event.dart';
-import 'package:my_games_list/features/library/bloc/library_state.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/messages_extensions.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Bottom sheet for adding or editing a game in the library
 class AddToLibraryBottomSheet extends StatefulWidget {

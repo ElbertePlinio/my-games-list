@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/features/consent/bloc/consent_cubit.dart';
-import 'package:my_games_list/features/consent/bloc/consent_state.dart';
-import 'package:my_games_list/features/consent/consent_category_l10n.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/features/consent/bloc/consent_cubit.dart';
+import 'package:picklog/features/consent/bloc/consent_state.dart';
+import 'package:picklog/features/consent/consent_category_l10n.dart';
 
 /// Per-category consent toggles for the Settings screen.
 ///

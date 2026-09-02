@@ -1,5 +1,5 @@
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Repository for managing user's game library
 class LibraryRepository {

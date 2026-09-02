@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
 
 /// A curated collection of games (e.g. "Cozy Games"), with its game cards.
 class GameCollection extends Equatable {

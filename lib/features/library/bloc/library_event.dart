@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Base class for library events
 abstract class LibraryEvent extends Equatable {

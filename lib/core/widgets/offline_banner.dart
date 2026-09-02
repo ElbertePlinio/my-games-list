@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/core/services/connectivity_cubit.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/services/connectivity_cubit.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 
 /// Wraps [child] and shows a thin banner at the top while the device is offline.
 class OfflineBanner extends StatelessWidget {

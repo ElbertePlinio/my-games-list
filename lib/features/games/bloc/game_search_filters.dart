@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
+import 'package:picklog/features/games/search_game_model.dart';
 
 /// How search results are ordered. [relevance] keeps the API's original
 /// ordering; the others are applied client-side over the loaded results.

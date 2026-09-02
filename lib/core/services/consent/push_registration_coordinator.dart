@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/core/services/notification_service.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/core/services/notification_service.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
 
 /// Registers FCM only when push consent is granted **and** the user is
 /// authenticated, and tears it down when either condition stops holding.

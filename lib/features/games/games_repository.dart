@@ -1,11 +1,11 @@
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/features/games/anticipated_game_model.dart';
-import 'package:my_games_list/features/games/collection_model.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
-import 'package:my_games_list/features/games/featured_banner_model.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
-import 'package:my_games_list/features/games/i_games_repository.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/collection_model.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/featured_banner_model.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
+import 'package:picklog/features/games/search_game_model.dart';
 
 /// Repository for fetching game-related data from the API
 class GamesRepository implements IGamesRepository {

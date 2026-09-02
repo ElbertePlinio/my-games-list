@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 
 /// A destructive, type-to-confirm dialog for permanent account deletion.
 /// Pops with `true` only when the user types the localized confirmation word.

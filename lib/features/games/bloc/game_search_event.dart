@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/bloc/game_search_filters.dart';
 
 abstract class GameSearchEvent extends Equatable {
   const GameSearchEvent();

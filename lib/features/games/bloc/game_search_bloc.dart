@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/features/games/i_games_repository.dart';
-import 'package:my_games_list/features/games/bloc/game_search_event.dart';
-import 'package:my_games_list/features/games/bloc/game_search_filters.dart';
-import 'package:my_games_list/features/games/bloc/game_search_state.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
+import 'package:picklog/features/games/bloc/game_search_event.dart';
+import 'package:picklog/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/bloc/game_search_state.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 /// Debounce transformer for search events

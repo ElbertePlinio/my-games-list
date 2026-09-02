@@ -3,14 +3,14 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/image_utils.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
-import 'package:my_games_list/core/widgets/visibility_hero.dart';
-import 'package:my_games_list/features/games/anticipated_game_model.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_bloc.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_event.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_state.dart';
+import 'package:picklog/core/utils/image_utils.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_bloc.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_event.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_state.dart';
 
 /// A carousel widget displaying the most anticipated upcoming games
 class AnticipatedGamesCarousel extends StatelessWidget {

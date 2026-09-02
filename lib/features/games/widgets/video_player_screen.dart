@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Full-screen YouTube video player.

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
 
 enum BrowseGenresStatus { initial, loading, success, failure }
 

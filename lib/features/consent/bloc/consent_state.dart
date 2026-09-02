@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
 
 /// Snapshot of the user's consent choices, surfaced to the UI.
 ///

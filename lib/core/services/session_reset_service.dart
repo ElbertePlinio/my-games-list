@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:get_it/get_it.dart';
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/core/data/services/storage/token_storage.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/core/services/notification_service.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/data/services/storage/token_storage.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/core/services/notification_service.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
 
 /// Tears down per-user session state on logout so that a subsequent user in the
 /// same running app session (common on web/shared devices) cannot see the

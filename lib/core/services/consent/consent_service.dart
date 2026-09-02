@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/telemetry_gateway.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/telemetry_gateway.dart';
 
 /// Central gate for all telemetry/marketing data collection (LGPD).
 ///

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/utils/messages_extensions.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_event.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
-import 'package:my_games_list/features/consent/widgets/consent_settings_section.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_bloc.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_event.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_state.dart';
-import 'package:my_games_list/features/settings/bloc/settings_bloc.dart';
-import 'package:my_games_list/features/settings/bloc/settings_event.dart';
-import 'package:my_games_list/features/settings/bloc/settings_state.dart';
-import 'package:my_games_list/features/settings/widgets/delete_account_dialog.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/messages_extensions.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_event.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/consent/widgets/consent_settings_section.dart';
+import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
+import 'package:picklog/features/settings/bloc/account_management_event.dart';
+import 'package:picklog/features/settings/bloc/account_management_state.dart';
+import 'package:picklog/features/settings/bloc/settings_bloc.dart';
+import 'package:picklog/features/settings/bloc/settings_event.dart';
+import 'package:picklog/features/settings/bloc/settings_state.dart';
+import 'package:picklog/features/settings/widgets/delete_account_dialog.dart';
 
 // Language autonyms — shown in their own language, intentionally not localized.
 const List<({String code, String name})> _languageOptions = [
@@ -37,129 +37,76 @@ class SettingsScreen extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User Info Section
-            Text(
-              context.l10n.userInformationTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                final user = state is AuthAuthenticated ? state.user : null;
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.l10n.nameFormat(
-                            user?.name ?? context.l10n.unknown,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          context.l10n.emailFormat(
-                            user?.email ?? context.l10n.unknown,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // User Info Section
+              const _UserInfoSection(),
+              const SizedBox(height: 24),
 
-            // Theme Settings Section
-            Text(
-              context.l10n.appearanceTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            BlocBuilder<SettingsBloc, SettingsState>(
-              builder: (context, state) {
-                return SwitchListTile(
-                  title: Text(context.l10n.darkModeTitle),
-                  subtitle: Text(context.l10n.darkModeSubtitle),
-                  value: state.isDarkMode,
-                  onChanged: (value) => context.read<SettingsBloc>().add(
-                    SettingsDarkModeSet(value),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // Language Settings Section
-            Text(
-              context.l10n.languageTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            BlocBuilder<SettingsBloc, SettingsState>(
-              builder: (context, state) {
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.language),
-                    title: Text(context.l10n.languageTitle),
-                    trailing: DropdownButton<String?>(
-                      value: state.localeCode,
-                      onChanged: (value) => context.read<SettingsBloc>().add(
-                        SettingsLocaleSet(value),
-                      ),
-                      items: [
-                        DropdownMenuItem<String?>(
-                          value: null,
-                          child: Text(context.l10n.languageSystem),
-                        ),
-                        for (final option in _languageOptions)
-                          DropdownMenuItem<String?>(
-                            value: option.code,
-                            child: Text(option.name),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // Privacy & data Section (LGPD: export + delete), with the
-            // per-category consent toggles grouped directly under it so the two
-            // read as one privacy area rather than two competing sections.
-            const _PrivacyDataSection(),
-            const SizedBox(height: 8),
-            const ConsentSettingsSection(),
-            const SizedBox(height: 24),
-
-            // Legal Section — Privacy Policy & Terms documents
-            const _LegalSection(),
-            const SizedBox(height: 24),
-
-            // Logout Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Logout teardown (token + per-user in-memory state) is
-                  // handled centrally by AuthBloc via SessionResetService.
-                  context.read<AuthBloc>().add(const AuthLogoutRequested());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
+              // Theme Settings Section
+              Text(
+                context.l10n.appearanceTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Text(context.l10n.logoutButton),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  return Card(
+                    child: SwitchListTile(
+                      title: Text(context.l10n.darkModeTitle),
+                      subtitle: Text(context.l10n.darkModeSubtitle),
+                      value: state.isDarkMode,
+                      onChanged: (value) => context.read<SettingsBloc>().add(
+                        SettingsDarkModeSet(value),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // Language Settings Section
+              const _LanguageSection(),
+              const SizedBox(height: 24),
+
+              // Privacy & data Section (LGPD: export + delete), with the
+              // per-category consent toggles grouped directly under it so the two
+              // read as one privacy area rather than two competing sections.
+              const _PrivacyDataSection(),
+              const SizedBox(height: 8),
+              const ConsentSettingsSection(),
+              const SizedBox(height: 24),
+
+              // Legal Section — Privacy Policy & Terms documents
+              const _LegalSection(),
+              const SizedBox(height: 24),
+
+              // Logout Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Logout teardown (token + per-user in-memory state) is
+                    // handled centrally by AuthBloc via SessionResetService.
+                    context.read<AuthBloc>().add(const AuthLogoutRequested());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(context.l10n.logoutButton),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -324,6 +271,201 @@ class _LegalSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Full-width profile header: avatar (name initial) + name + email.
+class _UserInfoSection extends StatelessWidget {
+  const _UserInfoSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.userInformationTitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            final user = state is AuthAuthenticated ? state.user : null;
+            final name = user?.name ?? context.l10n.unknown;
+            final email = user?.email ?? context.l10n.unknown;
+            final trimmed = name.trim();
+            final initial = trimmed.isEmpty
+                ? '?'
+                : trimmed.substring(0, 1).toUpperCase();
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      child: Text(
+                        initial,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: theme.colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            email,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Language preference: a clean tappable row (no dropdown underline) that opens
+/// a bottom-sheet picker. System follows the device language.
+class _LanguageSection extends StatelessWidget {
+  const _LanguageSection();
+
+  String _displayName(BuildContext context, String? code) {
+    for (final option in _languageOptions) {
+      if (option.code == code) return option.name;
+    }
+    return context.l10n.languageSystem;
+  }
+
+  Future<void> _openPicker(BuildContext context, String? current) {
+    final bloc = context.read<SettingsBloc>();
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    context.l10n.languageTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              _LanguageOptionTile(
+                label: context.l10n.languageSystem,
+                selected: current == null,
+                onTap: () {
+                  bloc.add(const SettingsLocaleSet(null));
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              for (final option in _languageOptions)
+                _LanguageOptionTile(
+                  label: option.name,
+                  selected: current == option.code,
+                  onTap: () {
+                    bloc.add(SettingsLocaleSet(option.code));
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.languageTitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        BlocBuilder<SettingsBloc, SettingsState>(
+          builder: (context, state) {
+            return Card(
+              child: ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(context.l10n.languageTitle),
+                subtitle: Text(_displayName(context, state.localeCode)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _openPicker(context, state.localeCode),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _LanguageOptionTile extends StatelessWidget {
+  const _LanguageOptionTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      title: Text(
+        label,
+        style: selected
+            ? TextStyle(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              )
+            : null,
+      ),
+      trailing: selected
+          ? Icon(Icons.check, color: theme.colorScheme.primary)
+          : null,
+      onTap: onTap,
     );
   }
 }

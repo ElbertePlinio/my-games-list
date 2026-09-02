@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
 
 /// Skeleton for the full discovery grid screen. Mirrors the real grid
 /// (2 columns, `childAspectRatio: 0.65`, 12px spacing, 16px padding) so the

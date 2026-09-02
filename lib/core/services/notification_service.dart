@@ -4,7 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
 
 /// Service that manages Firebase Cloud Messaging (FCM) integration.
 ///

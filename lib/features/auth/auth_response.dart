@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/auth/user_model.dart';
+import 'package:picklog/features/auth/user_model.dart';
 
 /// Response model for authentication operations (signin/signup).
 class AuthResponse extends Equatable {

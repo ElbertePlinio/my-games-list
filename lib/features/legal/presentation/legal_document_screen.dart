@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/legal/legal_document.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/legal/legal_document.dart';
 
 /// Renders a [LegalDocument] (Privacy Policy or Terms of Service) from a
 /// locale-specific placeholder asset.

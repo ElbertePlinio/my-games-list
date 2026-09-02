@@ -9,10 +9,10 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'My Games List';
+  String get appTitle => 'Picklog';
 
   @override
-  String get welcomeMessage => 'Welcome to My Games List';
+  String get welcomeMessage => 'Welcome to Picklog';
 
   @override
   String get errorTitle => 'Error';
@@ -316,6 +316,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orContinueWith => 'or continue with';
 
   @override
+  String get signInWithEmail => 'Sign in with email';
+
+  @override
+  String get recommended => 'Recommended';
+
+  @override
   String get browseTitle => 'Browse';
 
   @override
@@ -484,7 +490,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shareGameMessage(String gameName, String url) {
-    return 'Check out $gameName on MyGamesList!\n$url';
+    return 'Check out $gameName on Picklog!\n$url';
   }
 
   @override

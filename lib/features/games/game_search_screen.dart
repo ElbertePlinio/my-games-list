@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/games/bloc/game_search_bloc.dart';
-import 'package:my_games_list/features/games/bloc/game_search_event.dart';
-import 'package:my_games_list/features/games/bloc/game_search_filters.dart';
-import 'package:my_games_list/features/games/bloc/game_search_state.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
-import 'package:my_games_list/features/games/widgets/game_search_card.dart';
-import 'package:my_games_list/features/games/widgets/search_filters_sheet.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/search_card_skeleton.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/games/bloc/game_search_bloc.dart';
+import 'package:picklog/features/games/bloc/game_search_event.dart';
+import 'package:picklog/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/bloc/game_search_state.dart';
+import 'package:picklog/features/games/search_game_model.dart';
+import 'package:picklog/features/games/widgets/game_search_card.dart';
+import 'package:picklog/features/games/widgets/search_filters_sheet.dart';
+import 'package:picklog/features/games/widgets/skeletons/search_card_skeleton.dart';
 
 class GameSearchScreen extends StatefulWidget {
   const GameSearchScreen({super.key});
@@ -51,56 +51,59 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.searchGamesTitle)),
-      body: Column(
-        children: [
-          _SearchBar(controller: _searchController),
-          BlocBuilder<GameSearchBloc, GameSearchState>(
-            buildWhen: (previous, current) =>
-                previous.games != current.games ||
-                previous.filters != current.filters,
-            builder: (context, state) {
-              if (state.games.isEmpty) return const SizedBox.shrink();
-              return _ActiveFiltersRow(state: state);
-            },
-          ),
-          Expanded(
-            child: BlocBuilder<GameSearchBloc, GameSearchState>(
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            _SearchBar(controller: _searchController),
+            BlocBuilder<GameSearchBloc, GameSearchState>(
+              buildWhen: (previous, current) =>
+                  previous.games != current.games ||
+                  previous.filters != current.filters,
               builder: (context, state) {
-                if (state.status == GameSearchStatus.initial) {
-                  return _InitialState();
-                }
-
-                if (state.isLoading) {
-                  return _LoadingState();
-                }
-
-                if (state.status == GameSearchStatus.failure) {
-                  return _ErrorState(
-                    message:
-                        state.errorMessage ??
-                        context.l10n.searchGamesErrorMessage,
-                  );
-                }
-
-                if (state.isEmptyByFilters) {
-                  return _FilteredEmptyState(canLoadMore: state.canLoadMore);
-                }
-
-                if (state.isEmpty) {
-                  return _EmptyState(query: state.query);
-                }
-
-                return _SearchResults(
-                  games: state.visibleGames,
-                  hasMore: state.canLoadMore,
-                  isLoadingMore: state.isLoadingMore,
-                  offsetLimitReached: state.offsetLimitReached,
-                  scrollController: _scrollController,
-                );
+                if (state.games.isEmpty) return const SizedBox.shrink();
+                return _ActiveFiltersRow(state: state);
               },
             ),
-          ),
-        ],
+            Expanded(
+              child: BlocBuilder<GameSearchBloc, GameSearchState>(
+                builder: (context, state) {
+                  if (state.status == GameSearchStatus.initial) {
+                    return _InitialState();
+                  }
+
+                  if (state.isLoading) {
+                    return _LoadingState();
+                  }
+
+                  if (state.status == GameSearchStatus.failure) {
+                    return _ErrorState(
+                      message:
+                          state.errorMessage ??
+                          context.l10n.searchGamesErrorMessage,
+                    );
+                  }
+
+                  if (state.isEmptyByFilters) {
+                    return _FilteredEmptyState(canLoadMore: state.canLoadMore);
+                  }
+
+                  if (state.isEmpty) {
+                    return _EmptyState(query: state.query);
+                  }
+
+                  return _SearchResults(
+                    games: state.visibleGames,
+                    hasMore: state.canLoadMore,
+                    isLoadingMore: state.isLoadingMore,
+                    offsetLimitReached: state.offsetLimitReached,
+                    scrollController: _scrollController,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

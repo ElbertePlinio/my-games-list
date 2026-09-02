@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/features/consent/bloc/consent_state.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/features/consent/bloc/consent_state.dart';
 
 /// Thin presentation layer over [ConsentService].
 ///

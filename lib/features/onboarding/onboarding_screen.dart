@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/features/onboarding/onboarding_page_data.dart';
-import 'package:my_games_list/features/onboarding/onboarding_service.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/onboarding/onboarding_page_data.dart';
+import 'package:picklog/features/onboarding/onboarding_service.dart';
 
 /// First-run welcome flow: a few swipeable intro pages shown once per install.
 ///

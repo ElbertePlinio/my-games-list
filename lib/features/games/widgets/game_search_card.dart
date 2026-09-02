@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:my_games_list/core/utils/image_utils.dart';
-import 'package:my_games_list/core/widgets/visibility_hero.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
+import 'package:picklog/core/utils/image_utils.dart';
+import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/features/games/search_game_model.dart';
 
 class GameSearchCard extends StatelessWidget {
   const GameSearchCard({super.key, required this.game});

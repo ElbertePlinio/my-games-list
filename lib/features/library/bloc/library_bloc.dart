@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:my_games_list/features/library/bloc/library_event.dart';
-import 'package:my_games_list/features/library/bloc/library_state.dart';
-import 'package:my_games_list/features/library/library_repository.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/library_repository.dart';
 
 /// BLoC for managing user's game library state
 class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {

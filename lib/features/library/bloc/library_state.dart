@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Enum representing the status of library loading
 enum LibraryStatus { initial, loading, success, failure }

@@ -3,12 +3,12 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/core/utils/image_utils.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
-import 'package:my_games_list/features/games/bloc/featured_banners_bloc.dart';
-import 'package:my_games_list/features/games/bloc/featured_banners_state.dart';
-import 'package:my_games_list/features/games/featured_banner_model.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/image_utils.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/features/games/bloc/featured_banners_bloc.dart';
+import 'package:picklog/features/games/bloc/featured_banners_state.dart';
+import 'package:picklog/features/games/featured_banner_model.dart';
 
 /// Hero carousel of editorial featured banners at the top of the home feed.
 ///

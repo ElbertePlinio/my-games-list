@@ -19,10 +19,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:my_games_list/core/utils/service_locator.dart';
-import 'package:my_games_list/features/home/home_screen.dart';
-import 'package:my_games_list/features/splash/splash_screen.dart';
-import 'package:my_games_list/main.dart';
+import 'package:picklog/core/utils/service_locator.dart';
+import 'package:picklog/features/home/home_screen.dart';
+import 'package:picklog/features/splash/splash_screen.dart';
+import 'package:picklog/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 

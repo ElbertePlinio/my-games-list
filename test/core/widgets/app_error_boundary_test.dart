@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/widgets/app_error_boundary.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/widgets/app_error_boundary.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 void main() {
   group('AppErrorBoundary', () {

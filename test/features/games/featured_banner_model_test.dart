@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/games/featured_banner_model.dart';
+import 'package:picklog/features/games/featured_banner_model.dart';
 
 void main() {
   group('FeaturedBanner', () {

@@ -11,8 +11,8 @@
 // (`flutter build web --release`).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/utils/service_locator.dart';
-import 'package:my_games_list/main.dart';
+import 'package:picklog/core/utils/service_locator.dart';
+import 'package:picklog/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

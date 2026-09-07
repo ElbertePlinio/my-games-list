@@ -1,11 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/features/games/anticipated_game_model.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_bloc.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_event.dart';
-import 'package:my_games_list/features/games/bloc/anticipated_games_state.dart';
-import 'package:my_games_list/features/games/i_games_repository.dart';
+import 'package:picklog/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_bloc.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_event.dart';
+import 'package:picklog/features/games/bloc/anticipated_games_state.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
 
 class MockGamesRepository extends Mock implements IGamesRepository {}
 

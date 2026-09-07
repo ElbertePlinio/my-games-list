@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/widgets/google_logo.dart';
-import 'package:my_games_list/core/widgets/google_sign_in_button.dart';
+import 'package:picklog/core/widgets/google_logo.dart';
+import 'package:picklog/core/widgets/google_sign_in_button.dart';
 
 void main() {
   group('GoogleSignInButton', () {

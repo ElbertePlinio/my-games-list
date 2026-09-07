@@ -1,11 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/features/games/bloc/featured_banners_bloc.dart';
-import 'package:my_games_list/features/games/bloc/featured_banners_event.dart';
-import 'package:my_games_list/features/games/bloc/featured_banners_state.dart';
-import 'package:my_games_list/features/games/featured_banner_model.dart';
-import 'package:my_games_list/features/games/games_repository.dart';
+import 'package:picklog/features/games/bloc/featured_banners_bloc.dart';
+import 'package:picklog/features/games/bloc/featured_banners_event.dart';
+import 'package:picklog/features/games/bloc/featured_banners_state.dart';
+import 'package:picklog/features/games/featured_banner_model.dart';
+import 'package:picklog/features/games/games_repository.dart';
 
 class MockGamesRepository extends Mock implements GamesRepository {}
 

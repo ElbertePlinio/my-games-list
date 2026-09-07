@@ -5,16 +5,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_bloc.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_event.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_state.dart';
-import 'package:my_games_list/features/auth/sign_up/sign_up_screen.dart';
-import 'package:my_games_list/features/legal/legal_document.dart';
-import 'package:my_games_list/features/legal/presentation/legal_document_screen.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_bloc.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_event.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_state.dart';
+import 'package:picklog/features/auth/sign_up/sign_up_screen.dart';
+import 'package:picklog/features/legal/legal_document.dart';
+import 'package:picklog/features/legal/presentation/legal_document_screen.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../../mocks/mock_blocs.dart';
 

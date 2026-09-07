@@ -1,14 +1,14 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/features/auth/auth_repository.dart';
-import 'package:my_games_list/features/auth/auth_response.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_bloc.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_event.dart';
-import 'package:my_games_list/features/auth/sign_up/bloc/sign_up_state.dart';
-import 'package:my_games_list/features/auth/sign_up/sign_up_request.dart';
-import 'package:my_games_list/features/auth/user_model.dart';
-import 'package:my_games_list/features/legal/legal_constants.dart';
+import 'package:picklog/features/auth/auth_repository.dart';
+import 'package:picklog/features/auth/auth_response.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_bloc.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_event.dart';
+import 'package:picklog/features/auth/sign_up/bloc/sign_up_state.dart';
+import 'package:picklog/features/auth/sign_up/sign_up_request.dart';
+import 'package:picklog/features/auth/user_model.dart';
+import 'package:picklog/features/legal/legal_constants.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 

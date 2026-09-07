@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_event.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
-import 'package:my_games_list/features/auth/user_model.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_event.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/auth/user_model.dart';
 
 import '../../../mocks/mock_services.dart';
 

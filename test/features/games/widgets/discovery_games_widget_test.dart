@@ -5,14 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/widgets/shimmer_loading.dart';
-import 'package:my_games_list/features/games/discovery_game_model.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_bloc.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_event.dart';
-import 'package:my_games_list/features/games/bloc/discovery_games_state.dart';
-import 'package:my_games_list/features/games/widgets/discovery_game_tile.dart';
-import 'package:my_games_list/features/games/widgets/discovery_games_widget.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/widgets/shimmer_loading.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
+import 'package:picklog/features/games/bloc/discovery_games_event.dart';
+import 'package:picklog/features/games/bloc/discovery_games_state.dart';
+import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
+import 'package:picklog/features/games/widgets/discovery_games_widget.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class MockDiscoveryGamesBloc

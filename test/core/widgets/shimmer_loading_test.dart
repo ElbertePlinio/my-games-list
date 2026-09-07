@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/widgets/shimmer_loading.dart';
+import 'package:picklog/core/widgets/shimmer_loading.dart';
 
 void main() {
   testWidgets('ShimmerLoading renders its child through a ShaderMask', (

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/widgets/shimmer_loading.dart';
-import 'package:my_games_list/core/widgets/skeleton_box.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/discovery_grid_skeleton.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/game_details_skeleton.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/library_entry_skeleton.dart';
-import 'package:my_games_list/features/games/widgets/skeletons/search_card_skeleton.dart';
+import 'package:picklog/core/widgets/shimmer_loading.dart';
+import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/features/games/widgets/skeletons/discovery_grid_skeleton.dart';
+import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
+import 'package:picklog/features/games/widgets/skeletons/game_details_skeleton.dart';
+import 'package:picklog/features/games/widgets/skeletons/library_entry_skeleton.dart';
+import 'package:picklog/features/games/widgets/skeletons/search_card_skeleton.dart';
 
 Widget _wrap(Widget child, {Brightness brightness = Brightness.light}) {
   return MaterialApp(

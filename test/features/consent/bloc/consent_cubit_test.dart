@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/core/services/consent/telemetry_gateway.dart';
-import 'package:my_games_list/features/consent/bloc/consent_cubit.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/core/services/consent/telemetry_gateway.dart';
+import 'package:picklog/features/consent/bloc/consent_cubit.dart';
 
 class _MockStorage extends Mock implements LocalStorageService {}
 

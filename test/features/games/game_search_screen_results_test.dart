@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/features/games/bloc/game_search_bloc.dart';
-import 'package:my_games_list/features/games/bloc/game_search_event.dart';
-import 'package:my_games_list/features/games/bloc/game_search_filters.dart';
-import 'package:my_games_list/features/games/bloc/game_search_state.dart';
-import 'package:my_games_list/features/games/game_search_screen.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
-import 'package:my_games_list/features/games/widgets/game_search_card.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/features/games/bloc/game_search_bloc.dart';
+import 'package:picklog/features/games/bloc/game_search_event.dart';
+import 'package:picklog/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/bloc/game_search_state.dart';
+import 'package:picklog/features/games/game_search_screen.dart';
+import 'package:picklog/features/games/search_game_model.dart';
+import 'package:picklog/features/games/widgets/game_search_card.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../mocks/mock_blocs.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/widgets/bottom_nav_bar.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/widgets/bottom_nav_bar.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 void main() {
   group('BottomNavBar', () {

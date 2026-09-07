@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/core/domain/models/api_error.dart';
-import 'package:my_games_list/core/domain/models/api_response.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
-import 'package:my_games_list/features/library/library_repository.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/domain/models/api_error.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_repository.dart';
 
 class MockHttpClient extends Mock implements IHttpClient {}
 

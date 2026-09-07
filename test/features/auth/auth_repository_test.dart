@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/core/data/services/storage/token_storage.dart';
-import 'package:my_games_list/core/domain/models/api_error.dart';
-import 'package:my_games_list/core/domain/models/api_response.dart';
-import 'package:my_games_list/features/auth/auth_repository.dart';
-import 'package:my_games_list/features/auth/auth_response.dart';
-import 'package:my_games_list/features/auth/sign_in/sign_in_request.dart';
-import 'package:my_games_list/features/auth/sign_up/sign_up_request.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/data/services/storage/token_storage.dart';
+import 'package:picklog/core/domain/models/api_error.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
+import 'package:picklog/features/auth/auth_repository.dart';
+import 'package:picklog/features/auth/auth_response.dart';
+import 'package:picklog/features/auth/sign_in/sign_in_request.dart';
+import 'package:picklog/features/auth/sign_up/sign_up_request.dart';
 
 class MockHttpClient extends Mock implements IHttpClient {}
 

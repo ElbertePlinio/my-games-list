@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/auth/domain/social_auth_request.dart';
-import 'package:my_games_list/features/legal/legal_constants.dart';
+import 'package:picklog/features/auth/domain/social_auth_request.dart';
+import 'package:picklog/features/legal/legal_constants.dart';
 
 void main() {
   group('SocialAuthRequest', () {

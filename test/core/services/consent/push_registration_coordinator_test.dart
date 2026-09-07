@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/core/services/consent/push_registration_coordinator.dart';
-import 'package:my_games_list/core/services/consent/telemetry_gateway.dart';
-import 'package:my_games_list/core/services/notification_service.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
-import 'package:my_games_list/features/auth/user_model.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/core/services/consent/push_registration_coordinator.dart';
+import 'package:picklog/core/services/consent/telemetry_gateway.dart';
+import 'package:picklog/core/services/notification_service.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/auth/user_model.dart';
 
 class _MockStorage extends Mock implements LocalStorageService {}
 

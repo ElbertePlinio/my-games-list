@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/services/connectivity_cubit.dart';
+import 'package:picklog/core/services/connectivity_cubit.dart';
 
 class _MockConnectivity extends Mock implements Connectivity {}
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/features/settings/bloc/settings_bloc.dart';
 import 'package:picklog/features/settings/bloc/settings_event.dart';
@@ -8,7 +9,7 @@ import 'package:picklog/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('MyGamesListApp', () {
+  group('PicklogApp', () {
     setUp(() async {
       // Reset GetIt and setup mock data. Mark onboarding completed so the app
       // routes straight to the auth flow — these tests assert returning-user
@@ -24,7 +25,7 @@ void main() {
 
     testWidgets('should initialize and display app correctly', (tester) async {
       // Act
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // Assert - App should be created and MaterialApp should be present
@@ -33,19 +34,19 @@ void main() {
 
     testWidgets('should have correct app title', (tester) async {
       // Arrange
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // Assert
       // Since we use onGenerateTitle with localization, we check the Title widget
       expect(find.byType(Title), findsOneWidget);
       final titleWidget = tester.widget<Title>(find.byType(Title));
-      expect(titleWidget.title, equals('My Games List'));
+      expect(titleWidget.title, equals('Picklog'));
     });
 
     testWidgets('should not show debug banner', (tester) async {
       // Arrange
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // Assert
@@ -55,7 +56,7 @@ void main() {
 
     testWidgets('should use Material 3 design', (tester) async {
       // Arrange
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // Assert
@@ -66,7 +67,7 @@ void main() {
     testWidgets('should react to theme changes', (tester) async {
       // This test will be expanded once we have SettingsBloc fully integrated
       // For now, just ensure the app can be built
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // Assert
@@ -77,11 +78,16 @@ void main() {
       tester,
     ) async {
       // Arrange - Start the app
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
-      // The app starts at sign-in page - check for email field which is unique to sign-in
-      expect(find.byType(TextFormField), findsWidgets);
+      // The email form starts collapsed. Open it before checking that theme
+      // changes preserve both the sign-in route and its local form state.
+      expect(find.byType(TextFormField), findsNothing);
+      final signInContext = tester.element(find.byType(Scaffold));
+      await tester.tap(find.text(signInContext.l10n.signInWithEmail));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextFormField), findsNWidgets(2));
 
       // Get the Scaffold to verify we're on sign-in screen
       expect(find.byType(Scaffold), findsOneWidget);
@@ -111,7 +117,7 @@ void main() {
       tester,
     ) async {
       // Arrange
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // Initially light: themeMode follows the (light) setting, and the static

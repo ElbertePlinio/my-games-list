@@ -82,7 +82,7 @@ void main() {
       // Assert
       expect(find.byType(BrandLogo), findsOneWidget);
       expect(find.byIcon(Icons.games), findsOneWidget);
-      expect(find.text('My Games List'), findsOneWidget);
+      expect(find.text('Picklog'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 

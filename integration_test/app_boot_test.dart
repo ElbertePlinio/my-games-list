@@ -1,6 +1,6 @@
 // End-to-end boot integration test.
 //
-// Runs the real `MyGamesListApp` through the live service locator and GoRouter,
+// Runs the real `PicklogApp` through the live service locator and GoRouter,
 // exercising the splash -> auth-redirect path that unit widget tests stub out.
 // Runnable on a device or browser via:
 //   flutter test integration_test -d chrome   (headless web smoke)
@@ -19,6 +19,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/features/home/home_screen.dart';
 import 'package:picklog/features/splash/splash_screen.dart';
@@ -44,7 +45,7 @@ void main() {
     SharedPreferences.setMockInitialValues(prefs);
     await setupServiceLocator();
 
-    await tester.pumpWidget(const MyGamesListApp());
+    await tester.pumpWidget(const PicklogApp());
     // First frame: splash is on screen before the auth check resolves.
     await tester.pump();
     expect(find.byType(SplashScreen), findsOneWidget);
@@ -57,7 +58,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SplashScreen), findsNothing);
-    expect(find.byType(TextFormField), findsWidgets);
+    expect(find.byType(TextFormField), findsNothing);
+    final context = tester.element(find.byType(Scaffold));
+    await tester.tap(find.text(context.l10n.signInWithEmail));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsNWidgets(2));
     expect(tester.takeException(), isNull);
   });
 

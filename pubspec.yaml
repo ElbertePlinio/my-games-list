@@ -27,6 +27,7 @@ dependencies:
   cached_network_image: ^3.4.1
   stream_transform: ^2.1.1
   flutter_rating_bar: ^4.0.1
+  flutter_svg: ^2.0.10
   url_launcher: ^6.2.5
   youtube_player_iframe: ^5.2.2
   share_plus: ^10.1.4
@@ -60,6 +61,7 @@ flutter:
   assets:
     - .env
     - assets/legal/
+    - assets/branding/google_g.svg
 
 # Launcher icons — generated from the PLACEHOLDER brand art in assets/branding/.
 # Regenerate after replacing the source PNGs:

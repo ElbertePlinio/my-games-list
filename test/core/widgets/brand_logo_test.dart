@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/widgets/brand_logo.dart';
+import 'package:picklog/core/widgets/brand_logo.dart';
 
 void main() {
   group('BrandLogo', () {

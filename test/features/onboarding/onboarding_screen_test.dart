@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/onboarding/onboarding_screen.dart';
-import 'package:my_games_list/features/onboarding/onboarding_service.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/features/onboarding/onboarding_screen.dart';
+import 'package:picklog/features/onboarding/onboarding_service.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../mocks/mock_services.dart';
 

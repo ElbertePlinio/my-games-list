@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/services/connectivity_cubit.dart';
-import 'package:my_games_list/core/utils/l10n_extensions.dart';
-import 'package:my_games_list/core/widgets/app_error_boundary.dart';
-import 'package:my_games_list/core/widgets/offline_banner.dart';
-import 'package:my_games_list/features/browse/widgets/browse_status_views.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/services/connectivity_cubit.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/app_error_boundary.dart';
+import 'package:picklog/core/widgets/offline_banner.dart';
+import 'package:picklog/features/browse/widgets/browse_status_views.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 class _MockConnectivityCubit extends MockCubit<bool>
     implements ConnectivityCubit {}

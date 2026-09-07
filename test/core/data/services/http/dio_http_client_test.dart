@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/data/services/http/dio_http_client.dart';
+import 'package:picklog/core/data/services/http/dio_http_client.dart';
 
 /// Adapter that returns a fixed status code for every request.
 class _StatusAdapter implements HttpClientAdapter {

@@ -1,0 +1,1 @@
+AccountManagementBloc owns export and deletion calls through AuthRepository; the UI owns confirmation and dispatches AuthLogoutRequested after successful deletion. Keep the central session teardown instead of clearing a few local fields in the screen. Deliver exports through the platform-aware AccountExportSaver boundary.

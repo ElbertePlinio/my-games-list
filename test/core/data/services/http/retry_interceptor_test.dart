@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/data/services/http/retry_interceptor.dart';
+import 'package:picklog/core/data/services/http/retry_interceptor.dart';
 
 /// Adapter that fails the first [failTimes] calls (a connection error, or a
 /// [failStatus] response) then returns 200, counting every call.

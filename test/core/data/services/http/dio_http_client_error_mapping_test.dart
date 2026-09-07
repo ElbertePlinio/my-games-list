@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/data/services/http/dio_http_client.dart';
-import 'package:my_games_list/core/domain/models/api_error.dart';
-import 'package:my_games_list/core/domain/models/api_response.dart';
+import 'package:picklog/core/data/services/http/dio_http_client.dart';
+import 'package:picklog/core/domain/models/api_error.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
 
 /// Adapter that throws a fixed [DioException] for every request, driving the
 /// non-`badResponse` branches of `DioHttpClient._handleError`.

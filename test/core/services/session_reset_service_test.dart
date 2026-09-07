@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/core/data/services/http/i_http_client.dart';
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/core/data/services/storage/token_storage.dart';
-import 'package:my_games_list/core/services/consent/consent_category.dart';
-import 'package:my_games_list/core/services/consent/consent_service.dart';
-import 'package:my_games_list/core/services/consent/telemetry_gateway.dart';
-import 'package:my_games_list/core/services/notification_service.dart';
-import 'package:my_games_list/core/services/session_reset_service.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
-import 'package:my_games_list/features/library/library_repository.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/data/services/storage/token_storage.dart';
+import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/services/consent/consent_service.dart';
+import 'package:picklog/core/services/consent/telemetry_gateway.dart';
+import 'package:picklog/core/services/notification_service.dart';
+import 'package:picklog/core/services/session_reset_service.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/library_repository.dart';
 
 class _MockTokenStorage extends Mock implements TokenStorage {}
 

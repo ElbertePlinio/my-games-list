@@ -11,8 +11,9 @@
 // (`flutter build web --release`).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/utils/service_locator.dart';
-import 'package:my_games_list/main.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/service_locator.dart';
+import 'package:picklog/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -32,7 +33,7 @@ void main() {
     testWidgets('app boots and renders the core shell without throwing', (
       tester,
     ) async {
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
       // No build/layout/navigation exception escaped during boot.
@@ -49,12 +50,16 @@ void main() {
     testWidgets('boot settles on the sign-in screen for a signed-out user', (
       tester,
     ) async {
-      await tester.pumpWidget(const MyGamesListApp());
+      await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
-      // Unauthenticated boot redirects splash -> sign-in, which exposes the
-      // credential form fields.
-      expect(find.byType(TextFormField), findsWidgets);
+      // Unauthenticated boot redirects splash -> sign-in. Email credentials
+      // are available after expanding the secondary sign-in option.
+      expect(find.byType(TextFormField), findsNothing);
+      final context = tester.element(find.byType(Scaffold));
+      await tester.tap(find.text(context.l10n.signInWithEmail));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextFormField), findsNWidgets(2));
       expect(tester.takeException(), isNull);
     });
   });

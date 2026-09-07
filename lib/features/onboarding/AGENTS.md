@@ -1,0 +1,1 @@
+Keep completion persisted once per install through OnboardingService. A failed read means onboarding is incomplete. The screen marks completion and calls its onCompleted callback; the router decides the auth-dependent destination. Keep onboarding exempt from auth redirects.

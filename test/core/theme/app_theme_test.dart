@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/theme/app_colors.dart';
-import 'package:my_games_list/core/theme/app_theme.dart';
+import 'package:picklog/core/theme/app_colors.dart';
+import 'package:picklog/core/theme/app_theme.dart';
 
 void main() {
   group('AppTheme', () {

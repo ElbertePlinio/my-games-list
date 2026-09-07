@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/widgets/visibility_hero.dart';
+import 'package:picklog/core/widgets/visibility_hero.dart';
 
 HeroMode _heroModeFor(WidgetTester tester, Key childKey) {
   return tester.widget<HeroMode>(

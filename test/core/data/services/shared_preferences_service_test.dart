@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/data/services/storage/local_storage_service.dart';
-import 'package:my_games_list/core/data/services/storage/shared_preferences_service.dart';
+import 'package:picklog/core/data/services/storage/local_storage_service.dart';
+import 'package:picklog/core/data/services/storage/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

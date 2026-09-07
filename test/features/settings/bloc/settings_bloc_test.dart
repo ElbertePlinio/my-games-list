@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/settings/bloc/settings_bloc.dart';
-import 'package:my_games_list/features/settings/bloc/settings_event.dart';
-import 'package:my_games_list/features/settings/bloc/settings_state.dart';
+import 'package:picklog/features/settings/bloc/settings_bloc.dart';
+import 'package:picklog/features/settings/bloc/settings_event.dart';
+import 'package:picklog/features/settings/bloc/settings_state.dart';
 
 import '../../../mocks/mock_services.dart';
 

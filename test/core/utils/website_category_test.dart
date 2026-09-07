@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/utils/website_category.dart';
+import 'package:picklog/core/utils/website_category.dart';
 
 void main() {
   group('WebsiteCategory constants', () {

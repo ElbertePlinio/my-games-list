@@ -3,11 +3,11 @@ import 'dart:ui';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/features/auth/auth_repository.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_bloc.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_event.dart';
-import 'package:my_games_list/features/settings/bloc/account_management_state.dart';
-import 'package:my_games_list/features/settings/services/account_export_saver.dart';
+import 'package:picklog/features/auth/auth_repository.dart';
+import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
+import 'package:picklog/features/settings/bloc/account_management_event.dart';
+import 'package:picklog/features/settings/bloc/account_management_state.dart';
+import 'package:picklog/features/settings/services/account_export_saver.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 

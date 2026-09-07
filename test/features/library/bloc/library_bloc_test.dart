@@ -1,11 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
-import 'package:my_games_list/features/library/bloc/library_event.dart';
-import 'package:my_games_list/features/library/bloc/library_state.dart';
-import 'package:my_games_list/features/library/library_entry_model.dart';
-import 'package:my_games_list/features/library/library_repository.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_repository.dart';
 
 class MockLibraryRepository extends Mock implements LibraryRepository {}
 

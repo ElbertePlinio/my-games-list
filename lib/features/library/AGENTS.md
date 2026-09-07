@@ -1,0 +1,1 @@
+LibraryBloc is a shared lazy singleton used by the library and game-details routes, not a separate instance per screen. Preserve optimistic favorite/delete updates with rollback on failure, and reset user-scoped state through the central session teardown. Keep IGDB integer IDs distinct from cached game and library-entry UUIDs when making API requests.

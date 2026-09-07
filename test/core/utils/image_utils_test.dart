@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/core/utils/image_utils.dart';
+import 'package:picklog/core/utils/image_utils.dart';
 
 void main() {
   group('getHighResUrl', () {

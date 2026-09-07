@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/games/bloc/game_details_bloc.dart';
-import 'package:my_games_list/features/games/bloc/game_details_event.dart';
-import 'package:my_games_list/features/games/bloc/game_details_state.dart';
-import 'package:my_games_list/features/games/game_detail_model.dart';
-import 'package:my_games_list/features/games/game_details_screen.dart';
-import 'package:my_games_list/features/library/bloc/library_bloc.dart';
-import 'package:my_games_list/features/library/bloc/library_event.dart';
-import 'package:my_games_list/features/library/bloc/library_state.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/features/games/bloc/game_details_bloc.dart';
+import 'package:picklog/features/games/bloc/game_details_event.dart';
+import 'package:picklog/features/games/bloc/game_details_state.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/game_details_screen.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 class MockGameDetailsBloc extends MockBloc<GameDetailsEvent, GameDetailsState>
     implements GameDetailsBloc {}

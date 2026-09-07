@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/features/games/search_game_model.dart';
-import 'package:my_games_list/features/games/widgets/game_search_card.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/features/games/search_game_model.dart';
+import 'package:picklog/features/games/widgets/game_search_card.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 void main() {
   group('GameSearchCard', () {

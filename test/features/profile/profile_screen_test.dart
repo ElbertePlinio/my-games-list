@@ -4,12 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_games_list/core/utils/app_router.dart';
-import 'package:my_games_list/features/auth/bloc/auth_bloc.dart';
-import 'package:my_games_list/features/auth/bloc/auth_state.dart';
-import 'package:my_games_list/features/auth/user_model.dart';
-import 'package:my_games_list/features/profile/profile_screen.dart';
-import 'package:my_games_list/l10n/app_localizations.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/auth/user_model.dart';
+import 'package:picklog/features/profile/profile_screen.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../mocks/mock_blocs.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_games_list/features/games/collection_model.dart';
+import 'package:picklog/features/games/collection_model.dart';
 
 void main() {
   group('GameCollection', () {

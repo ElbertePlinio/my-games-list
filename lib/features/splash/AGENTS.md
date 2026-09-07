@@ -1,0 +1,1 @@
+Load authentication through AuthBloc before choosing the destination. Check first-run onboarding before the normal auth destination, and keep splash exempt from auth redirects. Preserve the minimum branding delay and mounted check before navigating.

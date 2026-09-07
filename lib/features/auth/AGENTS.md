@@ -1,0 +1,1 @@
+Keep AuthBloc global and sign-in/sign-up form BLoCs route-scoped. Store JWTs through TokenStorage, not preferences. Preserve the SignUpBloc acceptance check as well as the UI checkbox; signup and social auth send kConsentVersion from the legal feature.

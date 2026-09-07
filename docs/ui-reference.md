@@ -1,0 +1,5 @@
+Paths below are relative to the app root.
+
+Home and Browse remain mounted in the indexed navigation shell. Browse cover Heroes use `browse-genre-<id>-`, `browse-new-releases-`, `browse-coming-soon-` and `browse-col-<collectionId>-` prefixes. The tile sends its prefix as GoRouter `extra`; game details reconstructs `${heroTagPrefix}game-cover-<id>`. This preserves the source/destination match without collisions between rows or tabs. See `lib/features/browse/browse_screen.dart`, `lib/features/browse/browse_genre_games_screen.dart`, `lib/features/games/widgets/collections_widget.dart` and `lib/core/utils/app_router.dart`.
+
+For consent widget tests, create ConsentCubit inside BlocProvider.create rather than setUp. Its service-stream subscription must run in the widget test's async zone or stream-driven rebuilds can stall under the fake clock. Mount ConsentBanner in MaterialApp.router's builder, as production does, rather than below a home Navigator: the latter hides sheet Navigator-lookup failures. `test/features/consent/widgets/consent_banner_test.dart` contains this harness.

@@ -1,91 +1,56 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
 import 'package:picklog/features/games/search_game_model.dart';
 
-/// How search results are ordered. [relevance] keeps the API's original
-/// ordering; the others are applied client-side over the loaded results.
+/// How search results are ordered. [relevance] keeps the API order. The
+/// search API has no sort, so the others reorder the loaded results.
 enum GameSearchSort { relevance, nameAsc, yearDesc, yearAsc }
 
-/// Client-side refinement applied to the loaded search results.
-///
-/// The search API is text-only (it binds query/limit/offset), so genre,
-/// platform and year filtering plus sorting are computed over the results the
-/// API already returned, using the fields the [SearchGame] model exposes.
+/// Search refinement: server-side [catalog] filters plus a client-side sort.
 class GameSearchFilters extends Equatable {
   const GameSearchFilters({
     this.sort = GameSearchSort.relevance,
-    this.genreIds = const {},
-    this.platformIds = const {},
-    this.year,
+    this.catalog = const CatalogFilters(),
   });
 
   final GameSearchSort sort;
-  final Set<int> genreIds;
-  final Set<int> platformIds;
-  final int? year;
 
-  bool get isEmpty =>
-      sort == GameSearchSort.relevance &&
-      genreIds.isEmpty &&
-      platformIds.isEmpty &&
-      year == null;
+  /// Genre, platform, year and rating filters sent to `POST /games/search`.
+  final CatalogFilters catalog;
 
-  /// Number of active filter constraints (sort excluded — it is always set).
-  int get activeFilterCount =>
-      genreIds.length + platformIds.length + (year != null ? 1 : 0);
+  bool get isEmpty => sort == GameSearchSort.relevance && catalog.isEmpty;
 
-  GameSearchFilters copyWith({
-    GameSearchSort? sort,
-    Set<int>? genreIds,
-    Set<int>? platformIds,
-    int? year,
-    bool clearYear = false,
-  }) {
+  /// Number of active filter constraints (sort excluded).
+  int get activeFilterCount => catalog.activeCount;
+
+  GameSearchFilters copyWith({GameSearchSort? sort, CatalogFilters? catalog}) {
     return GameSearchFilters(
       sort: sort ?? this.sort,
-      genreIds: genreIds ?? this.genreIds,
-      platformIds: platformIds ?? this.platformIds,
-      year: clearYear ? null : (year ?? this.year),
+      catalog: catalog ?? this.catalog,
     );
   }
 
-  /// Applies the active filters and sort to [games].
-  List<SearchGame> apply(List<SearchGame> games) {
-    final filtered = games.where((game) {
-      if (genreIds.isNotEmpty &&
-          !game.genres.any((g) => genreIds.contains(g.id))) {
-        return false;
-      }
-      if (platformIds.isNotEmpty &&
-          !game.platforms.any((p) => platformIds.contains(p.id))) {
-        return false;
-      }
-      // Match on the UTC year so the filter agrees with the year facet and the
-      // API's midnight-UTC release timestamps regardless of the device zone.
-      if (year != null && game.firstReleaseDate?.toUtc().year != year) {
-        return false;
-      }
-      return true;
-    }).toList();
-
+  /// Orders [games] by [sort]. Relevance keeps the API order.
+  List<SearchGame> sortGames(List<SearchGame> games) {
+    if (sort == GameSearchSort.relevance) return games;
+    final sorted = List.of(games);
     switch (sort) {
       case GameSearchSort.relevance:
         break;
       case GameSearchSort.nameAsc:
-        filtered.sort(
+        sorted.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
         );
       case GameSearchSort.yearDesc:
-        filtered.sort(_byYear(descending: true));
+        sorted.sort(_byYear(descending: true));
       case GameSearchSort.yearAsc:
-        filtered.sort(_byYear(descending: false));
+        sorted.sort(_byYear(descending: false));
     }
-
-    return filtered;
+    return sorted;
   }
 
   /// Sorts by full release date, always pushing games without a release date
-  /// to the end regardless of direction. Comparing the whole [DateTime] (not
-  /// just the year) keeps same-year results in correct chronological order.
+  /// to the end regardless of direction.
   Comparator<SearchGame> _byYear({required bool descending}) {
     return (a, b) {
       final ad = a.firstReleaseDate;
@@ -98,5 +63,5 @@ class GameSearchFilters extends Equatable {
   }
 
   @override
-  List<Object?> get props => [sort, genreIds, platformIds, year];
+  List<Object?> get props => [sort, catalog];
 }

@@ -1,6 +1,7 @@
 import 'package:picklog/core/data/services/http/i_http_client.dart';
 import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
 import 'package:picklog/features/games/collection_model.dart';
 import 'package:picklog/features/games/discovery_game_model.dart';
 import 'package:picklog/features/games/featured_banner_model.dart';
@@ -167,10 +168,16 @@ class GamesRepository implements IGamesRepository {
     String query, {
     int limit = 20,
     int offset = 0,
+    CatalogFilters filters = const CatalogFilters(),
   }) async {
     final response = await _httpClient.post<Map<String, dynamic>>(
       '/games/search',
-      data: {'query': query, 'limit': limit, 'offset': offset},
+      data: {
+        'query': query,
+        'limit': limit,
+        'offset': offset,
+        ...filters.toSearchBody(),
+      },
     );
 
     if (response.isError) {
@@ -199,5 +206,48 @@ class GamesRepository implements IGamesRepository {
       response.dataOrThrow,
     );
     return gameDetailResponse.game;
+  }
+
+  /// Fetches the curated platform list (`GET /games/platforms`).
+  @override
+  Future<List<PlatformOption>> getPlatforms() async {
+    final response = await _httpClient.get<Map<String, dynamic>>(
+      '/games/platforms',
+    );
+
+    if (response.isError) {
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch platforms',
+      );
+    }
+
+    final platforms =
+        response.dataOrThrow['platforms'] as List<dynamic>? ?? const [];
+    return platforms
+        .map((p) => PlatformOption.fromJson(p as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Browses the catalog (`GET /games/explore`).
+  @override
+  Future<DiscoveryGamesResponse> exploreGames(
+    ExploreFilters filters, {
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final response = await _httpClient.get<Map<String, dynamic>>(
+      '/games/explore',
+      queryParameters: filters.toQueryParameters(limit: limit, offset: offset),
+    );
+
+    if (response.isError) {
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to explore games',
+      );
+    }
+
+    return DiscoveryGamesResponse.fromJson(response.dataOrThrow);
   }
 }

@@ -4,18 +4,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/features/games/bloc/filter_options_cubit.dart';
 import 'package:picklog/features/games/bloc/game_search_bloc.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/bloc/game_search_state.dart';
 import 'package:picklog/features/games/game_search_screen.dart';
-import 'package:picklog/features/games/search_game_model.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 
 class _MockGameSearchBloc extends MockBloc<GameSearchEvent, GameSearchState>
     implements GameSearchBloc {}
 
 class _FakeGameSearchEvent extends Fake implements GameSearchEvent {}
+
+class _MockGamesRepository extends Mock implements IGamesRepository {}
 
 void main() {
   setUpAll(() => registerFallbackValue(_FakeGameSearchEvent()));
@@ -35,8 +39,14 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('en'),
-        home: BlocProvider<GameSearchBloc>.value(
-          value: bloc,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<GameSearchBloc>.value(value: bloc),
+            BlocProvider(
+              create: (_) =>
+                  FilterOptionsCubit(gamesRepository: _MockGamesRepository()),
+            ),
+          ],
           child: const GameSearchScreen(),
         ),
       );
@@ -77,10 +87,9 @@ void main() {
           const GameSearchState(
             status: GameSearchStatus.success,
             query: 'zelda',
-            games: [
-              SearchGame(id: 1, name: 'Zelda', genres: [], platforms: []),
-            ],
-            filters: GameSearchFilters(year: 1999),
+            filters: GameSearchFilters(
+              catalog: CatalogFilters(yearFrom: 1999, yearTo: 1999),
+            ),
           ),
         );
 

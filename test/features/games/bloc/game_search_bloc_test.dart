@@ -5,12 +5,15 @@ import 'package:picklog/features/games/bloc/game_search_bloc.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/bloc/game_search_state.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
 import 'package:picklog/features/games/search_game_model.dart';
 import 'package:picklog/features/games/i_games_repository.dart';
 
 class MockGamesRepository extends Mock implements IGamesRepository {}
 
 void main() {
+  setUpAll(() => registerFallbackValue(const CatalogFilters()));
+
   group('GameSearchBloc', () {
     late MockGamesRepository mockRepository;
     late GameSearchBloc bloc;
@@ -52,6 +55,7 @@ void main() {
               any(),
               limit: any(named: 'limit'),
               offset: any(named: 'offset'),
+              filters: any(named: 'filters'),
             ),
           ).thenAnswer((_) async => mockResponse);
           return bloc;
@@ -74,7 +78,12 @@ void main() {
         ],
         verify: (_) {
           verify(
-            () => mockRepository.searchGames('Test', limit: 20, offset: 0),
+            () => mockRepository.searchGames(
+              'Test',
+              limit: 20,
+              offset: 0,
+              filters: const CatalogFilters(),
+            ),
           ).called(1);
         },
       );
@@ -91,6 +100,7 @@ void main() {
               any(),
               limit: any(named: 'limit'),
               offset: any(named: 'offset'),
+              filters: any(named: 'filters'),
             ),
           );
           // State should remain initial
@@ -106,6 +116,7 @@ void main() {
               any(),
               limit: any(named: 'limit'),
               offset: any(named: 'offset'),
+              filters: any(named: 'filters'),
             ),
           ).thenThrow(Exception('Search failed'));
           return bloc;
@@ -134,6 +145,7 @@ void main() {
               any(),
               limit: any(named: 'limit'),
               offset: any(named: 'offset'),
+              filters: any(named: 'filters'),
             ),
           ).thenAnswer((_) async => mockResponse);
           return bloc;
@@ -151,7 +163,12 @@ void main() {
         verify: (_) {
           // Should only call API once with final query after debounce
           verify(
-            () => mockRepository.searchGames('Test', limit: 20, offset: 0),
+            () => mockRepository.searchGames(
+              'Test',
+              limit: 20,
+              offset: 0,
+              filters: const CatalogFilters(),
+            ),
           ).called(1);
         },
       );
@@ -176,6 +193,7 @@ void main() {
               any(),
               limit: any(named: 'limit'),
               offset: any(named: 'offset'),
+              filters: any(named: 'filters'),
             ),
           ).thenAnswer(
             (_) async => SearchGamesResponse(
@@ -356,143 +374,165 @@ void main() {
         expect(oldest.map((g) => g.id), [1, 2, 3]);
       });
 
-      test('genre filter narrows results to the selected genre', () {
-        final visible = seeded(
-          const GameSearchFilters(genreIds: {10}),
-        ).visibleGames;
-        expect(visible.map((g) => g.id), [1, 3]);
-      });
-
-      test('platform filter narrows results to the selected platform', () {
-        final visible = seeded(
-          const GameSearchFilters(platformIds: {200}),
-        ).visibleGames;
-        expect(visible.map((g) => g.id), [2]);
-      });
-
-      test('year filter narrows results to the selected year', () {
-        final visible = seeded(
-          const GameSearchFilters(year: 2019),
-        ).visibleGames;
-        expect(visible.map((g) => g.id), [2]);
-      });
-
-      test('combined filters intersect', () {
-        final visible = seeded(
-          const GameSearchFilters(genreIds: {10}, year: 2021),
-        ).visibleGames;
-        expect(visible.map((g) => g.id), [3]);
-      });
-
-      test('isEmptyByFilters is true when filters hide every result', () {
-        final state = seeded(const GameSearchFilters(year: 1990));
-        expect(state.visibleGames, isEmpty);
-        expect(state.isEmptyByFilters, isTrue);
-        expect(state.isEmpty, isTrue);
-      });
-
-      test('available facets derive from loaded results', () {
-        final state = seeded();
-        expect(state.availableGenres.map((g) => g.name), [
-          'Adventure',
-          'Shooter',
-        ]);
-        expect(state.availablePlatforms.map((p) => p.name), ['PC', 'Switch']);
-        expect(state.availableYears, [2021, 2019, 2017]);
-      });
-
-      test('availableYears derives the year in UTC for a midnight-UTC '
-          'release', () {
-        // 2017-01-01T00:00:00Z resolves to 2016 in local time west of UTC, but
-        // the year facet must report the UTC year (2017).
-        final state = GameSearchState(
+      test('isEmptyByFilters needs active catalog filters', () {
+        const empty = GameSearchState(status: GameSearchStatus.success);
+        expect(empty.isEmptyByFilters, isFalse);
+        const filtered = GameSearchState(
           status: GameSearchStatus.success,
-          query: 'q',
-          games: [
-            SearchGame(
-              id: 1,
-              name: 'New Year Release',
-              firstReleaseDate: DateTime.utc(2017, 1, 1),
-              genres: const [],
-              platforms: const [],
-            ),
-          ],
+          filters: GameSearchFilters(catalog: CatalogFilters(genreIds: {10})),
         );
-        expect(state.availableYears, [2017]);
+        expect(filtered.isEmptyByFilters, isTrue);
+        expect(filtered.isEmpty, isTrue);
       });
 
-      blocTest<GameSearchBloc, GameSearchState>(
-        'GameSearchFiltersChanged applies the filters to the state',
-        build: () => bloc,
-        seed: seeded,
-        act: (bloc) => bloc.add(
-          const GameSearchFiltersChanged(GameSearchFilters(genreIds: {20})),
-        ),
-        expect: () => [
-          predicate<GameSearchState>(
-            (state) =>
-                state.filters.genreIds.contains(20) &&
-                state.visibleGames.length == 1 &&
-                state.visibleGames.first.id == 2 &&
-                state.hasActiveFilters,
-          ),
-        ],
-      );
-
-      blocTest<GameSearchBloc, GameSearchState>(
-        'GameSearchFiltersCleared restores all results',
-        build: () => bloc,
-        seed: () => seeded(
-          const GameSearchFilters(
-            sort: GameSearchSort.nameAsc,
-            genreIds: {10},
-            year: 2017,
-          ),
-        ),
-        act: (bloc) => bloc.add(const GameSearchFiltersCleared()),
-        expect: () => [
-          predicate<GameSearchState>(
-            (state) =>
-                state.filters.isEmpty &&
-                !state.hasActiveFilters &&
-                state.visibleGames.length == 3,
-          ),
-        ],
-      );
-
-      blocTest<GameSearchBloc, GameSearchState>(
-        'a new query resets active filters',
-        build: () {
+      void stubSearch() =>
           when(
             () => mockRepository.searchGames(
               any(),
               limit: any(named: 'limit'),
               offset: any(named: 'offset'),
+              filters: any(named: 'filters'),
             ),
           ).thenAnswer(
-            (_) async => const SearchGamesResponse(
-              games: [],
-              totalCount: 0,
+            (_) async => SearchGamesResponse(
+              games: [games[1]],
+              totalCount: 1,
               hasMore: false,
               offset: 0,
               limit: 20,
             ),
           );
+
+      blocTest<GameSearchBloc, GameSearchState>(
+        'a catalog filter change runs the query again with the filters',
+        build: () {
+          stubSearch();
           return bloc;
         },
-        seed: () => seeded(const GameSearchFilters(genreIds: {10})),
-        act: (bloc) => bloc.add(const GameSearchQueryChanged('new query')),
-        wait: const Duration(milliseconds: 600),
-        expect: () => [
-          predicate<GameSearchState>(
-            (state) =>
-                state.status == GameSearchStatus.loading &&
-                state.filters.isEmpty,
+        seed: seeded,
+        act: (bloc) => bloc.add(
+          const GameSearchFiltersChanged(
+            GameSearchFilters(
+              catalog: CatalogFilters(genreIds: {20}, minRating: 80),
+            ),
           ),
+        ),
+        expect: () => [
+          predicate<GameSearchState>((s) => s.hasActiveFilters),
+          predicate<GameSearchState>((s) => s.isLoading && s.games.isEmpty),
           predicate<GameSearchState>(
-            (state) => state.status == GameSearchStatus.success,
+            (s) =>
+                s.status == GameSearchStatus.success && s.games.single.id == 2,
           ),
         ],
+        verify: (_) => verify(
+          () => mockRepository.searchGames(
+            'q',
+            limit: 20,
+            offset: 0,
+            filters: const CatalogFilters(genreIds: {20}, minRating: 80),
+          ),
+        ).called(1),
+      );
+
+      blocTest<GameSearchBloc, GameSearchState>(
+        'a sort-only change reorders without a request',
+        build: () => bloc,
+        seed: seeded,
+        act: (bloc) => bloc.add(
+          const GameSearchFiltersChanged(
+            GameSearchFilters(sort: GameSearchSort.nameAsc),
+          ),
+        ),
+        expect: () => [
+          predicate<GameSearchState>(
+            (s) => s.visibleGames.map((g) => g.name).first == 'Apex',
+          ),
+        ],
+        verify: (_) => verifyNever(
+          () => mockRepository.searchGames(
+            any(),
+            limit: any(named: 'limit'),
+            offset: any(named: 'offset'),
+            filters: any(named: 'filters'),
+          ),
+        ),
+      );
+
+      blocTest<GameSearchBloc, GameSearchState>(
+        'GameSearchFiltersCleared clears and searches again',
+        build: () {
+          stubSearch();
+          return bloc;
+        },
+        seed: () => seeded(
+          const GameSearchFilters(
+            sort: GameSearchSort.nameAsc,
+            catalog: CatalogFilters(genreIds: {10}),
+          ),
+        ),
+        act: (bloc) => bloc.add(const GameSearchFiltersCleared()),
+        verify: (bloc) {
+          expect(bloc.state.filters.isEmpty, isTrue);
+          verify(
+            () => mockRepository.searchGames(
+              'q',
+              limit: 20,
+              offset: 0,
+              filters: const CatalogFilters(),
+            ),
+          ).called(1);
+        },
+      );
+
+      blocTest<GameSearchBloc, GameSearchState>(
+        'a new query keeps the filters and sends them',
+        build: () {
+          stubSearch();
+          return bloc;
+        },
+        seed: () => seeded(
+          const GameSearchFilters(catalog: CatalogFilters(platformIds: {200})),
+        ),
+        act: (bloc) => bloc.add(const GameSearchQueryChanged('new query')),
+        wait: const Duration(milliseconds: 600),
+        verify: (bloc) {
+          expect(bloc.state.filters.catalog.platformIds, {200});
+          verify(
+            () => mockRepository.searchGames(
+              'new query',
+              limit: 20,
+              offset: 0,
+              filters: const CatalogFilters(platformIds: {200}),
+            ),
+          ).called(1);
+        },
+      );
+
+      blocTest<GameSearchBloc, GameSearchState>(
+        'load more sends the same filters',
+        build: () {
+          stubSearch();
+          return bloc;
+        },
+        seed: () => GameSearchState(
+          status: GameSearchStatus.success,
+          query: 'q',
+          games: games,
+          currentOffset: 20,
+          filters: const GameSearchFilters(
+            catalog: CatalogFilters(yearFrom: 2018),
+          ),
+        ),
+        act: (bloc) => bloc.add(const GameSearchLoadMore()),
+        verify: (_) => verify(
+          () => mockRepository.searchGames(
+            'q',
+            limit: 20,
+            offset: 20,
+            filters: const CatalogFilters(yearFrom: 2018),
+          ),
+        ).called(1),
       );
     });
   });

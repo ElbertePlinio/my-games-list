@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/core/theme/pf_tokens.dart';
 import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/error_l10n.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/widgets/app_scaffold.dart';
 import 'package:picklog/core/widgets/staggered_reveal.dart';
 import 'package:picklog/core/widgets/state_views.dart';
+import 'package:picklog/features/games/bloc/filter_options_cubit.dart';
 import 'package:picklog/features/games/bloc/game_search_bloc.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/bloc/game_search_state.dart';
 import 'package:picklog/features/games/search_game_model.dart';
+import 'package:picklog/features/games/widgets/catalog_filter_fields.dart';
 import 'package:picklog/features/games/widgets/game_search_card.dart';
 import 'package:picklog/features/games/widgets/search_filters_sheet.dart';
 import 'package:picklog/features/games/widgets/skeletons/search_card_skeleton.dart';
@@ -57,7 +61,18 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.searchGamesTitle)),
+      appBar: AppBar(
+        title: Text(context.l10n.searchGamesTitle),
+        actions: [
+          IconButton(
+            key: const Key('search_explore_button'),
+            icon: const Icon(Icons.explore_outlined),
+            tooltip: context.l10n.exploreTitle,
+            onPressed: () => context.pushNamed(AppRouter.exploreName),
+          ),
+          const SizedBox(width: PfSpace.xs),
+        ],
+      ),
       body: SafeArea(
         top: false,
         child: MaxWidthBox(
@@ -67,12 +82,8 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
               _SearchBar(controller: _searchController),
               BlocBuilder<GameSearchBloc, GameSearchState>(
                 buildWhen: (previous, current) =>
-                    previous.games != current.games ||
                     previous.filters != current.filters,
-                builder: (context, state) {
-                  if (state.games.isEmpty) return const SizedBox.shrink();
-                  return _ActiveFiltersRow(state: state);
-                },
+                builder: (context, state) => _ActiveFiltersRow(state: state),
               ),
               Expanded(
                 child: BlocBuilder<GameSearchBloc, GameSearchState>(
@@ -96,9 +107,7 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
                     }
 
                     if (state.isEmptyByFilters) {
-                      return _FilteredEmptyState(
-                        canLoadMore: state.canLoadMore,
-                      );
+                      return const _FilteredEmptyState();
                     }
 
                     if (state.isEmpty) {
@@ -131,9 +140,7 @@ Future<void> _openFilters(BuildContext context, GameSearchState state) async {
   final result = await SearchFiltersSheet.show(
     context: context,
     filters: state.filters,
-    genres: state.availableGenres,
-    platforms: state.availablePlatforms,
-    years: state.availableYears,
+    optionsCubit: context.read<FilterOptionsCubit>(),
   );
   if (result != null) {
     bloc.add(GameSearchFiltersChanged(result));
@@ -196,15 +203,11 @@ class _SearchBar extends StatelessWidget {
           ),
           BlocBuilder<GameSearchBloc, GameSearchState>(
             buildWhen: (previous, current) =>
-                previous.games != current.games ||
                 previous.filters != current.filters,
-            builder: (context, state) {
-              if (state.games.isEmpty) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: _FilterButton(state: state),
-              );
-            },
+            builder: (context, state) => Padding(
+              padding: const EdgeInsets.only(left: PfSpace.sm),
+              child: _FilterButton(state: state),
+            ),
           ),
         ],
       ),
@@ -233,8 +236,7 @@ class _FilterButton extends StatelessWidget {
   }
 }
 
-/// Horizontally scrolling row of removable chips for the active sort and
-/// filters, with a quick "clear all" affordance.
+/// Removable chips for the active sort and filters, with "clear all".
 class _ActiveFiltersRow extends StatelessWidget {
   const _ActiveFiltersRow({required this.state});
 
@@ -244,12 +246,12 @@ class _ActiveFiltersRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<GameSearchBloc>();
     final filters = state.filters;
+    if (filters.isEmpty) return const SizedBox.shrink();
 
-    final chips = <Widget>[];
-
-    if (filters.sort != GameSearchSort.relevance) {
-      chips.add(
-        _ActiveFilterChip(
+    final options = context.watch<FilterOptionsCubit>().state;
+    final chips = <ActiveFilterChipData>[
+      if (filters.sort != GameSearchSort.relevance)
+        ActiveFilterChipData(
           label: context.l10n.searchFilterChipSort(
             sortLabel(context, filters.sort),
           ),
@@ -259,102 +261,38 @@ class _ActiveFiltersRow extends StatelessWidget {
             ),
           ),
         ),
-      );
-    }
-
-    for (final genre in state.availableGenres) {
-      if (!filters.genreIds.contains(genre.id)) continue;
-      chips.add(
-        _ActiveFilterChip(
-          label: genre.name,
-          onRemoved: () => bloc.add(
-            GameSearchFiltersChanged(
-              filters.copyWith(
-                genreIds: {...filters.genreIds}..remove(genre.id),
-              ),
-            ),
-          ),
+      ...catalogFilterChips(
+        context,
+        filters.catalog,
+        options,
+        (catalog) => bloc.add(
+          GameSearchFiltersChanged(filters.copyWith(catalog: catalog)),
         ),
-      );
-    }
-
-    for (final platform in state.availablePlatforms) {
-      if (!filters.platformIds.contains(platform.id)) continue;
-      chips.add(
-        _ActiveFilterChip(
-          label: platform.name,
-          onRemoved: () => bloc.add(
-            GameSearchFiltersChanged(
-              filters.copyWith(
-                platformIds: {...filters.platformIds}..remove(platform.id),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (filters.year != null) {
-      chips.add(
-        _ActiveFilterChip(
-          label: context.l10n.searchFilterChipYear(filters.year!),
-          onRemoved: () => bloc.add(
-            GameSearchFiltersChanged(filters.copyWith(clearYear: true)),
-          ),
-        ),
-      );
-    }
-
-    if (chips.isEmpty) return const SizedBox.shrink();
-
-    final theme = Theme.of(context);
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 48,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: chips.length + 1,
-            separatorBuilder: (context, index) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              if (index == chips.length) {
-                return Center(
-                  child: TextButton(
-                    onPressed: () => bloc.add(const GameSearchFiltersCleared()),
-                    child: Text(context.l10n.searchFiltersClearAll),
-                  ),
-                );
-              }
-              return Center(child: chips[index]);
-            },
-          ),
+        ActiveFilterChipsRow(
+          chips: chips,
+          onClearAll: () => bloc.add(const GameSearchFiltersCleared()),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            context.l10n.searchFiltersLoadedScopeCaption,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+        if (filters.sort != GameSearchSort.relevance)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.lg,
+              0,
+              PfSpace.lg,
+              PfSpace.sm,
+            ),
+            child: Text(
+              context.l10n.searchSortLoadedScopeCaption,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ),
       ],
     );
-  }
-}
-
-class _ActiveFilterChip extends StatelessWidget {
-  const _ActiveFilterChip({required this.label, required this.onRemoved});
-
-  final String label;
-  final VoidCallback onRemoved;
-
-  @override
-  Widget build(BuildContext context) {
-    return InputChip(label: Text(label), onDeleted: onRemoved);
   }
 }
 
@@ -487,6 +425,11 @@ class _InitialState extends StatelessWidget {
       icon: Icons.search,
       title: context.l10n.searchGamesInitialTitle,
       hint: context.l10n.searchGamesInitialHint,
+      action: OutlinedButton.icon(
+        onPressed: () => context.pushNamed(AppRouter.exploreName),
+        icon: const Icon(Icons.explore_outlined),
+        label: Text(context.l10n.searchExploreCatalog),
+      ),
     );
   }
 }
@@ -517,42 +460,9 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// Shown when the active filters hide every loaded result. It keeps the
-/// "no matches / clear filters" guidance visible, but when more catalog pages
-/// exist it auto-fetches them: filtering must never halt paging, otherwise a
-/// later page holding matching games would never be loaded.
-class _FilteredEmptyState extends StatefulWidget {
-  const _FilteredEmptyState({required this.canLoadMore});
-
-  final bool canLoadMore;
-
-  @override
-  State<_FilteredEmptyState> createState() => _FilteredEmptyStateState();
-}
-
-class _FilteredEmptyStateState extends State<_FilteredEmptyState> {
-  @override
-  void initState() {
-    super.initState();
-    _maybeLoadMore();
-  }
-
-  @override
-  void didUpdateWidget(covariant _FilteredEmptyState oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _maybeLoadMore();
-  }
-
-  /// The filtered-empty view never overflows the viewport, so the scroll-driven
-  /// load-more can't fire. While more pages exist, fetch the next one so paging
-  /// continues until a matching game shows up or the catalog is exhausted.
-  void _maybeLoadMore() {
-    if (!widget.canLoadMore) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !widget.canLoadMore) return;
-      context.read<GameSearchBloc>().add(const GameSearchLoadMore());
-    });
-  }
+/// Shown when the active filters match nothing for the query.
+class _FilteredEmptyState extends StatelessWidget {
+  const _FilteredEmptyState();
 
   @override
   Widget build(BuildContext context) {

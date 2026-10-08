@@ -31,7 +31,7 @@ class GameSearchClear extends GameSearchEvent {
   const GameSearchClear();
 }
 
-/// Applies new client-side filters/sort to the current results.
+/// Applies new filters. Catalog filter changes run the query again.
 class GameSearchFiltersChanged extends GameSearchEvent {
   const GameSearchFiltersChanged(this.filters);
 

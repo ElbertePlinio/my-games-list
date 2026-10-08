@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/core/theme/pf_tokens.dart';
 import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
@@ -19,6 +21,7 @@ import 'package:picklog/features/library/bloc/library_state.dart';
 import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
 import 'package:picklog/features/library/collections/bloc/user_collections_event.dart';
 import 'package:picklog/features/library/collections/bloc/user_collections_state.dart';
+import 'package:picklog/features/library/collections/collection_failure.dart';
 import 'package:picklog/features/library/collections/widgets/collection_form_dialog.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/widgets/library_status_pill.dart';
@@ -95,6 +98,9 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   UserCollectionsBloc? _collections;
   bool _collectionsResolved = false;
 
+  /// True once the entry saved, while the collection changes finish.
+  bool _finishing = false;
+
   /// Collections chosen in the sheet. Applied after the entry saves.
   late Set<String> _collectionIds = {...?widget.existingEntry?.collectionIds};
 
@@ -128,41 +134,69 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     }
   }
 
-  /// Sends the collection changes for the saved [entry] and updates the
-  /// shared library. Results arrive in the shared collections bloc.
-  void _applyCollections(LibraryBloc library, LibraryEntry entry) {
+  /// Sends the collection changes for the saved [entry] and publishes only
+  /// the memberships the API confirmed. Returns the first failure, if any.
+  Future<CollectionFailure?> _applyCollections(
+    LibraryBloc library,
+    LibraryEntry entry,
+  ) async {
     final bloc = _collections;
-    if (bloc == null) return;
+    if (bloc == null) return null;
     final before = entry.collectionIds.toSet();
-    final added = _collectionIds.difference(before);
-    final removed = before.difference(_collectionIds);
-    if (added.isEmpty && removed.isEmpty) return;
-    for (final id in added) {
-      bloc.add(
-        UserCollectionEntryToggled(
-          requestId: UserCollectionsBloc.newRequestId(),
-          collectionId: id,
-          libraryEntryId: entry.id,
-          add: true,
+    final changes = {
+      for (final id in _collectionIds.difference(before)) id: true,
+      for (final id in before.difference(_collectionIds)) id: false,
+    };
+    if (changes.isEmpty) return null;
+    final failures = await Future.wait([
+      for (final MapEntry(key: id, value: add) in changes.entries)
+        _toggleCollection(bloc, entry.id, id, add: add),
+    ]);
+    final confirmed = {...before};
+    for (final (i, MapEntry(key: id, value: add)) in changes.entries.indexed) {
+      if (failures[i] != null) continue;
+      add ? confirmed.add(id) : confirmed.remove(id);
+    }
+    if (!setEquals(confirmed, before)) {
+      library.add(
+        LibraryEntryCollectionsChanged(
+          entryId: entry.id,
+          collectionIds: confirmed.toList(),
         ),
       );
     }
-    for (final id in removed) {
-      bloc.add(
-        UserCollectionEntryToggled(
-          requestId: UserCollectionsBloc.newRequestId(),
-          collectionId: id,
-          libraryEntryId: entry.id,
-          add: false,
-        ),
-      );
-    }
-    library.add(
-      LibraryEntryCollectionsChanged(
-        entryId: entry.id,
-        collectionIds: _collectionIds.toList(),
+    return failures.nonNulls.firstOrNull;
+  }
+
+  /// Adds or removes one membership and waits for its result.
+  static Future<CollectionFailure?> _toggleCollection(
+    UserCollectionsBloc bloc,
+    String entryId,
+    String collectionId, {
+    required bool add,
+  }) async {
+    final requestId = UserCollectionsBloc.newRequestId();
+    final result = bloc.stream
+        .map((s) => s.mutation)
+        .firstWhere((m) => m?.requestId == requestId);
+    bloc.add(
+      UserCollectionEntryToggled(
+        requestId: requestId,
+        collectionId: collectionId,
+        libraryEntryId: entryId,
+        add: add,
       ),
     );
+    try {
+      return (await result)?.failure;
+    } on StateError {
+      // The bloc closed before it answered.
+      return CollectionFailure.of(
+        add ? CollectionAction.addEntry : CollectionAction.removeEntry,
+        CollectionErrorKind.other,
+        AppErrorKind.unknown,
+      );
+    }
   }
 
   Future<void> _createCollection() async {
@@ -406,25 +440,37 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   }
 
   void _onLibraryState(BuildContext context, LibraryState state) {
-    final l10n = context.l10n;
     final failure = state.failure;
     if (failure != null &&
         (failure.action == LibraryAction.add ||
             failure.action == LibraryAction.update)) {
-      context.showErrorMessage(l10n.librarySaveFailed);
+      context.showErrorMessage(context.l10n.librarySaveFailed);
     }
-    if (state.gameAddedOrUpdated) {
-      final saved = isEditing
-          ? state.entries.where((e) => e.id == widget.existingEntry!.id)
-          : state.entries.where((e) => e.game.igdbId == widget.gameId);
-      if (saved.isNotEmpty) {
-        _applyCollections(context.read<LibraryBloc>(), saved.first);
-      }
+    if (state.gameAddedOrUpdated && !_finishing) {
+      setState(() => _finishing = true);
+      _finishSave(context.read<LibraryBloc>(), state);
+    }
+  }
+
+  /// Applies the collection changes of the saved entry, then closes.
+  Future<void> _finishSave(LibraryBloc library, LibraryState state) async {
+    final saved = isEditing
+        ? state.entries.where((e) => e.id == widget.existingEntry!.id)
+        : state.entries.where((e) => e.game.igdbId == widget.gameId);
+    final failure = saved.isEmpty
+        ? null
+        : await _applyCollections(library, saved.first);
+    if (!mounted) return;
+    if (failure != null) {
+      context.showErrorMessage(failure.message(context));
+    } else {
       context.showSuccessMessage(
-        isEditing ? l10n.libraryEntryUpdated : l10n.gameAddedToLibrary,
+        isEditing
+            ? context.l10n.libraryEntryUpdated
+            : context.l10n.gameAddedToLibrary,
       );
-      Navigator.of(context).pop(true);
     }
+    Navigator.of(context).pop(true);
   }
 
   /// Pinned header with the grabber, close, title and save.
@@ -476,7 +522,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
                 PfButton(
                   label: l10n.save,
                   size: PfButtonSize.sm,
-                  onPressed: _save,
+                  onPressed: _finishing ? null : _save,
                 ),
               ],
             ),

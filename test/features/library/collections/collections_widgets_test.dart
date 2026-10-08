@@ -396,5 +396,97 @@ void main() {
         {'c-2': true, 'c-1': false},
       );
     });
+
+    testWidgets('only confirmed memberships reach the shared library', (
+      t,
+    ) async {
+      final collectionStates = StreamController<UserCollectionsState>();
+      addTearDown(collectionStates.close);
+      final ready = UserCollectionsState(
+        status: UserCollectionsStatus.success,
+        collections: [_c1, _c2],
+      );
+      whenListen(collections, collectionStates.stream, initialState: ready);
+      final existing = entry(collectionIds: ['c-1']);
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        library,
+        states.stream,
+        initialState: LibraryState(
+          status: LibraryStatus.success,
+          entries: [existing],
+        ),
+      );
+      t.view.physicalSize = const Size(390, 1400);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      await pumpPicklog(
+        t,
+        BlocProvider<LibraryBloc>.value(
+          value: library,
+          child: AddToLibraryBottomSheet(
+            gameId: 42,
+            gameName: 'Hollow Knight',
+            platforms: const [Platform(id: 6, name: 'PC')],
+            existingEntry: existing,
+            collectionsBloc: collections,
+          ),
+        ),
+        reducedMotion: true,
+      );
+      await t.tap(find.byKey(const ValueKey('sheet_collection_c-1')));
+      await t.pump();
+      await t.tap(find.byKey(const ValueKey('sheet_collection_c-2')));
+      await t.pump();
+
+      states.add(
+        LibraryState(
+          status: LibraryStatus.success,
+          entries: [existing],
+          gameAddedOrUpdated: true,
+        ),
+      );
+      await t.pump();
+      final toggles = {
+        for (final e in sent<UserCollectionEntryToggled>()) e.collectionId: e,
+      };
+      // Nothing is published before the collections API answers.
+      verifyNever(
+        () => library.add(any(that: isA<LibraryEntryCollectionsChanged>())),
+      );
+
+      collectionStates.add(
+        ready.copyWith(
+          mutation: CollectionMutation(
+            requestId: toggles['c-1']!.requestId,
+            action: CollectionAction.removeEntry,
+          ),
+        ),
+      );
+      await t.pump();
+      collectionStates.add(
+        ready.copyWith(
+          mutation: CollectionMutation(
+            requestId: toggles['c-2']!.requestId,
+            action: CollectionAction.addEntry,
+            failure: const CollectionFailure.of(
+              CollectionAction.addEntry,
+              CollectionErrorKind.entriesLimitReached,
+              AppErrorKind.unknown,
+            ),
+          ),
+        ),
+      );
+      await t.pump();
+      await t.pump();
+
+      final published = verify(
+        () => library.add(captureAny()),
+      ).captured.whereType<LibraryEntryCollectionsChanged>().single;
+      // c-1 was removed; the full c-2 rejected the entry.
+      expect(published.collectionIds, isEmpty);
+      expect(find.text('This collection is full (500 games).'), findsOneWidget);
+    });
   });
 }

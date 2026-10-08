@@ -6,11 +6,11 @@ import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
 
 /// Shows a localized snackbar when a background library action fails
-/// (favorite toggle, delete, refresh).
+/// (favorite toggle, delete, refresh, quick status change).
 ///
 /// Only the visible screen reacts (current route, tickers on), so two screens
-/// that share the library bloc never show the same message twice. Add and update failures are reported
-/// by the add-to-library sheet itself.
+/// that share the library bloc never show the same message twice. While the add-to-library
+/// sheet is open it covers the route, so the sheet reports its own failures.
 class LibraryFailureListener extends StatelessWidget {
   const LibraryFailureListener({required this.child, super.key});
 
@@ -31,6 +31,7 @@ class LibraryFailureListener extends StatelessWidget {
           LibraryAction.toggleFavorite => l10n.libraryFavoriteFailed,
           LibraryAction.delete => l10n.libraryDeleteFailed,
           LibraryAction.refresh => l10n.libraryRefreshFailed,
+          LibraryAction.update => l10n.librarySaveFailed,
           _ => null,
         };
         if (message != null) context.showErrorMessage(message);

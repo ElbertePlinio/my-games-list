@@ -6,6 +6,7 @@ import 'package:picklog/core/theme/pf_tokens.dart';
 import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/messages_extensions.dart';
+import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/core/widgets/favorite_button.dart';
 import 'package:picklog/core/widgets/pf_button.dart';
 import 'package:picklog/core/widgets/pf_dialog.dart';
@@ -15,6 +16,10 @@ import 'package:picklog/features/games/game_detail_model.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_event.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_state.dart';
+import 'package:picklog/features/library/collections/widgets/collection_form_dialog.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/widgets/library_status_pill.dart';
 
@@ -26,12 +31,18 @@ class AddToLibraryBottomSheet extends StatefulWidget {
     required this.gameName,
     required this.platforms,
     this.existingEntry,
+    this.collectionsBloc,
   });
 
   final int gameId;
   final String gameName;
   final List<Platform> platforms;
   final LibraryEntry? existingEntry;
+
+  /// Source of the user's collections. Defaults to a provided bloc, then the
+  /// shared instance in the service locator. Without one the collections
+  /// section is hidden.
+  final UserCollectionsBloc? collectionsBloc;
 
   /// Shows the bottom sheet and returns true if saved successfully
   static Future<bool?> show({
@@ -81,10 +92,86 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   /// Optional details start open when the entry already has some.
   bool _detailsExpanded = false;
 
+  UserCollectionsBloc? _collections;
+  bool _collectionsResolved = false;
+
+  /// Collections chosen in the sheet. Applied after the entry saves.
+  late Set<String> _collectionIds = {...?widget.existingEntry?.collectionIds};
+
   @override
   void initState() {
     super.initState();
     _initializeFromExisting();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_collectionsResolved) return;
+    _collectionsResolved = true;
+    _collections = widget.collectionsBloc ?? _lookupCollections(context);
+    final bloc = _collections;
+    if (bloc != null &&
+        (bloc.state.status == UserCollectionsStatus.initial ||
+            bloc.state.status == UserCollectionsStatus.failure)) {
+      bloc.add(const UserCollectionsLoadRequested());
+    }
+  }
+
+  static UserCollectionsBloc? _lookupCollections(BuildContext context) {
+    try {
+      return context.read<UserCollectionsBloc>();
+    } on ProviderNotFoundException {
+      return sl.isRegistered<UserCollectionsBloc>()
+          ? sl<UserCollectionsBloc>()
+          : null;
+    }
+  }
+
+  /// Sends the collection changes for the saved [entry] and updates the
+  /// shared library. Results arrive in the shared collections bloc.
+  void _applyCollections(LibraryBloc library, LibraryEntry entry) {
+    final bloc = _collections;
+    if (bloc == null) return;
+    final before = entry.collectionIds.toSet();
+    final added = _collectionIds.difference(before);
+    final removed = before.difference(_collectionIds);
+    if (added.isEmpty && removed.isEmpty) return;
+    for (final id in added) {
+      bloc.add(
+        UserCollectionEntryToggled(
+          requestId: UserCollectionsBloc.newRequestId(),
+          collectionId: id,
+          libraryEntryId: entry.id,
+          add: true,
+        ),
+      );
+    }
+    for (final id in removed) {
+      bloc.add(
+        UserCollectionEntryToggled(
+          requestId: UserCollectionsBloc.newRequestId(),
+          collectionId: id,
+          libraryEntryId: entry.id,
+          add: false,
+        ),
+      );
+    }
+    library.add(
+      LibraryEntryCollectionsChanged(
+        entryId: entry.id,
+        collectionIds: _collectionIds.toList(),
+      ),
+    );
+  }
+
+  Future<void> _createCollection() async {
+    final bloc = _collections;
+    if (bloc == null) return;
+    final created = await showCollectionFormDialog(context, bloc: bloc);
+    if (created != null && mounted) {
+      setState(() => _collectionIds = {..._collectionIds, created.id});
+    }
   }
 
   void _initializeFromExisting() {
@@ -249,6 +336,12 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
           context.showErrorMessage(l10n.librarySaveFailed);
         }
         if (state.gameAddedOrUpdated) {
+          final saved = isEditing
+              ? state.entries.where((e) => e.id == widget.existingEntry!.id)
+              : state.entries.where((e) => e.game.igdbId == widget.gameId);
+          if (saved.isNotEmpty) {
+            _applyCollections(context.read<LibraryBloc>(), saved.first);
+          }
           context.showSuccessMessage(
             isEditing ? l10n.libraryEntryUpdated : l10n.gameAddedToLibrary,
           );
@@ -454,6 +547,16 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
                           ],
                         ),
                       ),
+                      if (_collections != null) ...[
+                        const SizedBox(height: PfSpace.md),
+                        _CollectionsSection(
+                          bloc: _collections!,
+                          selected: _collectionIds,
+                          onChanged: (ids) =>
+                              setState(() => _collectionIds = ids),
+                          onCreate: _createCollection,
+                        ),
+                      ],
                       const SizedBox(height: PfSpace.md),
 
                       // Step 2: optional details, collapsed by default.
@@ -633,6 +736,58 @@ class _SheetSection extends StatelessWidget {
           child,
         ],
       ),
+    );
+  }
+}
+
+/// Collection chips for the entry. The choice is saved with the entry.
+class _CollectionsSection extends StatelessWidget {
+  const _CollectionsSection({
+    required this.bloc,
+    required this.selected,
+    required this.onChanged,
+    required this.onCreate,
+  });
+
+  final UserCollectionsBloc bloc;
+  final Set<String> selected;
+  final ValueChanged<Set<String>> onChanged;
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return BlocBuilder<UserCollectionsBloc, UserCollectionsState>(
+      bloc: bloc,
+      builder: (context, state) {
+        return _SheetSection(
+          title: l10n.librarySegmentCollections,
+          child: Wrap(
+            spacing: PfSpace.sm,
+            runSpacing: PfSpace.sm,
+            children: [
+              for (final collection in state.collections)
+                FilterChip(
+                  key: ValueKey('sheet_collection_${collection.id}'),
+                  label: Text(collection.name),
+                  selected: selected.contains(collection.id),
+                  onSelected: (on) => onChanged(
+                    on
+                        ? {...selected, collection.id}
+                        : ({...selected}..remove(collection.id)),
+                  ),
+                ),
+              if (!state.atLimit)
+                ActionChip(
+                  key: const Key('sheet_new_collection'),
+                  avatar: const Icon(Icons.add, size: 16),
+                  label: Text(l10n.collectionNewTitle),
+                  onPressed: onCreate,
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

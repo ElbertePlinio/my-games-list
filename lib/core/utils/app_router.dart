@@ -161,43 +161,7 @@ class AppRouter {
     return GoRouter(
       initialLocation: splashPath,
       refreshListenable: GoRouterRefreshStream(sl<AuthBloc>().stream),
-      redirect: (context, state) {
-        final authState = sl<AuthBloc>().state;
-        final isAuthenticated = authState is AuthAuthenticated;
-        final currentPath = state.matchedLocation;
-
-        // Splash performs the initial auth + onboarding routing, and the
-        // onboarding flow is shown once regardless of auth state. Let both
-        // through untouched so the auth redirect below never bounces them.
-        if (currentPath == splashPath || currentPath == onboardingPath) {
-          return null;
-        }
-
-        final isGoingToAuth =
-            currentPath == signInPath || currentPath == signUpPath;
-
-        // Legal documents must be reachable before an account exists (linked
-        // from the sign-up consent gate), so never bounce them through the
-        // auth guard regardless of auth state.
-        final isLegalDocument =
-            currentPath == privacyPolicyPath || currentPath == termsPath;
-        if (isLegalDocument) {
-          return null;
-        }
-
-        // If authenticated and going to auth pages, redirect to home
-        if (isAuthenticated && isGoingToAuth) {
-          return homePath;
-        }
-
-        // If not authenticated and trying to access protected routes, redirect to signin
-        if (!isAuthenticated && !isGoingToAuth) {
-          return signInPath;
-        }
-
-        // No redirect needed
-        return null;
-      },
+      redirect: _redirect,
       routes: [
         // Splash Route - Initial loading screen
         GoRoute(
@@ -210,364 +174,39 @@ class AppRouter {
         GoRoute(
           path: onboardingPath,
           name: onboardingName,
-          builder: (context, state) {
-            _ensureOnboardingServiceRegistered();
-
-            return OnboardingScreen(
-              onboardingService: sl<OnboardingService>(),
-              // Destination depends on auth state, which only the router knows.
-              onCompleted: () => context.go(_postOnboardingDestination()),
-            );
-          },
+          builder: _onboardingPage,
         ),
 
         // SignIn Route with modular dependency injection
-        GoRoute(
-          path: signInPath,
-          name: signInName,
-          builder: (context, state) {
-            // Register auth repository lazily (only once, stays in memory)
-            _ensureAuthRepositoryRegistered();
-
-            // Provide SignInBloc to the screen (auto-disposed by BlocProvider)
-            return BlocProvider(
-              create: (_) => SignInBloc(sl<AuthRepository>()),
-              child: const SignInScreen(),
-            );
-          },
-        ),
+        GoRoute(path: signInPath, name: signInName, builder: _signInPage),
 
         // SignUp Route with modular dependency injection
-        GoRoute(
-          path: signUpPath,
-          name: signUpName,
-          builder: (context, state) {
-            // Register auth repository lazily (only once, stays in memory)
-            _ensureAuthRepositoryRegistered();
-
-            // Provide SignUpBloc to the screen (auto-disposed by BlocProvider)
-            return BlocProvider(
-              create: (_) => SignUpBloc(sl<AuthRepository>()),
-              child: const SignUpScreen(),
-            );
-          },
-        ),
+        GoRoute(path: signUpPath, name: signUpName, builder: _signUpPage),
 
         // Shell Route for bottom navigation with state preservation
-        StatefulShellRoute.indexedStack(
-          builder: (context, state, navigationShell) {
-            return BottomNavBar(navigationShell: navigationShell);
-          },
-          branches: [
-            // Home Branch
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: homePath,
-                  name: homeName,
-                  builder: (context, state) {
-                    // Register games repository lazily (only once, stays in memory)
-                    _ensureGamesRepositoryRegistered();
-
-                    // Provide the home dashboard blocs (auto-disposed by
-                    // BlocProvider).
-                    return MultiBlocProvider(
-                      providers: [
-                        BlocProvider(
-                          create: (_) => AnticipatedGamesBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          )..add(const AnticipatedGamesLoadRequested()),
-                        ),
-                        BlocProvider(
-                          create: (_) =>
-                              DiscoveryGamesBloc(
-                                gamesRepository: sl<IGamesRepository>(),
-                              )..add(
-                                const DiscoveryGamesLoadRequested(
-                                  DiscoveryType.trending,
-                                ),
-                              ),
-                        ),
-                        BlocProvider(
-                          create: (_) => FeaturedBannersBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          )..add(const FeaturedBannersLoadRequested()),
-                        ),
-                        BlocProvider(
-                          create: (_) => RecommendationsBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          )..add(const RecommendationsLoadRequested()),
-                        ),
-                        BlocProvider(
-                          create: (_) => CollectionsBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          )..add(const CollectionsLoadRequested()),
-                        ),
-                        BlocProvider(
-                          create: (_) {
-                            _ensureAiRepositoryRegistered();
-                            return AiStatusCubit(repository: sl<AiRepository>())
-                              ..load();
-                          },
-                        ),
-                      ],
-                      child: const HomeScreen(),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            // Browse Branch (public discovery hub)
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: browsePath,
-                  name: browseName,
-                  builder: (context, state) {
-                    _ensureGamesRepositoryRegistered();
-
-                    // The Browse tab owns its own discovery/collections blocs,
-                    // separate from the Home tab's instances, so both can stay
-                    // alive in the indexed stack without sharing state.
-                    return MultiBlocProvider(
-                      providers: [
-                        BlocProvider(
-                          create: (_) => BrowseGenresBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          )..add(const BrowseGenresLoadRequested()),
-                        ),
-                        BlocProvider(
-                          create: (_) => DiscoveryGamesBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          ),
-                        ),
-                        BlocProvider(
-                          create: (_) => CollectionsBloc(
-                            gamesRepository: sl<IGamesRepository>(),
-                          )..add(const CollectionsLoadRequested()),
-                        ),
-                      ],
-                      child: const BrowseScreen(),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            // Games Branch (User Library)
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: gamesPath,
-                  name: gamesName,
-                  builder: (context, state) {
-                    // Register library repository lazily
-                    _ensureLibraryRepositoryAndBlocRegistered();
-                    _ensureStatsRepositoryRegistered();
-                    _ensureGamesRepositoryRegistered();
-
-                    // Get the current user ID from AuthBloc
-                    final authState = sl<AuthBloc>().state;
-                    final userId = authState is AuthAuthenticated
-                        ? authState.user.id
-                        : '';
-
-                    // The shared LibraryBloc keeps the whole library; the
-                    // route-scoped browse bloc pages the filtered list.
-                    return MultiBlocProvider(
-                      providers: [
-                        BlocProvider.value(
-                          value: sl<LibraryBloc>()
-                            ..add(LibraryLoadRequested(userId: userId)),
-                        ),
-                        BlocProvider.value(value: sl<UserCollectionsBloc>()),
-                        BlocProvider(
-                          create: (_) => LibraryBrowseBloc(
-                            libraryRepository: sl<LibraryRepository>(),
-                            storage: sl<LocalStorageService>(),
-                          )..add(LibraryBrowseStarted(userId: userId)),
-                        ),
-                        BlocProvider(
-                          create: (_) =>
-                              StatsCubit(statsRepository: sl<StatsRepository>())
-                                ..load(),
-                        ),
-                        BlocProvider(
-                          create: (_) => FilterOptionsCubit(
-                            gamesRepository: sl<IGamesRepository>(),
-                          ),
-                        ),
-                      ],
-                      child: const GamesScreen(),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            // Profile Branch
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: profilePath,
-                  name: profileName,
-                  builder: (context, state) {
-                    _ensureLibraryRepositoryAndBlocRegistered();
-                    _ensureStatsRepositoryRegistered();
-                    final authState = sl<AuthBloc>().state;
-                    final userId = authState is AuthAuthenticated
-                        ? authState.user.id
-                        : '';
-                    return MultiBlocProvider(
-                      providers: [
-                        BlocProvider(
-                          create: (_) =>
-                              StatsCubit(statsRepository: sl<StatsRepository>())
-                                ..load(),
-                        ),
-                        BlocProvider.value(
-                          value: sl<LibraryBloc>()
-                            ..add(LibraryLoadRequested(userId: userId)),
-                        ),
-                      ],
-                      child: const ProfileScreen(),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
+        _shellRoute(),
 
         // Settings Route (outside bottom navigation)
-        GoRoute(
-          path: settingsPath,
-          name: settingsName,
-          builder: (context, state) {
-            _ensureAuthRepositoryRegistered();
-            _ensureAiRepositoryRegistered();
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) => AccountManagementBloc(
-                    authRepository: sl<AuthRepository>(),
-                  ),
-                ),
-                BlocProvider(
-                  create: (_) =>
-                      AiStatusCubit(repository: sl<AiRepository>())..load(),
-                ),
-              ],
-              child: const SettingsScreen(),
-            );
-          },
-        ),
+        GoRoute(path: settingsPath, name: settingsName, builder: _settingsPage),
 
         // Search Route (outside bottom navigation)
-        GoRoute(
-          path: searchPath,
-          name: searchName,
-          builder: (context, state) {
-            // Register games repository lazily (only once, stays in memory)
-            _ensureGamesRepositoryRegistered();
-
-            // Provide GameSearchBloc to the screen (auto-disposed by BlocProvider)
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) =>
-                      GameSearchBloc(gamesRepository: sl<IGamesRepository>()),
-                ),
-                BlocProvider(
-                  create: (_) => FilterOptionsCubit(
-                    gamesRepository: sl<IGamesRepository>(),
-                  ),
-                ),
-              ],
-              child: const GameSearchScreen(),
-            );
-          },
-        ),
+        GoRoute(path: searchPath, name: searchName, builder: _searchPage),
 
         // Explore Route (outside bottom navigation): catalog filters.
-        GoRoute(
-          path: explorePath,
-          name: exploreName,
-          builder: (context, state) {
-            _ensureGamesRepositoryRegistered();
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) =>
-                      ExploreBloc(gamesRepository: sl<IGamesRepository>())
-                        ..add(const ExploreLoadRequested()),
-                ),
-                BlocProvider(
-                  create: (_) => FilterOptionsCubit(
-                    gamesRepository: sl<IGamesRepository>(),
-                  )..load(),
-                ),
-              ],
-              child: const ExploreScreen(),
-            );
-          },
-        ),
+        GoRoute(path: explorePath, name: exploreName, builder: _explorePage),
 
         // Collection Detail Route (outside bottom navigation)
         GoRoute(
           path: collectionDetailPath,
           name: collectionDetailName,
-          builder: (context, state) {
-            final collectionId = state.pathParameters['id']!;
-            _ensureLibraryRepositoryAndBlocRegistered();
-            final authState = sl<AuthBloc>().state;
-            final userId = authState is AuthAuthenticated
-                ? authState.user.id
-                : '';
-            final collections = sl<UserCollectionsBloc>();
-            if (collections.state.status == UserCollectionsStatus.initial) {
-              collections.add(const UserCollectionsLoadRequested());
-            }
-            final library = sl<LibraryBloc>();
-            if (library.state.entries.isEmpty) {
-              library.add(LibraryLoadRequested(userId: userId));
-            }
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider.value(value: collections),
-                BlocProvider.value(value: library),
-                BlocProvider(
-                  create: (_) => CollectionDetailCubit(
-                    repository: sl<UserCollectionsRepository>(),
-                    collectionId: collectionId,
-                  )..load(),
-                ),
-              ],
-              child: CollectionDetailScreen(collectionId: collectionId),
-            );
-          },
+          builder: _collectionDetailPage,
         ),
 
         // Year in Review Route (outside bottom navigation)
         GoRoute(
           path: yearInReviewPath,
           name: yearInReviewName,
-          builder: (context, state) {
-            final now = DateTime.now().year;
-            final parsed = int.tryParse(state.pathParameters['year'] ?? '');
-            // Clamp malformed or out-of-range years to the API's range.
-            final year = parsed == null || parsed < 2000 || parsed > now + 1
-                ? now
-                : parsed;
-            _ensureStatsRepositoryRegistered();
-            return BlocProvider(
-              create: (_) =>
-                  StatsCubit(statsRepository: sl<StatsRepository>(), year: year)
-                    ..load(year: year),
-              child: YearInReviewScreen(year: year),
-            );
-          },
+          builder: _yearInReviewPage,
         ),
 
         // Privacy Policy Route (outside bottom navigation; reachable while
@@ -592,238 +231,590 @@ class AppRouter {
         GoRoute(
           path: gameDetailsPath,
           name: gameDetailsName,
-          builder: (context, state) {
-            final gameIdStr = state.pathParameters['id']!;
-            final gameId = int.parse(gameIdStr);
-            // Hero tag prefix passed from the source tile (e.g. recommendations
-            // row) so the cover transition matches the source card.
-            final heroTagPrefix = state.extra is String
-                ? state.extra! as String
-                : '';
-
-            // Register games repository lazily (only once, stays in memory)
-            _ensureGamesRepositoryRegistered();
-            _ensureLibraryRepositoryAndBlocRegistered();
-
-            // Provide GameDetailsBloc to the screen (auto-disposed by BlocProvider)
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) =>
-                      GameDetailsBloc(gamesRepository: sl<IGamesRepository>())
-                        ..add(GameDetailsLoadRequested(gameId)),
-                ),
-                BlocProvider.value(
-                  value: sl<LibraryBloc>()
-                    ..add(
-                      LibraryLoadRequested(
-                        userId:
-                            (sl<AuthBloc>().state as AuthAuthenticated).user.id,
-                      ),
-                    ),
-                ),
-                BlocProvider(
-                  create: (_) {
-                    _ensureIntegrationsRepositoryRegistered();
-                    return GameAchievementsCubit(
-                      repository: sl<IntegrationsRepository>(),
-                    )..load(gameId);
-                  },
-                ),
-              ],
-              child: GameDetailsScreen(
-                gameId: gameId,
-                heroTagPrefix: heroTagPrefix,
-              ),
-            );
-          },
+          builder: _gameDetailsPage,
         ),
 
         // Video Player Route (outside bottom navigation)
         GoRoute(
           path: videoPlayerPath,
           name: videoPlayerName,
-          builder: (context, state) {
-            final videoId = state.pathParameters['videoId']!;
-            final title = state.uri.queryParameters['title'];
-
-            return VideoPlayerScreen(videoId: videoId, title: title);
-          },
+          builder: _videoPlayerPage,
         ),
 
         // Discovery Games Route (outside bottom navigation)
         GoRoute(
           path: discoveryPath,
           name: discoveryName,
-          builder: (context, state) {
-            final typeParam = state.pathParameters['type']!;
-            final discoveryType = DiscoveryType.fromQueryParam(typeParam);
-
-            // Register games repository lazily (only once, stays in memory)
-            _ensureGamesRepositoryRegistered();
-
-            // Provide DiscoveryGamesBloc to the screen (auto-disposed by BlocProvider)
-            return BlocProvider(
-              create: (_) =>
-                  DiscoveryGamesBloc(gamesRepository: sl<IGamesRepository>())
-                    ..add(DiscoveryGamesLoadRequested(discoveryType)),
-              child: DiscoveryGamesScreen(discoveryType: discoveryType),
-            );
-          },
+          builder: _discoveryPage,
         ),
 
         // Genre Games Route (outside bottom navigation)
         GoRoute(
           path: genreGamesPath,
           name: genreGamesName,
-          builder: (context, state) {
-            final genreId = int.tryParse(state.pathParameters['genreId'] ?? '');
-            final genreName = state.uri.queryParameters['name'] ?? '';
-
-            // Guard against a malformed/bookmarked URL (e.g. /browse/genres/abc):
-            // an exception in a builder is not caught by errorBuilder.
-            if (genreId == null) {
-              return Scaffold(
-                appBar: AppBar(),
-                body: EmptyState(
-                  icon: Icons.category_outlined,
-                  title: context.l10n.browseGenreGamesError,
-                ),
-              );
-            }
-
-            _ensureGamesRepositoryRegistered();
-
-            return BlocProvider(
-              create: (_) =>
-                  BrowseGenreGamesBloc(gamesRepository: sl<IGamesRepository>())
-                    ..add(BrowseGenreGamesLoadRequested(genreId)),
-              child: BrowseGenreGamesScreen(
-                genreId: genreId,
-                genreName: genreName,
-              ),
-            );
-          },
+          builder: _genreGamesPage,
         ),
 
         // AI play next (outside bottom navigation)
         GoRoute(
           path: aiPlayNextPath,
           name: aiPlayNextName,
-          builder: (context, state) {
-            _ensureAiRepositoryRegistered();
-            _ensureLibraryRepositoryAndBlocRegistered();
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) =>
-                      AiStatusCubit(repository: sl<AiRepository>())..load(),
-                ),
-                BlocProvider(
-                  create: (_) => PlayNextCubit(
-                    aiRepository: sl<AiRepository>(),
-                    libraryRepository: sl<LibraryRepository>(),
-                    userId: _currentUserId(),
-                  )..loadLibrary(),
-                ),
-              ],
-              child: const PlayNextScreen(),
-            );
-          },
+          builder: _aiPlayNextPage,
         ),
 
         // AI discover (outside bottom navigation)
         GoRoute(
           path: aiDiscoverPath,
           name: aiDiscoverName,
-          builder: (context, state) {
-            _ensureAiRepositoryRegistered();
-            _ensureLibraryRepositoryAndBlocRegistered();
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) =>
-                      AiStatusCubit(repository: sl<AiRepository>())..load(),
-                ),
-                BlocProvider(
-                  create: (_) => DiscoverCubit(repository: sl<AiRepository>()),
-                ),
-                // Shared library state for the add-to-library sheet.
-                BlocProvider.value(
-                  value: sl<LibraryBloc>()
-                    ..add(LibraryLoadRequested(userId: _currentUserId())),
-                ),
-              ],
-              child: const DiscoverScreen(),
-            );
-          },
+          builder: _aiDiscoverPage,
         ),
 
         // Connected accounts (outside bottom navigation)
         GoRoute(
           path: connectedAccountsPath,
           name: connectedAccountsName,
-          builder: (context, state) {
-            _ensureIntegrationsRepositoryRegistered();
-            return BlocProvider(
-              create: (_) => ConnectedAccountsCubit(
-                repository: sl<IntegrationsRepository>(),
-              )..load(),
-              child: const ConnectedAccountsScreen(),
-            );
-          },
+          builder: _connectedAccountsPage,
         ),
 
         // Achievements hub (outside bottom navigation)
         GoRoute(
           path: achievementsPath,
           name: achievementsName,
-          builder: (context, state) {
-            _ensureIntegrationsRepositoryRegistered();
-            return BlocProvider(
-              create: (_) =>
-                  AchievementsCubit(repository: sl<IntegrationsRepository>())
-                    ..load(),
-              child: const AchievementsScreen(),
-            );
-          },
+          builder: _achievementsPage,
         ),
 
         // Per-game achievements (outside bottom navigation)
         GoRoute(
           path: achievementGamePath,
           name: achievementGameName,
-          builder: (context, state) {
-            final provider = GameProvider.fromApi(
-              state.pathParameters['provider'],
-            );
-            final externalGameId = state.pathParameters['externalGameId'] ?? '';
-
-            // A malformed or stale link must not throw inside the builder.
-            if (provider == null || externalGameId.isEmpty) {
-              return Scaffold(
-                appBar: AppBar(),
-                body: EmptyState(
-                  icon: Icons.emoji_events_outlined,
-                  title: context.l10n.accountsErrorGameNotFound,
-                ),
-              );
-            }
-
-            _ensureIntegrationsRepositoryRegistered();
-            return BlocProvider(
-              create: (_) => AchievementGameCubit(
-                repository: sl<IntegrationsRepository>(),
-                provider: provider,
-                externalGameId: externalGameId,
-              )..load(),
-              child: const AchievementGameScreen(),
-            );
-          },
+          builder: _achievementGamePage,
         ),
       ],
       errorBuilder: (context, state) => _ErrorScreen(error: state.error),
       debugLogDiagnostics: kDebugMode,
+    );
+  }
+
+  static Widget _onboardingPage(BuildContext context, GoRouterState state) {
+    _ensureOnboardingServiceRegistered();
+
+    return OnboardingScreen(
+      onboardingService: sl<OnboardingService>(),
+      // Destination depends on auth state, which only the router knows.
+      onCompleted: () => context.go(_postOnboardingDestination()),
+    );
+  }
+
+  static Widget _signInPage(BuildContext context, GoRouterState state) {
+    // Register auth repository lazily (only once, stays in memory)
+    _ensureAuthRepositoryRegistered();
+
+    // Provide SignInBloc to the screen (auto-disposed by BlocProvider)
+    return BlocProvider(
+      create: (_) => SignInBloc(sl<AuthRepository>()),
+      child: const SignInScreen(),
+    );
+  }
+
+  static Widget _signUpPage(BuildContext context, GoRouterState state) {
+    // Register auth repository lazily (only once, stays in memory)
+    _ensureAuthRepositoryRegistered();
+
+    // Provide SignUpBloc to the screen (auto-disposed by BlocProvider)
+    return BlocProvider(
+      create: (_) => SignUpBloc(sl<AuthRepository>()),
+      child: const SignUpScreen(),
+    );
+  }
+
+  static Widget _homePage(BuildContext context, GoRouterState state) {
+    // Register games repository lazily (only once, stays in memory)
+    _ensureGamesRepositoryRegistered();
+
+    // Provide the home dashboard blocs (auto-disposed by
+    // BlocProvider).
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              AnticipatedGamesBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const AnticipatedGamesLoadRequested()),
+        ),
+        BlocProvider(
+          create: (_) => DiscoveryGamesBloc(
+            gamesRepository: sl<IGamesRepository>(),
+          )..add(const DiscoveryGamesLoadRequested(DiscoveryType.trending)),
+        ),
+        BlocProvider(
+          create: (_) =>
+              FeaturedBannersBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const FeaturedBannersLoadRequested()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              RecommendationsBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const RecommendationsLoadRequested()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              CollectionsBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const CollectionsLoadRequested()),
+        ),
+        BlocProvider(
+          create: (_) {
+            _ensureAiRepositoryRegistered();
+            return AiStatusCubit(repository: sl<AiRepository>())..load();
+          },
+        ),
+      ],
+      child: const HomeScreen(),
+    );
+  }
+
+  static Widget _browsePage(BuildContext context, GoRouterState state) {
+    _ensureGamesRepositoryRegistered();
+
+    // The Browse tab owns its own discovery/collections blocs,
+    // separate from the Home tab's instances, so both can stay
+    // alive in the indexed stack without sharing state.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              BrowseGenresBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const BrowseGenresLoadRequested()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              DiscoveryGamesBloc(gamesRepository: sl<IGamesRepository>()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              CollectionsBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const CollectionsLoadRequested()),
+        ),
+      ],
+      child: const BrowseScreen(),
+    );
+  }
+
+  static Widget _gamesPage(BuildContext context, GoRouterState state) {
+    // Register library repository lazily
+    _ensureLibraryRepositoryAndBlocRegistered();
+    _ensureStatsRepositoryRegistered();
+    _ensureGamesRepositoryRegistered();
+
+    // Get the current user ID from AuthBloc
+    final authState = sl<AuthBloc>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : '';
+
+    // The shared LibraryBloc keeps the whole library; the
+    // route-scoped browse bloc pages the filtered list.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(
+          value: sl<LibraryBloc>()..add(LibraryLoadRequested(userId: userId)),
+        ),
+        BlocProvider.value(value: sl<UserCollectionsBloc>()),
+        BlocProvider(
+          create: (_) => LibraryBrowseBloc(
+            libraryRepository: sl<LibraryRepository>(),
+            storage: sl<LocalStorageService>(),
+          )..add(LibraryBrowseStarted(userId: userId)),
+        ),
+        BlocProvider(
+          create: (_) =>
+              StatsCubit(statsRepository: sl<StatsRepository>())..load(),
+        ),
+        BlocProvider(
+          create: (_) =>
+              FilterOptionsCubit(gamesRepository: sl<IGamesRepository>()),
+        ),
+      ],
+      child: const GamesScreen(),
+    );
+  }
+
+  static Widget _profilePage(BuildContext context, GoRouterState state) {
+    _ensureLibraryRepositoryAndBlocRegistered();
+    _ensureStatsRepositoryRegistered();
+    final authState = sl<AuthBloc>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : '';
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              StatsCubit(statsRepository: sl<StatsRepository>())..load(),
+        ),
+        BlocProvider.value(
+          value: sl<LibraryBloc>()..add(LibraryLoadRequested(userId: userId)),
+        ),
+      ],
+      child: const ProfileScreen(),
+    );
+  }
+
+  static Widget _settingsPage(BuildContext context, GoRouterState state) {
+    _ensureAuthRepositoryRegistered();
+    _ensureAiRepositoryRegistered();
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              AccountManagementBloc(authRepository: sl<AuthRepository>()),
+        ),
+        BlocProvider(
+          create: (_) => AiStatusCubit(repository: sl<AiRepository>())..load(),
+        ),
+      ],
+      child: const SettingsScreen(),
+    );
+  }
+
+  static Widget _searchPage(BuildContext context, GoRouterState state) {
+    // Register games repository lazily (only once, stays in memory)
+    _ensureGamesRepositoryRegistered();
+
+    // Provide GameSearchBloc to the screen (auto-disposed by BlocProvider)
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              GameSearchBloc(gamesRepository: sl<IGamesRepository>()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              FilterOptionsCubit(gamesRepository: sl<IGamesRepository>()),
+        ),
+      ],
+      child: const GameSearchScreen(),
+    );
+  }
+
+  static Widget _explorePage(BuildContext context, GoRouterState state) {
+    _ensureGamesRepositoryRegistered();
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              ExploreBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(const ExploreLoadRequested()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              FilterOptionsCubit(gamesRepository: sl<IGamesRepository>())
+                ..load(),
+        ),
+      ],
+      child: const ExploreScreen(),
+    );
+  }
+
+  static Widget _collectionDetailPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    final collectionId = state.pathParameters['id']!;
+    _ensureLibraryRepositoryAndBlocRegistered();
+    final authState = sl<AuthBloc>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : '';
+    final collections = sl<UserCollectionsBloc>();
+    if (collections.state.status == UserCollectionsStatus.initial) {
+      collections.add(const UserCollectionsLoadRequested());
+    }
+    final library = sl<LibraryBloc>();
+    if (library.state.entries.isEmpty) {
+      library.add(LibraryLoadRequested(userId: userId));
+    }
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: collections),
+        BlocProvider.value(value: library),
+        BlocProvider(
+          create: (_) => CollectionDetailCubit(
+            repository: sl<UserCollectionsRepository>(),
+            collectionId: collectionId,
+          )..load(),
+        ),
+      ],
+      child: CollectionDetailScreen(collectionId: collectionId),
+    );
+  }
+
+  static Widget _yearInReviewPage(BuildContext context, GoRouterState state) {
+    final now = DateTime.now().year;
+    final parsed = int.tryParse(state.pathParameters['year'] ?? '');
+    // Clamp malformed or out-of-range years to the API's range.
+    final year = parsed == null || parsed < 2000 || parsed > now + 1
+        ? now
+        : parsed;
+    _ensureStatsRepositoryRegistered();
+    return BlocProvider(
+      create: (_) =>
+          StatsCubit(statsRepository: sl<StatsRepository>(), year: year)
+            ..load(year: year),
+      child: YearInReviewScreen(year: year),
+    );
+  }
+
+  static Widget _gameDetailsPage(BuildContext context, GoRouterState state) {
+    final gameIdStr = state.pathParameters['id']!;
+    final gameId = int.parse(gameIdStr);
+    // Hero tag prefix passed from the source tile (e.g. recommendations
+    // row) so the cover transition matches the source card.
+    final heroTagPrefix = state.extra is String ? state.extra! as String : '';
+
+    // Register games repository lazily (only once, stays in memory)
+    _ensureGamesRepositoryRegistered();
+    _ensureLibraryRepositoryAndBlocRegistered();
+
+    // Provide GameDetailsBloc to the screen (auto-disposed by BlocProvider)
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              GameDetailsBloc(gamesRepository: sl<IGamesRepository>())
+                ..add(GameDetailsLoadRequested(gameId)),
+        ),
+        BlocProvider.value(
+          value: sl<LibraryBloc>()
+            ..add(
+              LibraryLoadRequested(
+                userId: (sl<AuthBloc>().state as AuthAuthenticated).user.id,
+              ),
+            ),
+        ),
+        BlocProvider(
+          create: (_) {
+            _ensureIntegrationsRepositoryRegistered();
+            return GameAchievementsCubit(
+              repository: sl<IntegrationsRepository>(),
+            )..load(gameId);
+          },
+        ),
+      ],
+      child: GameDetailsScreen(gameId: gameId, heroTagPrefix: heroTagPrefix),
+    );
+  }
+
+  static Widget _videoPlayerPage(BuildContext context, GoRouterState state) {
+    final videoId = state.pathParameters['videoId']!;
+    final title = state.uri.queryParameters['title'];
+
+    return VideoPlayerScreen(videoId: videoId, title: title);
+  }
+
+  static Widget _discoveryPage(BuildContext context, GoRouterState state) {
+    final typeParam = state.pathParameters['type']!;
+    final discoveryType = DiscoveryType.fromQueryParam(typeParam);
+
+    // Register games repository lazily (only once, stays in memory)
+    _ensureGamesRepositoryRegistered();
+
+    // Provide DiscoveryGamesBloc to the screen (auto-disposed by BlocProvider)
+    return BlocProvider(
+      create: (_) =>
+          DiscoveryGamesBloc(gamesRepository: sl<IGamesRepository>())
+            ..add(DiscoveryGamesLoadRequested(discoveryType)),
+      child: DiscoveryGamesScreen(discoveryType: discoveryType),
+    );
+  }
+
+  static Widget _genreGamesPage(BuildContext context, GoRouterState state) {
+    final genreId = int.tryParse(state.pathParameters['genreId'] ?? '');
+    final genreName = state.uri.queryParameters['name'] ?? '';
+
+    // Guard against a malformed/bookmarked URL (e.g. /browse/genres/abc):
+    // an exception in a builder is not caught by errorBuilder.
+    if (genreId == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: EmptyState(
+          icon: Icons.category_outlined,
+          title: context.l10n.browseGenreGamesError,
+        ),
+      );
+    }
+
+    _ensureGamesRepositoryRegistered();
+
+    return BlocProvider(
+      create: (_) =>
+          BrowseGenreGamesBloc(gamesRepository: sl<IGamesRepository>())
+            ..add(BrowseGenreGamesLoadRequested(genreId)),
+      child: BrowseGenreGamesScreen(genreId: genreId, genreName: genreName),
+    );
+  }
+
+  static Widget _aiPlayNextPage(BuildContext context, GoRouterState state) {
+    _ensureAiRepositoryRegistered();
+    _ensureLibraryRepositoryAndBlocRegistered();
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => AiStatusCubit(repository: sl<AiRepository>())..load(),
+        ),
+        BlocProvider(
+          create: (_) => PlayNextCubit(
+            aiRepository: sl<AiRepository>(),
+            libraryRepository: sl<LibraryRepository>(),
+            userId: _currentUserId(),
+          )..loadLibrary(),
+        ),
+      ],
+      child: const PlayNextScreen(),
+    );
+  }
+
+  static Widget _aiDiscoverPage(BuildContext context, GoRouterState state) {
+    _ensureAiRepositoryRegistered();
+    _ensureLibraryRepositoryAndBlocRegistered();
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => AiStatusCubit(repository: sl<AiRepository>())..load(),
+        ),
+        BlocProvider(
+          create: (_) => DiscoverCubit(repository: sl<AiRepository>()),
+        ),
+        // Shared library state for the add-to-library sheet.
+        BlocProvider.value(
+          value: sl<LibraryBloc>()
+            ..add(LibraryLoadRequested(userId: _currentUserId())),
+        ),
+      ],
+      child: const DiscoverScreen(),
+    );
+  }
+
+  static Widget _connectedAccountsPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    _ensureIntegrationsRepositoryRegistered();
+    return BlocProvider(
+      create: (_) =>
+          ConnectedAccountsCubit(repository: sl<IntegrationsRepository>())
+            ..load(),
+      child: const ConnectedAccountsScreen(),
+    );
+  }
+
+  static Widget _achievementsPage(BuildContext context, GoRouterState state) {
+    _ensureIntegrationsRepositoryRegistered();
+    return BlocProvider(
+      create: (_) =>
+          AchievementsCubit(repository: sl<IntegrationsRepository>())..load(),
+      child: const AchievementsScreen(),
+    );
+  }
+
+  static Widget _achievementGamePage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    final provider = GameProvider.fromApi(state.pathParameters['provider']);
+    final externalGameId = state.pathParameters['externalGameId'] ?? '';
+
+    // A malformed or stale link must not throw inside the builder.
+    if (provider == null || externalGameId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: EmptyState(
+          icon: Icons.emoji_events_outlined,
+          title: context.l10n.accountsErrorGameNotFound,
+        ),
+      );
+    }
+
+    _ensureIntegrationsRepositoryRegistered();
+    return BlocProvider(
+      create: (_) => AchievementGameCubit(
+        repository: sl<IntegrationsRepository>(),
+        provider: provider,
+        externalGameId: externalGameId,
+      )..load(),
+      child: const AchievementGameScreen(),
+    );
+  }
+
+  /// Auth guard. Splash, onboarding and legal pages always pass. Signed-in
+  /// users skip the auth pages; signed-out users go to sign in.
+  static String? _redirect(BuildContext context, GoRouterState state) {
+    final authState = sl<AuthBloc>().state;
+    final isAuthenticated = authState is AuthAuthenticated;
+    final currentPath = state.matchedLocation;
+
+    // Splash performs the initial auth + onboarding routing, and the
+    // onboarding flow is shown once regardless of auth state. Let both
+    // through untouched so the auth redirect below never bounces them.
+    if (currentPath == splashPath || currentPath == onboardingPath) {
+      return null;
+    }
+
+    final isGoingToAuth =
+        currentPath == signInPath || currentPath == signUpPath;
+
+    // Legal documents must be reachable before an account exists (linked
+    // from the sign-up consent gate), so never bounce them through the
+    // auth guard regardless of auth state.
+    final isLegalDocument =
+        currentPath == privacyPolicyPath || currentPath == termsPath;
+    if (isLegalDocument) {
+      return null;
+    }
+
+    // If authenticated and going to auth pages, redirect to home
+    if (isAuthenticated && isGoingToAuth) {
+      return homePath;
+    }
+
+    // If not authenticated and trying to access protected routes, redirect to signin
+    if (!isAuthenticated && !isGoingToAuth) {
+      return signInPath;
+    }
+
+    // No redirect needed
+    return null;
+  }
+
+  /// Bottom navigation tabs. Each branch keeps its own stack.
+  static StatefulShellRoute _shellRoute() {
+    return StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return BottomNavBar(navigationShell: navigationShell);
+      },
+      branches: [
+        // Home Branch
+        StatefulShellBranch(
+          routes: [GoRoute(path: homePath, name: homeName, builder: _homePage)],
+        ),
+
+        // Browse Branch (public discovery hub)
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: browsePath, name: browseName, builder: _browsePage),
+          ],
+        ),
+
+        // Games Branch (User Library)
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: gamesPath, name: gamesName, builder: _gamesPage),
+          ],
+        ),
+
+        // Profile Branch
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: profilePath,
+              name: profileName,
+              builder: _profilePage,
+            ),
+          ],
+        ),
+      ],
     );
   }
 

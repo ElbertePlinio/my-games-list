@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/auth/auth_repository.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:picklog/features/auth/bloc/auth_event.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
 import 'package:picklog/features/auth/user_model.dart';
 import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/features/consent/bloc/consent_cubit.dart';
 import 'package:picklog/features/consent/bloc/consent_state.dart';
 import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
@@ -97,7 +99,14 @@ void main() {
   // The AccountManagementBloc is created inside BlocProvider.create so it lives
   // in the test's async zone (a bloc built in setUp would schedule its async on
   // the wrong zone and never settle under the fake clock).
-  Widget buildScreen() {
+  const delegates = [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ];
+
+  Widget buildScreen({GoRouter? router}) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: mockAuthBloc),
@@ -113,18 +122,41 @@ void main() {
           },
         ),
       ],
-      child: const MaterialApp(
-        localizationsDelegates: [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: SettingsScreen(),
-      ),
+      child: router == null
+          ? const MaterialApp(
+              localizationsDelegates: delegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SettingsScreen(),
+            )
+          : MaterialApp.router(
+              localizationsDelegates: delegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
     );
   }
+
+  testWidgets('back from a deep link to settings goes home', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/settings',
+      routes: [
+        GoRoute(
+          path: AppRouter.homePath,
+          name: AppRouter.homeName,
+          builder: (_, _) => const Text('home page'),
+        ),
+        GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(buildScreen(router: router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('home page'), findsOneWidget);
+  });
 
   testWidgets('shows the privacy & data actions', (tester) async {
     await tester.pumpWidget(buildScreen());

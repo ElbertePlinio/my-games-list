@@ -43,7 +43,10 @@ class SettingsScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          onPressed: () => context.pop(),
+          // A deep link opens settings with nothing below it.
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.goNamed(AppRouter.homeName),
         ),
       ),
       body: SafeArea(

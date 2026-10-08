@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/features/games/release_date.dart';
 
 /// Moods the play-next endpoint accepts.
 enum AiMood {
@@ -203,9 +204,7 @@ class AiDiscoverGame extends Equatable {
       name: json['name'] as String? ?? '',
       coverUrl: cover == null || cover.isEmpty ? null : cover,
       totalRating: (json['total_rating'] as num?)?.toDouble(),
-      firstReleaseDate: DateTime.tryParse(
-        json['first_release_date'] as String? ?? '',
-      ),
+      firstReleaseDate: parseReleaseDate(json['first_release_date']),
     );
   }
 

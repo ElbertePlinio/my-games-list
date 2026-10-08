@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/release_date.dart';
 
 /// Represents the type of discovery query
 enum DiscoveryType {
@@ -123,13 +124,12 @@ class DiscoveryGame extends Equatable {
   });
 
   factory DiscoveryGame.fromJson(Map<String, dynamic> json) {
-    final release = json['first_release_date'];
     return DiscoveryGame(
       id: json['id'] as int,
       name: json['name'] as String,
       coverUrl: json['cover_url'] as String?,
       totalRating: (json['total_rating'] as num?)?.toDouble(),
-      firstReleaseDate: release is String ? DateTime.tryParse(release) : null,
+      firstReleaseDate: parseReleaseDate(json['first_release_date']),
       genres:
           (json['genres'] as List<dynamic>?)
               ?.map((g) => Genre.fromJson(g as Map<String, dynamic>))

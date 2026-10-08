@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/release_date.dart';
 
 /// Enum representing the status of a game in the user's library
 enum GameStatus {
@@ -82,9 +83,7 @@ class CachedGame extends Equatable {
       igdbId: json['igdb_id'] as int,
       name: json['name'] as String,
       coverUrl: json['cover_url'] as String?,
-      firstReleaseDate: json['first_release_date'] != null
-          ? DateTime.parse(json['first_release_date'] as String)
-          : null,
+      firstReleaseDate: parseReleaseDate(json['first_release_date']),
       lastSyncedAt: DateTime.parse(json['last_synced_at'] as String),
       totalRating: (json['total_rating'] as num?)?.toDouble(),
       slug: json['slug'] as String?,

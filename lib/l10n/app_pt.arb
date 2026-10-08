@@ -443,5 +443,6 @@
     "achievementsUnlockedOn": "Desbloqueada em {date}",
     "achievementsLocked": "Bloqueada",
     "achievementsLastPlayed": "Jogado em {date}",
-    "achievementsGameEmpty": "Este jogo não tem conquistas para mostrar."
+    "achievementsGameEmpty": "Este jogo não tem conquistas para mostrar.",
+    "aiDiscoverHeadline": "Encontre seu próximo jogo favorito"
 }

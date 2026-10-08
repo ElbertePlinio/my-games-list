@@ -106,7 +106,7 @@ class _BodyState extends State<_Body> {
               Semantics(
                 header: true,
                 child: Text(
-                  l10n.aiDiscoverTitle,
+                  l10n.aiDiscoverHeadline,
                   style: theme.textTheme.headlineMedium,
                 ),
               ),

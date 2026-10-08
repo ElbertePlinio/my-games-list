@@ -94,6 +94,12 @@ class _BodyState extends State<_Body> {
       ],
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // Nothing to pick from: lead with the way out instead of a form
+          // that cannot work.
+          final libraryEmpty = context.select(
+            (PlayNextCubit c) => c.state.backlogCount == 0,
+          );
+          if (libraryEmpty) return const _EmptyBacklog();
           final wide = constraints.maxWidth >= PfBreakpoints.twoPane;
           if (wide) {
             return Align(
@@ -267,11 +273,11 @@ class _PlayNextFormState extends State<_PlayNextForm> {
                 children: [
                   Text(
                     _stopLabel(context, 0),
-                    style: PfTypography.monoStyle(colors.textLow, size: 11),
+                    style: PfTypography.monoStyle(colors.textMed, size: 11),
                   ),
                   Text(
                     _stopLabel(context, kPlayNextMinuteStops.length - 1),
-                    style: PfTypography.monoStyle(colors.textLow, size: 11),
+                    style: PfTypography.monoStyle(colors.textMed, size: 11),
                   ),
                 ],
               ),

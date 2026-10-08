@@ -1561,5 +1561,9 @@
     "achievementsGameEmpty": "This game has no achievements to show.",
     "@achievementsGameEmpty": {
       "description": "Per-game screen with an empty list"
+    },
+    "aiDiscoverHeadline": "Find your next favorite game",
+    "@aiDiscoverHeadline": {
+      "description": "Headline of the AI discover screen"
     }
 }

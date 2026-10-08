@@ -1472,4 +1472,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get achievementsGameEmpty => 'This game has no achievements to show.';
+
+  @override
+  String get aiDiscoverHeadline => 'Find your next favorite game';
 }

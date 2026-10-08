@@ -41,15 +41,17 @@ class AiConsentDialog extends StatelessWidget {
     );
 
     return AlertDialog(
-      icon: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: colors.surface2,
-          borderRadius: PfRadius.mdAll,
-          border: Border.all(color: colors.hairlineStrong),
+      icon: Center(
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: colors.surface2,
+            borderRadius: PfRadius.mdAll,
+            border: Border.all(color: colors.hairlineStrong),
+          ),
+          child: Icon(Icons.auto_awesome_outlined, color: colors.textHi),
         ),
-        child: Icon(Icons.auto_awesome_outlined, color: colors.textHi),
       ),
       title: Text(l10n.aiConsentTitle),
       scrollable: true,

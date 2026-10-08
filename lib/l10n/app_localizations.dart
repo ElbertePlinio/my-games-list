@@ -2683,6 +2683,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This game has no achievements to show.'**
   String get achievementsGameEmpty;
+
+  /// Headline of the AI discover screen
+  ///
+  /// In en, this message translates to:
+  /// **'Find your next favorite game'**
+  String get aiDiscoverHeadline;
 }
 
 class _AppLocalizationsDelegate

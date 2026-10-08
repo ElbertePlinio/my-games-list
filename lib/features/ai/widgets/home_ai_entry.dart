@@ -50,90 +50,159 @@ class _Entries extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(PfSpace.lg, 0, PfSpace.lg, PfSpace.lg),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= PfBreakpoints.twoPane) {
+            return const IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(flex: 3, child: _PlayNextCard()),
+                  SizedBox(width: PfSpace.md),
+                  Expanded(flex: 2, child: _DiscoverEntry(vertical: true)),
+                ],
+              ),
+            );
+          }
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PlayNextCard(),
+              SizedBox(height: PfSpace.sm),
+              _DiscoverEntry(vertical: false),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// The prominent "What should I play tonight?" card.
+class _PlayNextCard extends StatelessWidget {
+  const _PlayNextCard();
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = context.pfColors;
+    void open() => context.pushNamed(AppRouter.aiPlayNextName);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(PfSpace.lg, 0, PfSpace.lg, PfSpace.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          PressScale(
-            scale: 0.985,
-            semanticLabel: l10n.aiPlayNextHeadline,
-            onTap: () => context.pushNamed(AppRouter.aiPlayNextName),
-            child: ExcludeSemantics(
-              child: Container(
-                padding: const EdgeInsets.all(PfSpace.lg),
-                decoration: BoxDecoration(
-                  color: colors.surface1,
-                  borderRadius: PfRadius.cardAll,
-                  border: Border.all(color: colors.hairlineStrong),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colors.ember.withValues(
-                        alpha: colors.isDark ? 0.10 : 0.07,
-                      ),
-                      colors.surface1,
-                    ],
-                    stops: const [0, 0.6],
-                  ),
+    return PressScale(
+      scale: 0.985,
+      semanticLabel: l10n.aiPlayNextHeadline,
+      onTap: open,
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.all(PfSpace.lg),
+          decoration: BoxDecoration(
+            color: colors.surface1,
+            borderRadius: PfRadius.cardAll,
+            border: Border.all(color: colors.hairlineStrong),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colors.ember.withValues(alpha: colors.isDark ? 0.09 : 0.06),
+                colors.surface1,
+              ],
+              stops: const [0, 0.6],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Eyebrow(l10n.aiEyebrowPlayNext, muted: true),
+              const SizedBox(height: PfSpace.sm),
+              Text(
+                l10n.aiPlayNextHeadline,
+                style: theme.textTheme.headlineSmall,
+              ),
+              const SizedBox(height: PfSpace.xs),
+              Text(
+                l10n.aiHomeCardSubtitle,
+                style: theme.textTheme.bodyMedium!.copyWith(
+                  color: colors.textMed,
                 ),
-                child: Row(
+              ),
+              const SizedBox(height: PfSpace.md),
+              PfButton(
+                label: l10n.aiHomeCardAction,
+                icon: Icons.auto_awesome_outlined,
+                size: PfButtonSize.sm,
+                onPressed: open,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The smaller "Discover with AI" entry: a row on phones, a card on wide
+/// screens next to the play next card.
+class _DiscoverEntry extends StatelessWidget {
+  const _DiscoverEntry({required this.vertical});
+
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final icon = Icon(Icons.travel_explore, color: colors.textMed);
+    final texts = [
+      Text(l10n.aiDiscoverTitle, style: theme.textTheme.titleMedium),
+      const SizedBox(height: 2),
+      Text(l10n.aiHomeDiscoverSubtitle, style: theme.textTheme.bodySmall),
+    ];
+
+    return Material(
+      color: colors.surface1,
+      shape: RoundedRectangleBorder(
+        borderRadius: PfRadius.cardAll,
+        side: BorderSide(color: colors.hairline),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.pushNamed(AppRouter.aiDiscoverName),
+        child: Padding(
+          padding: const EdgeInsets.all(PfSpace.lg),
+          child: vertical
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        icon,
+                        const Spacer(),
+                        Icon(Icons.chevron_right, color: colors.textLow),
+                      ],
+                    ),
+                    const Spacer(),
+                    ...texts,
+                  ],
+                )
+              : Row(
+                  children: [
+                    icon,
+                    const SizedBox(width: PfSpace.lg),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Eyebrow(l10n.aiEyebrowPlayNext, muted: true),
-                          const SizedBox(height: PfSpace.sm),
-                          Text(
-                            l10n.aiPlayNextHeadline,
-                            style: theme.textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: PfSpace.xs),
-                          Text(
-                            l10n.aiHomeCardSubtitle,
-                            style: theme.textTheme.bodyMedium!.copyWith(
-                              color: colors.textMed,
-                            ),
-                          ),
-                          const SizedBox(height: PfSpace.md),
-                          PfButton(
-                            label: l10n.aiHomeCardAction,
-                            icon: Icons.auto_awesome_outlined,
-                            size: PfButtonSize.sm,
-                            onPressed: () =>
-                                context.pushNamed(AppRouter.aiPlayNextName),
-                          ),
-                        ],
+                        children: texts,
                       ),
                     ),
+                    Icon(Icons.chevron_right, color: colors.textLow),
                   ],
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: PfSpace.sm),
-          Material(
-            color: Colors.transparent,
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: PfRadius.cardAll,
-                side: BorderSide(color: colors.hairline),
-              ),
-              tileColor: colors.surface1,
-              leading: Icon(Icons.travel_explore, color: colors.textMed),
-              title: Text(l10n.aiDiscoverTitle),
-              subtitle: Text(l10n.aiHomeDiscoverSubtitle),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRouter.aiDiscoverName),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

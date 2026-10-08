@@ -10,6 +10,7 @@ import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/widgets/app_scaffold.dart';
 import 'package:picklog/core/widgets/brand_mark.dart';
 import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/features/ai/widgets/home_ai_entry.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
 import 'package:picklog/features/games/bloc/anticipated_games_bloc.dart';
@@ -96,6 +97,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               const SliverToBoxAdapter(child: _Greeting()),
+              const SliverToBoxAdapter(child: HomeAiEntry()),
               const SliverToBoxAdapter(child: FeaturedBannersCarousel()),
               const SliverToBoxAdapter(
                 child: AnticipatedGamesCarousel(

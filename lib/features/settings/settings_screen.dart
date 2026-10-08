@@ -10,10 +10,12 @@ import 'package:picklog/core/widgets/app_scaffold.dart';
 import 'package:picklog/core/widgets/pf_button.dart';
 import 'package:picklog/core/widgets/pf_dialog.dart';
 import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/features/ai/widgets/ai_settings_section.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
 import 'package:picklog/features/auth/bloc/auth_event.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
 import 'package:picklog/features/consent/widgets/consent_settings_section.dart';
+import 'package:picklog/features/integrations/connected_accounts_screen.dart';
 import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
 import 'package:picklog/features/settings/bloc/account_management_event.dart';
 import 'package:picklog/features/settings/bloc/account_management_state.dart';
@@ -65,6 +67,10 @@ class SettingsScreen extends StatelessWidget {
                 const _AppearanceSection(),
                 const SizedBox(height: PfSpace.xl),
                 const _LanguageSection(),
+                const SizedBox(height: PfSpace.xl),
+                const ConnectedAccountsSettingsSection(),
+                const SizedBox(height: PfSpace.xl),
+                const AiSettingsSection(),
                 const SizedBox(height: PfSpace.xl),
 
                 // Privacy & data (LGPD: export + delete), with the

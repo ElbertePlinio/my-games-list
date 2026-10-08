@@ -33,6 +33,7 @@ import 'package:picklog/features/games/widgets/game_rail.dart';
 import 'package:picklog/features/games/widgets/screenshot_lightbox.dart';
 import 'package:picklog/features/games/widgets/skeletons/game_details_skeleton.dart';
 import 'package:picklog/features/games/widgets/video_thumbnail_card.dart';
+import 'package:picklog/features/integrations/widgets/game_achievements_section.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
@@ -673,6 +674,7 @@ class _DetailSections {
       _gap,
       _DescriptionSection(game: game),
     ],
+    const GameAchievementsSection(),
     if (game.screenshots.isNotEmpty) ...[
       _gap,
       _ScreenshotsSection(screenshots: game.screenshots, gameName: game.name),

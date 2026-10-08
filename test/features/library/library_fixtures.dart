@@ -9,6 +9,11 @@ Map<String, dynamic> entryJson({
   bool favorite = false,
   int? platformId = 6,
   int? playtime,
+  int? score,
+  String? startDate,
+  String? endDate,
+  String? difficulty,
+  String? notes,
   List<String> collectionIds = const [],
 }) => {
   'id': id,
@@ -34,6 +39,11 @@ Map<String, dynamic> entryJson({
     },
   'status': status,
   'playtime_minutes': ?playtime,
+  'score': ?score,
+  'start_date': ?startDate,
+  'end_date': ?endDate,
+  'difficulty': ?difficulty,
+  'notes': ?notes,
   'is_favorite': favorite,
   'created_at': '2026-01-01T00:00:00Z',
   'updated_at': '2026-01-02T00:00:00Z',
@@ -49,6 +59,11 @@ LibraryEntry entry({
   bool favorite = false,
   int? platformId = 6,
   int? playtime,
+  int? score,
+  String? startDate,
+  String? endDate,
+  String? difficulty,
+  String? notes,
   List<String> collectionIds = const [],
 }) => LibraryEntry.fromJson(
   entryJson(
@@ -59,9 +74,39 @@ LibraryEntry entry({
     favorite: favorite,
     platformId: platformId,
     playtime: playtime,
+    score: score,
+    startDate: startDate,
+    endDate: endDate,
+    difficulty: difficulty,
+    notes: notes,
     collectionIds: collectionIds,
   ),
 );
+
+/// An entry with every field that PUT /library/{id} replaces.
+LibraryEntry detailedEntry({
+  String id = 'entry-1',
+  String name = 'Hollow Knight',
+  GameStatus status = GameStatus.planned,
+}) => entry(
+  id: id,
+  name: name,
+  status: status,
+  score: 80,
+  startDate: '2026-01-05',
+  endDate: '2026-02-10',
+  difficulty: 'Steel Soul',
+  notes: 'Pantheon left',
+);
+
+/// The replaced fields of [detailedEntry] as they must reach the API.
+const detailedEntryPayload = {
+  'score': 80,
+  'start_date': '2026-01-05',
+  'end_date': '2026-02-10',
+  'difficulty': 'Steel Soul',
+  'notes': 'Pantheon left',
+};
 
 Map<String, dynamic> collectionJson({
   String id = 'c-1',

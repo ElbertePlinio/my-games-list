@@ -233,16 +233,19 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     if (isEditing) {
       bloc.add(
         LibraryUpdateEntryRequested(
-          entryId: widget.existingEntry!.id,
+          entry: widget.existingEntry!,
           status: _selectedStatus,
           igdbPlatformId: _selectedPlatform?.id,
-          score: _score,
           playtimeMinutes: _totalPlaytimeMinutes,
-          startDate: _startDate?.toIso8601String().split('T').first,
-          endDate: _endDate?.toIso8601String().split('T').first,
-          difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
           isFavorite: _isFavorite,
-          notes: _notes?.isNotEmpty == true ? _notes : null,
+          // The form shows every detail, so empty fields are cleared.
+          details: LibraryEntryDetails(
+            score: _score,
+            startDate: _startDate,
+            endDate: _endDate,
+            difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
+            notes: _notes?.isNotEmpty == true ? _notes : null,
+          ),
         ),
       );
     } else {

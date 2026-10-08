@@ -231,10 +231,10 @@ class PlayNextCubit extends Cubit<PlayNextState> {
     }
     emit(state.copyWith(startingIds: {...state.startingIds, id}));
     try {
-      await _library.updateLibraryEntry(
-        entryId: id,
-        status: GameStatus.playing,
-      );
+      // The pick only carries the entry id. Read the entry first so the
+      // update sends back its score, dates, difficulty and notes.
+      final current = await _library.getLibraryEntry(id);
+      await _library.updateLibraryEntry(current, status: GameStatus.playing);
       if (isClosed) return;
       emit(
         state.copyWith(

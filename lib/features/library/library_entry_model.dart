@@ -326,6 +326,51 @@ class LibraryEntry extends Equatable {
   ];
 }
 
+/// The entry fields that PUT /library/{id} replaces on every call.
+///
+/// The API sets these columns straight from the request, so an omitted field
+/// becomes null. Every update sends all of them: [LibraryEntryDetails.of]
+/// keeps the current values, and a null field here clears that value.
+class LibraryEntryDetails extends Equatable {
+  const LibraryEntryDetails({
+    this.score,
+    this.startDate,
+    this.endDate,
+    this.difficulty,
+    this.notes,
+  });
+
+  /// The current values of [entry], to send back unchanged.
+  factory LibraryEntryDetails.of(LibraryEntry entry) => LibraryEntryDetails(
+    score: entry.score,
+    startDate: entry.startDate,
+    endDate: entry.endDate,
+    difficulty: entry.difficulty,
+    notes: entry.notes,
+  );
+
+  final int? score;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String? difficulty;
+  final String? notes;
+
+  /// Request fields. Null values are kept so the payload is always complete.
+  Map<String, dynamic> toJson() => {
+    'score': score,
+    'start_date': _apiDate(startDate),
+    'end_date': _apiDate(endDate),
+    'difficulty': difficulty,
+    'notes': notes,
+  };
+
+  static String? _apiDate(DateTime? date) =>
+      date?.toIso8601String().split('T').first;
+
+  @override
+  List<Object?> get props => [score, startDate, endDate, difficulty, notes];
+}
+
 /// Response model for library entries list
 class LibraryEntriesResponse extends Equatable {
   const LibraryEntriesResponse({

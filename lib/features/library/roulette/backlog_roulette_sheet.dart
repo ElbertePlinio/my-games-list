@@ -51,10 +51,7 @@ class BacklogRouletteSheet extends StatelessWidget {
   void _start(BuildContext context, LibraryEntry entry) {
     final l10n = context.l10n;
     context.read<LibraryBloc>().add(
-      LibraryUpdateEntryRequested(
-        entryId: entry.id,
-        status: GameStatus.playing,
-      ),
+      LibraryUpdateEntryRequested(entry: entry, status: GameStatus.playing),
     );
     context.showSuccessMessage(l10n.rouletteStarted(entry.game.name));
     Navigator.of(context).pop();

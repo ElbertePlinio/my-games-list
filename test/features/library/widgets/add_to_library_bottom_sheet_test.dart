@@ -218,9 +218,39 @@ void main() {
       final event = captured as LibraryUpdateEntryRequested;
       expect(event.entryId, 'entry-1');
       expect(event.status, GameStatus.playing);
-      expect(event.score, 80);
       expect(event.isFavorite, isTrue);
-      expect(event.notes, 'Great game');
+      expect(
+        event.details,
+        const LibraryEntryDetails(
+          score: 80,
+          difficulty: 'Hard',
+          notes: 'Great game',
+        ),
+      );
+    });
+
+    testWidgets('edit mode can deliberately clear the score and notes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+
+      // Moving the score slider to 0 means no score.
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+      await tester.pump();
+      expect(find.text('Not rated'), findsOneWidget);
+      final notes = find.widgetWithText(TextField, 'Great game');
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, '');
+      await tester.pump();
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      final event =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      // Null details are sent as null, so the API clears them.
+      expect(event.details, const LibraryEntryDetails(difficulty: 'Hard'));
     });
 
     testWidgets('delete confirmation dispatches LibraryDeleteEntryRequested', (

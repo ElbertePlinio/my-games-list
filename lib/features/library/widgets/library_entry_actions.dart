@@ -48,7 +48,7 @@ abstract final class LibraryEntryActions {
   ) {
     final bloc = context.read<LibraryBloc>();
     final previous = entry.status;
-    bloc.add(LibraryUpdateEntryRequested(entryId: entry.id, status: status));
+    bloc.add(LibraryUpdateEntryRequested(entry: entry, status: status));
     showUndoSnackBar(
       context,
       message: context.l10n.libraryStatusChanged(
@@ -56,7 +56,7 @@ abstract final class LibraryEntryActions {
         status.localizedName(context),
       ),
       onUndo: () => bloc.add(
-        LibraryUpdateEntryRequested(entryId: entry.id, status: previous),
+        LibraryUpdateEntryRequested(entry: entry, status: previous),
       ),
     );
   }

@@ -1,5 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
 import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
@@ -9,6 +11,8 @@ import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/library_repository.dart';
 
 class MockLibraryRepository extends Mock implements LibraryRepository {}
+
+class MockHttpClient extends Mock implements IHttpClient {}
 
 void main() {
   late MockLibraryRepository mockRepository;
@@ -297,6 +301,67 @@ void main() {
         expect: () => [
           predicate<LibraryState>((state) => state.statusFilter == null),
         ],
+      );
+    });
+
+    group('LibraryUpdateEntryRequested', () {
+      // A real repository over a fake HTTP client, so the test checks the
+      // body that reaches PUT /library/{id}.
+      late MockHttpClient http;
+
+      setUp(() {
+        http = MockHttpClient();
+        when(
+          () => http.put<Map<String, dynamic>>(any(), data: any(named: 'data')),
+        ).thenAnswer(
+          (_) async => ApiResponse.success(
+            mockEntries[0].copyWith(status: GameStatus.playing).toJson(),
+          ),
+        );
+      });
+
+      blocTest<LibraryBloc, LibraryState>(
+        'a status change and its undo keep score, dates, difficulty and notes',
+        build: () =>
+            LibraryBloc(libraryRepository: LibraryRepository(httpClient: http)),
+        seed: () =>
+            LibraryState(status: LibraryStatus.success, entries: mockEntries),
+        act: (bloc) async {
+          // The same events the swipe, the row menu and the undo send.
+          bloc.add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.playing,
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+          bloc.add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.finished,
+            ),
+          );
+        },
+        verify: (bloc) {
+          final bodies = verify(
+            () => http.put<Map<String, dynamic>>(
+              '/library/entry-uuid-1',
+              data: captureAny(named: 'data'),
+            ),
+          ).captured;
+          const kept = {
+            'score': 95,
+            'start_date': '2024-01-01',
+            'end_date': '2024-02-15',
+            'difficulty': 'Normal',
+            'notes': 'Amazing game!',
+          };
+          expect(bodies, [
+            {'status': 'playing', ...kept},
+            {'status': 'finished', ...kept},
+          ]);
+          expect(bloc.state.entries.first.score, 95);
+        },
       );
     });
 

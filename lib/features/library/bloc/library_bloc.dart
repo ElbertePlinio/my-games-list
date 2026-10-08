@@ -122,16 +122,12 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
     try {
       final updatedEntry = await _libraryRepository.updateLibraryEntry(
-        entryId: event.entryId,
+        event.entry,
         igdbPlatformId: event.igdbPlatformId,
         status: event.status,
-        score: event.score,
         playtimeMinutes: event.playtimeMinutes,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        difficulty: event.difficulty,
         isFavorite: event.isFavorite,
-        notes: event.notes,
+        details: event.details,
       );
 
       // Update the entry in the list

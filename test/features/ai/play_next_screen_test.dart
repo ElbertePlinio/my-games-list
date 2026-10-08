@@ -132,11 +132,12 @@ void main() {
 
   testWidgets('start playing updates the library entry', (tester) async {
     when(() => ai.playNext(any())).thenAnswer((_) async => kPlayNextResult);
+    final current = _entry('entry-1', GameStatus.planned);
     when(
-      () => library.updateLibraryEntry(
-        entryId: 'entry-1',
-        status: GameStatus.playing,
-      ),
+      () => library.getLibraryEntry('entry-1'),
+    ).thenAnswer((_) async => current);
+    when(
+      () => library.updateLibraryEntry(current, status: GameStatus.playing),
     ).thenAnswer((_) async => _entry('entry-1', GameStatus.playing));
     await pump(tester);
 
@@ -146,10 +147,7 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(
-      () => library.updateLibraryEntry(
-        entryId: 'entry-1',
-        status: GameStatus.playing,
-      ),
+      () => library.updateLibraryEntry(current, status: GameStatus.playing),
     ).called(1);
     expect(find.text('Now playing'), findsOneWidget);
   });

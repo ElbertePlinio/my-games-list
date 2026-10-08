@@ -48,9 +48,12 @@ void main() {
   }
 
   testWidgets('spins over the backlog and starts the pick', (t) async {
+    final backlog = [
+      detailedEntry(id: 'a', name: 'Alpha', status: GameStatus.planned),
+      detailedEntry(id: 'b', name: 'Beta', status: GameStatus.onHold),
+    ];
     await open(t, [
-      entry(id: 'a', name: 'Alpha', status: GameStatus.planned),
-      entry(id: 'b', name: 'Beta', status: GameStatus.onHold),
+      ...backlog,
       entry(id: 'c', name: 'Gamma', status: GameStatus.finished),
     ]);
 
@@ -70,6 +73,9 @@ void main() {
             as LibraryUpdateEntryRequested;
     expect(event.entryId, picked);
     expect(event.status, GameStatus.playing);
+    // The full entry travels with the event, so its details are resent.
+    expect(event.entry, backlog.firstWhere((e) => e.id == picked));
+    expect(event.details, isNull);
     expect(find.textContaining('Have fun with'), findsOneWidget);
   });
 

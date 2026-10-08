@@ -291,7 +291,8 @@ void main() {
     });
 
     testWidgets('swiping left changes the status with an undo', (t) async {
-      when(() => browse.state).thenReturn(loaded([entry(id: 's1')]));
+      final row = detailedEntry(id: 's1');
+      when(() => browse.state).thenReturn(loaded([row]));
       await t.pumpWidget(subject());
 
       await t.drag(find.byType(LibraryEntryRow), const Offset(-500, 0));
@@ -308,8 +309,34 @@ void main() {
         GameStatus.playing,
         GameStatus.planned,
       ]);
+      // Both updates carry the full entry and no details, so the repository
+      // sends back its score, dates, difficulty and notes.
+      for (final update in updates) {
+        expect(update.entry, row);
+        expect(update.details, isNull);
+      }
       // The row stays in place after the swipe.
       expect(find.byType(LibraryEntryRow), findsOneWidget);
+    });
+
+    testWidgets('the row menu changes the status and keeps the details', (
+      t,
+    ) async {
+      final row = detailedEntry(id: 'm1');
+      when(() => browse.state).thenReturn(loaded([row]));
+      await t.pumpWidget(subject());
+
+      await t.tap(find.byTooltip('More actions'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Change status'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Finished').last);
+      await t.pumpAndSettle();
+
+      final update = fromLibrary<LibraryUpdateEntryRequested>().single;
+      expect(update.status, GameStatus.finished);
+      expect(update.entry, row);
+      expect(update.details, isNull);
     });
 
     testWidgets('swiping right toggles the favorite', (t) async {

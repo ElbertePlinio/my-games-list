@@ -1,12 +1,19 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
 import 'package:picklog/features/ai/ai_models.dart';
 import 'package:picklog/features/ai/ai_repository.dart';
 import 'package:picklog/features/ai/bloc/play_next_cubit.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_repository.dart';
+
+import '../../library/library_fixtures.dart';
 
 import '../ai_fixtures.dart';
+
+class _MockHttpClient extends Mock implements IHttpClient {}
 
 LibraryEntry _entry(
   String id,
@@ -167,13 +174,14 @@ void main() {
     }
 
     blocTest<PlayNextCubit, PlayNextState>(
-      'startPlaying sets the entry to playing through the library repository',
+      'startPlaying reads the entry and sets it to playing',
       build: () {
+        final current = detailedEntry();
         when(
-          () => library.updateLibraryEntry(
-            entryId: 'entry-1',
-            status: GameStatus.playing,
-          ),
+          () => library.getLibraryEntry('entry-1'),
+        ).thenAnswer((_) async => current);
+        when(
+          () => library.updateLibraryEntry(current, status: GameStatus.playing),
         ).thenAnswer((_) async => _entry('entry-1', GameStatus.playing));
         return build();
       },
@@ -200,10 +208,7 @@ void main() {
       'a failed startPlaying bumps the failure counter',
       build: () {
         when(
-          () => library.updateLibraryEntry(
-            entryId: 'entry-1',
-            status: GameStatus.playing,
-          ),
+          () => library.getLibraryEntry('entry-1'),
         ).thenThrow(Exception('offline'));
         return build();
       },
@@ -221,6 +226,47 @@ void main() {
         ),
       ],
     );
+
+    test('startPlaying keeps score, dates, difficulty and notes', () async {
+      // The QA repro: an entry with score 80 lost it after Start playing.
+      final http = _MockHttpClient();
+      when(() => http.get<Map<String, dynamic>>('/library/entry-1')).thenAnswer(
+        (_) async => ApiResponse.success(
+          entryJson(
+            score: 80,
+            startDate: '2026-01-05',
+            endDate: '2026-02-10',
+            difficulty: 'Steel Soul',
+            notes: 'Pantheon left',
+          ),
+        ),
+      );
+      when(
+        () => http.put<Map<String, dynamic>>(
+          '/library/entry-1',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer(
+        (_) async => ApiResponse.success(entryJson(status: 'playing')),
+      );
+      final cubit = PlayNextCubit(
+        aiRepository: ai,
+        libraryRepository: LibraryRepository(httpClient: http),
+        userId: 'u1',
+      );
+      addTearDown(cubit.close);
+
+      await cubit.startPlaying(kPickHades);
+
+      final body = verify(
+        () => http.put<Map<String, dynamic>>(
+          '/library/entry-1',
+          data: captureAny(named: 'data'),
+        ),
+      ).captured.single;
+      expect(body, {'status': 'playing', ...detailedEntryPayload});
+      expect(cubit.state.startedIds, {'entry-1'});
+    });
 
     blocTest<PlayNextCubit, PlayNextState>(
       'the note is capped at 200 characters',

@@ -254,36 +254,95 @@ void main() {
     });
 
     group('updateLibraryEntry', () {
-      test('updates entry with partial data', () async {
-        // Arrange
-        final updatedEntry = Map<String, dynamic>.from(mockLibraryEntry);
-        updatedEntry['score'] = 100;
-        updatedEntry['status'] = 'finished';
+      final current = LibraryEntry.fromJson(mockLibraryEntry);
 
+      void answerPut() {
         when(
           () => mockHttpClient.put<Map<String, dynamic>>(
             '/library/entry-uuid-1',
             data: any(named: 'data'),
           ),
-        ).thenAnswer((_) async => ApiResponse.success(updatedEntry));
+        ).thenAnswer((_) async => ApiResponse.success(mockLibraryEntry));
+      }
 
-        // Act
+      Map<String, dynamic> sentBody() =>
+          verify(
+                () => mockHttpClient.put<Map<String, dynamic>>(
+                  '/library/entry-uuid-1',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+
+      test(
+        'a status change resends score, dates, difficulty and notes',
+        () async {
+          answerPut();
+
+          await repository.updateLibraryEntry(
+            current,
+            status: GameStatus.playing,
+          );
+
+          // The API clears any of these fields that a request leaves out.
+          expect(sentBody(), {
+            'status': 'playing',
+            'score': 95,
+            'start_date': '2024-01-01',
+            'end_date': '2024-02-15',
+            'difficulty': 'Normal',
+            'notes': 'Amazing game!',
+          });
+        },
+      );
+
+      test('explicit details replace the current ones', () async {
+        answerPut();
+
         final entry = await repository.updateLibraryEntry(
-          entryId: 'entry-uuid-1',
-          score: 100,
+          current,
           status: GameStatus.finished,
+          igdbPlatformId: 6,
+          playtimeMinutes: 1300,
+          isFavorite: false,
+          details: LibraryEntryDetails(
+            score: 100,
+            startDate: DateTime(2024, 1, 2),
+            endDate: DateTime(2024, 3, 1),
+            difficulty: 'Hard',
+            notes: 'Replayed',
+          ),
         );
 
-        // Assert
-        expect(entry.score, 100);
         expect(entry.status, GameStatus.finished);
+        expect(sentBody(), {
+          'status': 'finished',
+          'igdb_platform_id': 6,
+          'playtime_minutes': 1300,
+          'is_favorite': false,
+          'score': 100,
+          'start_date': '2024-01-02',
+          'end_date': '2024-03-01',
+          'difficulty': 'Hard',
+          'notes': 'Replayed',
+        });
+      });
 
-        verify(
-          () => mockHttpClient.put<Map<String, dynamic>>(
-            '/library/entry-uuid-1',
-            data: {'score': 100, 'status': 'finished'},
-          ),
-        ).called(1);
+      test('empty details let the edit form clear every detail', () async {
+        answerPut();
+
+        await repository.updateLibraryEntry(
+          current,
+          details: const LibraryEntryDetails(),
+        );
+
+        expect(sentBody(), {
+          'score': null,
+          'start_date': null,
+          'end_date': null,
+          'difficulty': null,
+          'notes': null,
+        });
       });
     });
 

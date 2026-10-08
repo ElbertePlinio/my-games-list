@@ -144,36 +144,31 @@ class LibraryRepository {
     return LibraryEntry.fromJson(response.dataOrThrow);
   }
 
-  /// Updates a library entry
+  /// Updates [current] on the server and returns the saved entry.
   ///
-  /// [entryId] - The ID of the entry to update
-  /// All other parameters are optional and will only update if provided
-  Future<LibraryEntry> updateLibraryEntry({
-    required String entryId,
-    int? igdbPlatformId,
+  /// Null [status], [igdbPlatformId], [playtimeMinutes] and [isFavorite]
+  /// keep their current values on the server. The API replaces score, dates,
+  /// difficulty and notes, so they are always sent: from [details] when given,
+  /// otherwise from [current]. Pass [details] only from a full edit form,
+  /// where a null field means the user cleared it.
+  Future<LibraryEntry> updateLibraryEntry(
+    LibraryEntry current, {
     GameStatus? status,
-    int? score,
+    int? igdbPlatformId,
     int? playtimeMinutes,
-    String? startDate,
-    String? endDate,
-    String? difficulty,
     bool? isFavorite,
-    String? notes,
+    LibraryEntryDetails? details,
   }) async {
-    final data = <String, dynamic>{};
-
-    if (igdbPlatformId != null) data['igdb_platform_id'] = igdbPlatformId;
-    if (status != null) data['status'] = status.toApiString();
-    if (score != null) data['score'] = score;
-    if (playtimeMinutes != null) data['playtime_minutes'] = playtimeMinutes;
-    if (startDate != null) data['start_date'] = startDate;
-    if (endDate != null) data['end_date'] = endDate;
-    if (difficulty != null) data['difficulty'] = difficulty;
-    if (isFavorite != null) data['is_favorite'] = isFavorite;
-    if (notes != null) data['notes'] = notes;
+    final data = <String, dynamic>{
+      'status': ?status?.toApiString(),
+      'igdb_platform_id': ?igdbPlatformId,
+      'playtime_minutes': ?playtimeMinutes,
+      'is_favorite': ?isFavorite,
+      ...(details ?? LibraryEntryDetails.of(current)).toJson(),
+    };
 
     final response = await _httpClient.put<Map<String, dynamic>>(
-      '/library/$entryId',
+      '/library/${current.id}',
       data: data,
     );
 

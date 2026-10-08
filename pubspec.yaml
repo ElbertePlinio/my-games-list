@@ -1,5 +1,5 @@
 name: picklog
-description: "A new Flutter project."
+description: "Picklog: your game library, logged."
 publish_to: "none"
 version: 1.0.0+1
 
@@ -26,7 +26,6 @@ dependencies:
   carousel_slider: ^5.1.1
   cached_network_image: ^3.4.1
   stream_transform: ^2.1.1
-  flutter_rating_bar: ^4.0.1
   flutter_svg: ^2.0.10
   url_launcher: ^6.2.5
   youtube_player_iframe: ^5.2.2
@@ -63,13 +62,33 @@ flutter:
     - assets/legal/
     - assets/branding/google_g.svg
 
-# Launcher icons — generated from the PLACEHOLDER brand art in assets/branding/.
-# Regenerate after replacing the source PNGs:
-#   dart run flutter_launcher_icons
+  # Geist and Geist Mono (SIL Open Font License, see assets/fonts/OFL.txt),
+  # from the official vercel/geist-font v1.7.2 release.
+  fonts:
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Geist-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Geist-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Geist-Bold.ttf
+          weight: 700
+    - family: GeistMono
+      fonts:
+        - asset: assets/fonts/GeistMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/GeistMono-Medium.ttf
+          weight: 500
+
+# Launcher icons, generated from the Picklog mark in assets/branding/.
+# Rasterize the SVG sources, then regenerate (see assets/branding/README.md):
+#   fvm dart run flutter_launcher_icons
 flutter_launcher_icons:
   image_path: "assets/branding/icon.png"
   android: "ic_launcher"
-  adaptive_icon_background: "#12141C"
+  adaptive_icon_background: "#0A0A0B"
   adaptive_icon_foreground: "assets/branding/icon_foreground.png"
   min_sdk_android: 21
   ios: true
@@ -77,22 +96,22 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: "assets/branding/icon.png"
-    background_color: "#12141C"
-    theme_color: "#12141C"
+    background_color: "#0A0A0B"
+    theme_color: "#0A0A0B"
 
-# Native splash — brand background + centered PLACEHOLDER logo.
-# Regenerate after replacing the source PNGs:
-#   dart run flutter_native_splash:create
+# Native splash: cream with the ink glyph in light mode, #0A0A0B with the
+# off-white glyph in dark mode. Regenerate after changing the PNGs:
+#   fvm dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#12141C"
-  color_dark: "#12141C"
-  image: "assets/branding/splash_logo.png"
+  color: "#FAFAF7"
+  color_dark: "#0A0A0B"
+  image: "assets/branding/splash_logo_light.png"
   image_dark: "assets/branding/splash_logo.png"
   android_12:
-    color: "#12141C"
-    color_dark: "#12141C"
-    image: "assets/branding/splash_logo.png"
+    color: "#FAFAF7"
+    color_dark: "#0A0A0B"
+    image: "assets/branding/splash_logo_light.png"
     image_dark: "assets/branding/splash_logo.png"
-    icon_background_color: "#12141C"
-    icon_background_color_dark: "#12141C"
+    icon_background_color: "#FAFAF7"
+    icon_background_color_dark: "#0A0A0B"
   web: false

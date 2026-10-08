@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
 import 'package:picklog/core/widgets/bottom_nav_bar.dart';
+import 'package:picklog/core/widgets/brand_mark.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 
 void main() {
@@ -279,10 +281,7 @@ void main() {
       final navigationBar = tester.widget<NavigationBar>(
         find.byType(NavigationBar),
       );
-      expect(
-        navigationBar.animationDuration,
-        equals(const Duration(milliseconds: 400)),
-      );
+      expect(navigationBar.animationDuration, PfMotion.slow);
 
       // Complete animation
       await tester.pumpAndSettle();
@@ -318,6 +317,46 @@ void main() {
 
       expect(find.byType(NavigationRail), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
+      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
+      expect(rail.extended, isFalse);
+      expect(find.byType(BrandMark), findsOneWidget);
+      expect(find.byType(Wordmark), findsNothing);
+    });
+
+    testWidgets('extends the rail with the wordmark from 1200 wide', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(createBottomNavBar());
+      await tester.pumpAndSettle();
+
+      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
+      expect(rail.extended, isTrue);
+      expect(find.byType(Wordmark), findsOneWidget);
+    });
+
+    testWidgets('disables the bar animation under reduced motion', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+
+      await tester.pumpWidget(createBottomNavBar());
+      await tester.pumpAndSettle();
+
+      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      expect(bar.animationDuration, Duration.zero);
     });
   });
 }

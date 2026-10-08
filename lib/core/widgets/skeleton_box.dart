@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/widgets/shimmer_loading.dart';
 
-/// A theme-aware, shimmering rounded rectangle used as the building block for
-/// skeleton placeholders. Give it a size via the parent's constraints (e.g.
-/// inside an [AspectRatio] or [SizedBox]) so the skeleton occupies exactly the
-/// space the real content will, preventing layout jump on load.
+/// A shimmering rounded rectangle in the surface tokens, used to build
+/// skeleton placeholders. Size it through the parent's constraints (for
+/// example an [AspectRatio] or [SizedBox]) so the skeleton occupies exactly the
+/// space of the real content and nothing jumps on load.
 class SkeletonBox extends StatelessWidget {
   const SkeletonBox({
     this.width,
     this.height,
-    this.borderRadius = 12,
+    this.borderRadius = PfRadius.md,
     super.key,
   });
 
@@ -19,14 +21,12 @@ class SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return ShimmerLoading(
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+          color: context.pfColors.surface2,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),

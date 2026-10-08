@@ -10,6 +10,7 @@ import 'package:picklog/core/data/services/storage/token_storage.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/core/widgets/bottom_nav_bar.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/auth/auth_repository.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
@@ -476,7 +477,10 @@ class AppRouter {
             if (genreId == null) {
               return Scaffold(
                 appBar: AppBar(),
-                body: Center(child: Text(context.l10n.browseGenreGamesError)),
+                body: EmptyState(
+                  icon: Icons.category_outlined,
+                  title: context.l10n.browseGenreGamesError,
+                ),
               );
             }
 
@@ -579,49 +583,25 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-/// Error screen widget for handling route errors
+/// Error screen for unknown or broken routes. Shows a friendly message and a
+/// way home; the raw router error is never shown to users.
 class _ErrorScreen extends StatelessWidget {
   const _ErrorScreen({this.error});
   final Exception? error;
 
   @override
   Widget build(BuildContext context) {
+    if (error != null) debugPrint('Router error: $error');
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.errorTitle),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                context.l10n.errorMessage,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              if (error != null)
-                Text(
-                  error.toString(),
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () => context.go(AppRouter.homePath),
-                child: Text(context.l10n.goHome),
-              ),
-            ],
-          ),
+      appBar: AppBar(),
+      body: EmptyState(
+        icon: Icons.explore_off_outlined,
+        title: context.l10n.errorMessage,
+        message: context.l10n.routeNotFoundMessage,
+        action: FilledButton.icon(
+          onPressed: () => context.go(AppRouter.homePath),
+          icon: const Icon(Icons.home_outlined),
+          label: Text(context.l10n.goHome),
         ),
       ),
     );

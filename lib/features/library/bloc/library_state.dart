@@ -32,6 +32,7 @@ class LibraryState extends Equatable {
     this.isAddingGame = false,
     this.isUpdatingEntry = false,
     this.gameAddedOrUpdated = false,
+    this.pendingWrites = 0,
   });
 
   final LibraryStatus status;
@@ -46,6 +47,9 @@ class LibraryState extends Equatable {
   final bool isAddingGame;
   final bool isUpdatingEntry;
   final bool gameAddedOrUpdated;
+
+  /// Optimistic changes whose request has not answered yet.
+  final int pendingWrites;
 
   /// Returns true if the state is in loading status
   bool get isLoading => status == LibraryStatus.loading;
@@ -92,6 +96,7 @@ class LibraryState extends Equatable {
     bool? isAddingGame,
     bool? isUpdatingEntry,
     bool? gameAddedOrUpdated,
+    int? pendingWrites,
   }) {
     return LibraryState(
       status: status ?? this.status,
@@ -106,6 +111,7 @@ class LibraryState extends Equatable {
       isAddingGame: isAddingGame ?? this.isAddingGame,
       isUpdatingEntry: isUpdatingEntry ?? this.isUpdatingEntry,
       gameAddedOrUpdated: gameAddedOrUpdated ?? this.gameAddedOrUpdated,
+      pendingWrites: pendingWrites ?? this.pendingWrites,
     );
   }
 
@@ -121,5 +127,6 @@ class LibraryState extends Equatable {
     isAddingGame,
     isUpdatingEntry,
     gameAddedOrUpdated,
+    pendingWrites,
   ];
 }

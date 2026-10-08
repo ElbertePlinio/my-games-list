@@ -169,15 +169,22 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         .where((entry) => entry.id != event.entryId)
         .toList();
 
-    emit(state.copyWith(entries: updatedEntries));
+    emit(
+      state.copyWith(
+        entries: updatedEntries,
+        pendingWrites: state.pendingWrites + 1,
+      ),
+    );
 
     try {
       await _libraryRepository.deleteLibraryEntry(event.entryId);
+      emit(state.copyWith(pendingWrites: state.pendingWrites - 1));
     } catch (e) {
       // Rollback on failure
       emit(
         state.copyWith(
           entries: originalEntries,
+          pendingWrites: state.pendingWrites - 1,
           failure: LibraryFailure(LibraryAction.delete, AppErrorKind.from(e)),
         ),
       );
@@ -197,15 +204,22 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       return entry;
     }).toList();
 
-    emit(state.copyWith(entries: updatedEntries));
+    emit(
+      state.copyWith(
+        entries: updatedEntries,
+        pendingWrites: state.pendingWrites + 1,
+      ),
+    );
 
     try {
       await _libraryRepository.toggleFavorite(event.entryId);
+      emit(state.copyWith(pendingWrites: state.pendingWrites - 1));
     } catch (e) {
       // Rollback on failure
       emit(
         state.copyWith(
           entries: originalEntries,
+          pendingWrites: state.pendingWrites - 1,
           failure: LibraryFailure(
             LibraryAction.toggleFavorite,
             AppErrorKind.from(e),

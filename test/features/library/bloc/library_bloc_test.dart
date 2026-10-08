@@ -156,7 +156,14 @@ void main() {
             (state) =>
                 state.entries[0].isFavorite ==
                     false && // Optimistically toggled
-                state.entries[1].isFavorite == false, // Unchanged
+                state.entries[1].isFavorite == false && // Unchanged
+                state.pendingWrites == 1,
+          ),
+          // The save answered; the toggle stays and nothing is pending.
+          predicate<LibraryState>(
+            (state) =>
+                state.entries[0].isFavorite == false &&
+                state.pendingWrites == 0,
           ),
         ],
         verify: (_) {
@@ -215,7 +222,11 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.entries.length == 1 &&
-                state.entries[0].id == 'entry-uuid-2',
+                state.entries[0].id == 'entry-uuid-2' &&
+                state.pendingWrites == 1,
+          ),
+          predicate<LibraryState>(
+            (state) => state.entries.length == 1 && state.pendingWrites == 0,
           ),
         ],
         verify: (_) {

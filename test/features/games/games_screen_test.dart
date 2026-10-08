@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +25,7 @@ import 'package:picklog/features/library/collections/user_collection_model.dart'
 import 'package:picklog/features/library/collections/widgets/collections_view.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/library_query.dart';
+import 'package:picklog/features/library/library_repository.dart';
 import 'package:picklog/features/library/stats/library_stats_model.dart';
 import 'package:picklog/features/library/stats/stats_cubit.dart';
 import 'package:picklog/features/library/widgets/library_entry_views.dart';
@@ -31,6 +34,7 @@ import 'package:picklog/features/library/widgets/library_status_pill.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../mocks/mock_blocs.dart';
+import '../../mocks/mock_services.dart';
 import '../library/library_fixtures.dart';
 
 class _MockBrowse extends MockBloc<LibraryBrowseEvent, LibraryBrowseState>
@@ -43,6 +47,8 @@ class _MockCollections
 class _MockStats extends MockCubit<StatsState> implements StatsCubit {}
 
 class _MockGamesRepository extends Mock implements IGamesRepository {}
+
+class _MockLibraryRepository extends Mock implements LibraryRepository {}
 
 class _FakeLibraryEvent extends Fake implements LibraryEvent {}
 
@@ -68,6 +74,7 @@ void main() {
     registerFallbackValue(_FakeLibraryEvent());
     registerFallbackValue(_FakeBrowseEvent());
     registerFallbackValue(_FakeCollectionsEvent());
+    registerFallbackValue(const LibraryFilters());
   });
 
   late MockLibraryBloc library;
@@ -436,6 +443,88 @@ void main() {
       await t.pump();
       final create = fromCollections<UserCollectionCreateRequested>();
       expect(create.single.name, 'Couch co-op');
+    });
+  });
+
+  group('GamesScreen with the real library blocs', () {
+    testWidgets('a game favorited elsewhere joins the Favorites list once '
+        'the save succeeds', (t) async {
+      final repo = _MockLibraryRepository();
+      final saved = Completer<LibraryEntry>();
+      var written = false;
+      final kept = entry(id: 'a', name: 'Game A', favorite: true);
+      final other = entry(id: 'b', igdbId: 7, name: 'Game B');
+      final otherFavorite = entry(
+        id: 'b',
+        igdbId: 7,
+        name: 'Game B',
+        favorite: true,
+      );
+      when(() => repo.toggleFavorite('b')).thenAnswer((_) => saved.future);
+      // The server only lists Game B as a favorite after the write lands.
+      when(
+        () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+      ).thenAnswer(
+        (_) async => written
+            ? LibraryEntriesResponse(
+                entries: [kept, otherFavorite],
+                totalCount: 2,
+              )
+            : LibraryEntriesResponse(entries: [kept], totalCount: 1),
+      );
+      final libraryBloc = LibraryBloc(libraryRepository: repo)
+        ..emit(
+          LibraryState(status: LibraryStatus.success, entries: [kept, other]),
+        );
+      final browseBloc =
+          LibraryBrowseBloc(
+            libraryRepository: repo,
+            storage: MockLocalStorageService(),
+          )..emit(
+            LibraryBrowseState(
+              status: LibraryBrowseStatus.success,
+              userId: 'user-1',
+              filters: const LibraryFilters(favoritesOnly: true),
+              entries: [kept],
+              totalCount: 1,
+              nextOffset: 1,
+            ),
+          );
+      addTearDown(libraryBloc.close);
+      addTearDown(browseBloc.close);
+      await t.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<LibraryBloc>.value(value: libraryBloc),
+              BlocProvider<LibraryBrowseBloc>.value(value: browseBloc),
+              BlocProvider<UserCollectionsBloc>.value(value: collections),
+              BlocProvider<StatsCubit>.value(value: stats),
+              BlocProvider(
+                create: (_) =>
+                    FilterOptionsCubit(gamesRepository: _MockGamesRepository()),
+              ),
+            ],
+            child: const GamesScreen(),
+          ),
+        ),
+      );
+
+      // Favorited from another screen; any reload now still misses it.
+      libraryBloc.add(const LibraryToggleFavoriteRequested(entryId: 'b'));
+      await t.pump();
+      await t.pump();
+      written = true;
+      saved.complete(otherFavorite);
+      await t.pump();
+      await t.pump();
+      await t.pump(const Duration(seconds: 1));
+
+      expect(browseBloc.state.entries.map((e) => e.id), ['a', 'b']);
+      expect(browseBloc.state.totalCount, 2);
     });
   });
 }

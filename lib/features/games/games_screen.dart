@@ -74,7 +74,10 @@ class _GamesScreenState extends State<GamesScreen> {
     if (library.status == LibraryStatus.success) {
       _librarySeen = true;
       context.read<LibraryBrowseBloc>().add(
-        LibraryBrowseSourceChanged(library.entries),
+        LibraryBrowseSourceChanged(
+          library.entries,
+          settled: library.pendingWrites == 0,
+        ),
       );
     }
     _searchController.text = context
@@ -102,7 +105,10 @@ class _GamesScreenState extends State<GamesScreen> {
 
   void _onLibraryChanged(BuildContext context, LibraryState state) {
     context.read<LibraryBrowseBloc>().add(
-      LibraryBrowseSourceChanged(state.entries),
+      LibraryBrowseSourceChanged(
+        state.entries,
+        settled: state.pendingWrites == 0,
+      ),
     );
     // The first load only seeds the list; the stats were loaded with the
     // route. Later changes (favorites, status, adds) refresh them.
@@ -149,8 +155,10 @@ class _GamesScreenState extends State<GamesScreen> {
       child: MultiBlocListener(
         listeners: [
           BlocListener<LibraryBloc, LibraryState>(
+            // A finished optimistic save also counts, so the list reloads.
             listenWhen: (p, c) =>
-                c.status == LibraryStatus.success && p.entries != c.entries,
+                c.status == LibraryStatus.success &&
+                (p.entries != c.entries || p.pendingWrites != c.pendingWrites),
             listener: _onLibraryChanged,
           ),
           // Clearing every filter also clears the search text.

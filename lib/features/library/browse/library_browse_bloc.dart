@@ -57,6 +57,9 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
   Map<String, LibraryEntry>? _source;
   Set<String> _deletedIds = const {};
 
+  /// An add or edit arrived; reload once no optimistic change is pending.
+  bool _reloadDue = false;
+
   Future<void> _onStarted(
     LibraryBrowseStarted event,
     Emitter<LibraryBrowseState> emit,
@@ -247,10 +250,12 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
     _source = latest;
     if (previous == null) return;
     _deletedIds = previous.keys.where((id) => !latest.containsKey(id)).toSet();
-    final changed = latest.entries.any((e) => previous[e.key] != e.value);
-    _emitReconciled(emit);
     // A new or edited entry can change membership, order and totals.
-    if (changed) await _loadFirstPage(emit, keepEntries: true, reconcile: true);
+    _reloadDue |= latest.entries.any((e) => previous[e.key] != e.value);
+    _emitReconciled(emit);
+    if (!event.settled || !_reloadDue) return;
+    _reloadDue = false;
+    await _loadFirstPage(emit, keepEntries: true, reconcile: true);
   }
 
   void _emitReconciled(Emitter<LibraryBrowseState> emit) {

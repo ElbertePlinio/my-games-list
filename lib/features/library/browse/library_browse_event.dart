@@ -70,11 +70,15 @@ class LibraryBrowseViewModeChanged extends LibraryBrowseEvent {
 
 /// The shared library changed (favorite, status, delete, add). Patches the
 /// loaded page in place and reloads when an entry was added or edited.
+///
+/// [settled] is false while an optimistic change waits for the API. The
+/// reload waits for it, so the server answers with the saved data.
 class LibraryBrowseSourceChanged extends LibraryBrowseEvent {
-  const LibraryBrowseSourceChanged(this.entries);
+  const LibraryBrowseSourceChanged(this.entries, {this.settled = true});
 
   final List<LibraryEntry> entries;
+  final bool settled;
 
   @override
-  List<Object?> get props => [entries];
+  List<Object?> get props => [entries, settled];
 }

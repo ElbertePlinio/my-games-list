@@ -54,8 +54,8 @@ abstract final class LibraryEntryActions {
   /// date or a note while the game is fresh.
   static const _editsOnStatus = {GameStatus.finished, GameStatus.dropped};
 
-  /// Opens the edit sheet for [entry]. Returns true when it sent a save or
-  /// removed the entry, even if the sheet closed before the save finished.
+  /// Opens the edit sheet for [entry]. Returns true when it saved or removed
+  /// the entry, or when its save is still running after the sheet closed.
   static Future<bool> editEntry(
     BuildContext context,
     LibraryEntry entry, {
@@ -69,7 +69,7 @@ abstract final class LibraryEntryActions {
       collections = null;
     }
     final platform = entry.platform;
-    var submitted = false;
+    var savePending = false;
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -91,12 +91,12 @@ abstract final class LibraryEntryActions {
               : null,
           existingEntry: entry,
           initialStatus: initialStatus,
-          onSubmitted: () => submitted = true,
+          onSavePending: (pending) => savePending = pending,
           collectionsBloc: collections,
         ),
       ),
     );
-    return submitted || result == true;
+    return savePending || result == true;
   }
 
   /// Saves [status] for [entry] and offers an undo.

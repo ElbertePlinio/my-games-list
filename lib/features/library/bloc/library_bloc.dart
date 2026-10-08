@@ -28,6 +28,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   final LibraryRepository _libraryRepository;
 
+  static int _nextRequestId = 0;
+
+  /// A fresh id for an add or update whose result the sender waits for.
+  static int newRequestId() => ++_nextRequestId;
+
   Future<void> _onLoadRequested(
     LibraryLoadRequested event,
     Emitter<LibraryState> emit,
@@ -105,6 +110,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           entries: updatedEntries,
           isAddingGame: false,
           gameAddedOrUpdated: true,
+          savedRequestId: event.requestId,
         ),
       );
 
@@ -113,7 +119,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       emit(
         state.copyWith(
           isAddingGame: false,
-          failure: LibraryFailure(LibraryAction.add, AppErrorKind.from(e)),
+          failure: LibraryFailure(
+            LibraryAction.add,
+            AppErrorKind.from(e),
+            requestId: event.requestId,
+          ),
         ),
       );
     }
@@ -145,6 +155,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           entries: updatedEntries,
           isUpdatingEntry: false,
           gameAddedOrUpdated: true,
+          savedRequestId: event.requestId,
         ),
       );
 
@@ -153,7 +164,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       emit(
         state.copyWith(
           isUpdatingEntry: false,
-          failure: LibraryFailure(LibraryAction.update, AppErrorKind.from(e)),
+          failure: LibraryFailure(
+            LibraryAction.update,
+            AppErrorKind.from(e),
+            requestId: event.requestId,
+          ),
         ),
       );
     }

@@ -299,7 +299,12 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
       await tester.tap(find.text('Save'));
-      states.add(const LibraryState(gameAddedOrUpdated: true));
+      final add =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryAddGameRequested;
+      states.add(
+        LibraryState(gameAddedOrUpdated: true, savedRequestId: add.requestId),
+      );
       await tester.pump();
 
       expect(find.byType(SnackBar), findsNothing);
@@ -316,9 +321,16 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
       await tester.tap(find.text('Save'));
+      final add =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryAddGameRequested;
       states.add(
-        const LibraryState(
-          failure: LibraryFailure(LibraryAction.add, AppErrorKind.network),
+        LibraryState(
+          failure: LibraryFailure(
+            LibraryAction.add,
+            AppErrorKind.network,
+            requestId: add.requestId,
+          ),
         ),
       );
       await tester.pump();
@@ -424,6 +436,72 @@ void main() {
           verify(() => libraryBloc.add(captureAny())).captured.single
               as LibraryUpdateEntryRequested;
       expect(event.igdbPlatformId, 48);
+    });
+
+    testWidgets('during its save, only its own result closes the sheet', (
+      tester,
+    ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        libraryBloc,
+        states.stream,
+        initialState: const LibraryState(),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showModalBottomSheet<bool>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => BlocProvider<LibraryBloc>.value(
+                    value: libraryBloc,
+                    child: AddToLibraryBottomSheet(
+                      gameId: 42,
+                      gameName: 'Hollow Knight',
+                      platforms: platforms,
+                      existingEntry: _buildEntry(),
+                    ),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save'));
+      final own =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      final other = own.requestId! + 1000;
+      states
+        ..add(LibraryState(gameAddedOrUpdated: true, savedRequestId: other))
+        ..add(
+          LibraryState(
+            failure: LibraryFailure(
+              LibraryAction.update,
+              AppErrorKind.network,
+              requestId: other,
+            ),
+          ),
+        );
+      await tester.pumpAndSettle();
+      expect(find.text('Edit entry'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+
+      states.add(
+        LibraryState(gameAddedOrUpdated: true, savedRequestId: own.requestId),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Edit entry'), findsNothing);
     });
   });
 }

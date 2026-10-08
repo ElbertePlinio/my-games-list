@@ -377,6 +377,42 @@ void main() {
         },
       );
 
+      test('an update echoes its request id on success and failure', () async {
+        final bloc = LibraryBloc(
+          libraryRepository: LibraryRepository(httpClient: http),
+        );
+        addTearDown(bloc.close);
+        final states = <LibraryState>[];
+        final sub = bloc.stream.listen(states.add);
+        addTearDown(sub.cancel);
+
+        bloc.add(
+          LibraryUpdateEntryRequested(
+            entry: mockEntries[0],
+            status: GameStatus.playing,
+            requestId: 7,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(
+          states.where((s) => s.gameAddedOrUpdated).single.savedRequestId,
+          7,
+        );
+
+        when(
+          () => http.put<Map<String, dynamic>>(any(), data: any(named: 'data')),
+        ).thenThrow(Exception('offline'));
+        bloc.add(
+          LibraryUpdateEntryRequested(
+            entry: mockEntries[0],
+            status: GameStatus.dropped,
+            requestId: 8,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(states.last.failure?.requestId, 8);
+      });
+
       test('a second update for the same entry waits for the first', () async {
         registerFallbackValue(mockEntries[0]);
         final first = Completer<LibraryEntry>();

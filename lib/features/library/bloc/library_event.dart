@@ -42,6 +42,7 @@ class LibraryAddGameRequested extends LibraryEvent {
     this.difficulty,
     this.isFavorite = false,
     this.notes,
+    this.requestId,
   });
 
   final int igdbId;
@@ -55,6 +56,9 @@ class LibraryAddGameRequested extends LibraryEvent {
   final bool isFavorite;
   final String? notes;
 
+  /// Echoed in the result state, so the sender can match it.
+  final int? requestId;
+
   @override
   List<Object?> get props => [
     igdbId,
@@ -67,6 +71,7 @@ class LibraryAddGameRequested extends LibraryEvent {
     difficulty,
     isFavorite,
     notes,
+    requestId,
   ];
 }
 
@@ -83,6 +88,7 @@ class LibraryUpdateEntryRequested extends LibraryEvent {
     this.playtimeMinutes,
     this.isFavorite,
     this.details,
+    this.requestId,
   });
 
   final LibraryEntry entry;
@@ -91,6 +97,9 @@ class LibraryUpdateEntryRequested extends LibraryEvent {
   final int? playtimeMinutes;
   final bool? isFavorite;
   final LibraryEntryDetails? details;
+
+  /// Echoed in the result state, so the sender can match it.
+  final int? requestId;
 
   String get entryId => entry.id;
 
@@ -102,6 +111,7 @@ class LibraryUpdateEntryRequested extends LibraryEvent {
     playtimeMinutes,
     isFavorite,
     details,
+    requestId,
   ];
 }
 

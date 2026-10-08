@@ -59,6 +59,11 @@ void main() {
     () => collections.add(captureAny()),
   ).captured.whereType<T>().toList();
 
+  /// Request id of the update the sheet just sent.
+  int? savedRequestId() => verify(
+    () => library.add(captureAny()),
+  ).captured.whereType<LibraryUpdateEntryRequested>().last.requestId;
+
   group('CollectionPickerSheet', () {
     testWidgets('toggles membership and updates the shared library', (t) async {
       final states = StreamController<UserCollectionsState>();
@@ -388,6 +393,7 @@ void main() {
           status: LibraryStatus.success,
           entries: [existing],
           gameAddedOrUpdated: true,
+          savedRequestId: savedRequestId(),
         ),
       );
       await t.pump();
@@ -447,6 +453,7 @@ void main() {
           status: LibraryStatus.success,
           entries: [existing],
           gameAddedOrUpdated: true,
+          savedRequestId: savedRequestId(),
         ),
       );
       await t.pump();

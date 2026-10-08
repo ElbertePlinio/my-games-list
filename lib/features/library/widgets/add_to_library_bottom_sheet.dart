@@ -36,7 +36,7 @@ class AddToLibraryBottomSheet extends StatefulWidget {
     this.existingEntry,
     this.initialStatus,
     this.loadPlatforms,
-    this.onSubmitted,
+    this.onSavePending,
     this.collectionsBloc,
   });
 
@@ -53,9 +53,10 @@ class AddToLibraryBottomSheet extends StatefulWidget {
   /// entry's current platform.
   final Future<List<Platform>> Function()? loadPlatforms;
 
-  /// Called when Save sends the entry, so a caller knows the write is on its
-  /// way even if the sheet closes before it finishes.
-  final VoidCallback? onSubmitted;
+  /// Called with true when Save sends the entry and with false when that
+  /// save fails, so a caller knows a write is on its way even if the sheet
+  /// closes before it finishes.
+  final ValueChanged<bool>? onSavePending;
 
   /// Source of the user's collections. Defaults to a provided bloc, then the
   /// shared instance in the service locator. Without one the collections
@@ -117,9 +118,9 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   /// True once the entry saved, while the collection changes finish.
   bool _finishing = false;
 
-  /// True while this sheet's own save is in flight. Library writes started
-  /// elsewhere do not close the sheet.
-  bool _saving = false;
+  /// Id of this sheet's save while it is in flight. Library writes started
+  /// elsewhere carry other ids and do not affect the sheet.
+  int? _requestId;
 
   /// Changes when the full platform list arrives, to rebuild the dropdown.
   int _platformsVersion = 0;
@@ -290,15 +291,20 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     } else {
       _selectedStatus = GameStatus.planned;
     }
-    final initialStatus = widget.initialStatus;
-    if (initialStatus != null) {
-      _selectedStatus = initialStatus;
-      if (initialStatus == GameStatus.finished && _endDate == null) {
-        final now = DateTime.now();
-        _endDate = DateTime(now.year, now.month, now.day);
-      }
-    }
+    _applyInitialStatus();
     _detailsExpanded = _hasDetails;
+  }
+
+  /// Preselects [AddToLibraryBottomSheet.initialStatus]. Finished also
+  /// fills an empty end date with today.
+  void _applyInitialStatus() {
+    final initialStatus = widget.initialStatus;
+    if (initialStatus == null) return;
+    _selectedStatus = initialStatus;
+    if (initialStatus == GameStatus.finished && _endDate == null) {
+      final now = DateTime.now();
+      _endDate = DateTime(now.year, now.month, now.day);
+    }
   }
 
   @override
@@ -319,8 +325,9 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
   void _save() {
     final bloc = context.read<LibraryBloc>();
-    _saving = true;
-    widget.onSubmitted?.call();
+    final requestId = LibraryBloc.newRequestId();
+    _requestId = requestId;
+    widget.onSavePending?.call(true);
 
     if (isEditing) {
       bloc.add(
@@ -338,6 +345,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
             difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
             notes: _notes?.isNotEmpty == true ? _notes : null,
           ),
+          requestId: requestId,
         ),
       );
     } else {
@@ -353,6 +361,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
           difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
           isFavorite: _isFavorite,
           notes: _notes?.isNotEmpty == true ? _notes : null,
+          requestId: requestId,
         ),
       );
     }
@@ -498,15 +507,16 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   }
 
   void _onLibraryState(BuildContext context, LibraryState state) {
-    if (!_saving) return;
-    final failure = state.failure;
-    if (failure != null &&
-        (failure.action == LibraryAction.add ||
-            failure.action == LibraryAction.update)) {
-      _saving = false;
+    final requestId = _requestId;
+    if (requestId == null) return;
+    if (state.failure?.requestId == requestId) {
+      _requestId = null;
+      widget.onSavePending?.call(false);
       context.showErrorMessage(context.l10n.librarySaveFailed);
     }
-    if (state.gameAddedOrUpdated && !_finishing) {
+    if (state.gameAddedOrUpdated &&
+        state.savedRequestId == requestId &&
+        !_finishing) {
       setState(() => _finishing = true);
       _finishSave(context.read<LibraryBloc>(), state);
     }

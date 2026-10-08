@@ -10,13 +10,16 @@ enum LibraryAction { load, refresh, add, update, delete, toggleFavorite }
 
 /// One-shot failure report: the action that failed and why.
 class LibraryFailure extends Equatable {
-  const LibraryFailure(this.action, this.kind);
+  const LibraryFailure(this.action, this.kind, {this.requestId});
 
   final LibraryAction action;
   final AppErrorKind kind;
 
+  /// The request id of the add or update that failed, if it had one.
+  final int? requestId;
+
   @override
-  List<Object?> get props => [action, kind];
+  List<Object?> get props => [action, kind, requestId];
 }
 
 /// State class for library
@@ -32,6 +35,7 @@ class LibraryState extends Equatable {
     this.isAddingGame = false,
     this.isUpdatingEntry = false,
     this.gameAddedOrUpdated = false,
+    this.savedRequestId,
     this.pendingWrites = 0,
   });
 
@@ -47,6 +51,10 @@ class LibraryState extends Equatable {
   final bool isAddingGame;
   final bool isUpdatingEntry;
   final bool gameAddedOrUpdated;
+
+  /// The request id of the add or update that just saved. Set only with
+  /// [gameAddedOrUpdated], so a sheet can match its own save.
+  final int? savedRequestId;
 
   /// Optimistic changes whose request has not answered yet.
   final int pendingWrites;
@@ -96,6 +104,7 @@ class LibraryState extends Equatable {
     bool? isAddingGame,
     bool? isUpdatingEntry,
     bool? gameAddedOrUpdated,
+    int? savedRequestId,
     int? pendingWrites,
   }) {
     return LibraryState(
@@ -111,6 +120,7 @@ class LibraryState extends Equatable {
       isAddingGame: isAddingGame ?? this.isAddingGame,
       isUpdatingEntry: isUpdatingEntry ?? this.isUpdatingEntry,
       gameAddedOrUpdated: gameAddedOrUpdated ?? this.gameAddedOrUpdated,
+      savedRequestId: savedRequestId,
       pendingWrites: pendingWrites ?? this.pendingWrites,
     );
   }
@@ -127,6 +137,7 @@ class LibraryState extends Equatable {
     isAddingGame,
     isUpdatingEntry,
     gameAddedOrUpdated,
+    savedRequestId,
     pendingWrites,
   ];
 }

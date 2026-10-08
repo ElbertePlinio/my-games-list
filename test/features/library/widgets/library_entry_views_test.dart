@@ -1,7 +1,11 @@
+import 'dart:async';
+
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
@@ -235,6 +239,44 @@ void main() {
       final events = verify(() => library.add(captureAny())).captured;
       expect(events, hasLength(1));
       expect((events.single as LibraryUpdateEntryRequested).details, isNotNull);
+    });
+
+    testWidgets('closing after a failed save still applies the status', (
+      t,
+    ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        library,
+        states.stream,
+        initialState: LibraryState(entries: [favorite]),
+      );
+      await pumpRow(t);
+      await pickStatus(t, 'Finished');
+
+      await t.tap(find.text('Save'));
+      final save =
+          verify(() => library.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      states.add(
+        LibraryState(
+          entries: [favorite],
+          failure: LibraryFailure(
+            LibraryAction.update,
+            AppErrorKind.network,
+            requestId: save.requestId,
+          ),
+        ),
+      );
+      await t.pump();
+      await t.tap(find.byTooltip('Cancel'));
+      await t.pumpAndSettle();
+
+      final fallback =
+          verify(() => library.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      expect(fallback.status, GameStatus.finished);
+      expect(fallback.details, isNull);
     });
   });
 }

@@ -1819,6 +1819,887 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This page doesn\'t exist or moved.'**
   String get routeNotFoundMessage;
+
+  /// Library sort: last updated first
+  ///
+  /// In en, this message translates to:
+  /// **'Recently updated'**
+  String get librarySortUpdated;
+
+  /// Library sort: newest additions first
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get librarySortAdded;
+
+  /// Library sort: by name
+  ///
+  /// In en, this message translates to:
+  /// **'Name (A-Z)'**
+  String get librarySortName;
+
+  /// Library sort: by the user's score
+  ///
+  /// In en, this message translates to:
+  /// **'Your score'**
+  String get librarySortScore;
+
+  /// Library sort: by playtime
+  ///
+  /// In en, this message translates to:
+  /// **'Most played'**
+  String get librarySortPlaytime;
+
+  /// Library sort: by release date
+  ///
+  /// In en, this message translates to:
+  /// **'Release date'**
+  String get librarySortRelease;
+
+  /// Library sort: by IGDB rating
+  ///
+  /// In en, this message translates to:
+  /// **'Community rating'**
+  String get librarySortRating;
+
+  /// Collection error: name taken
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a collection with this name.'**
+  String get collectionErrorDuplicateName;
+
+  /// Collection error: too many collections
+  ///
+  /// In en, this message translates to:
+  /// **'You can have up to 50 collections. Delete one to create another.'**
+  String get collectionErrorLimit;
+
+  /// Collection error: too many games
+  ///
+  /// In en, this message translates to:
+  /// **'This collection is full (500 games).'**
+  String get collectionErrorEntriesLimit;
+
+  /// Collection error: bad name
+  ///
+  /// In en, this message translates to:
+  /// **'Use 1 to 60 characters for the name.'**
+  String get collectionErrorNameInvalid;
+
+  /// Collection error: description too long
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the description under 280 characters.'**
+  String get collectionErrorDescriptionTooLong;
+
+  /// Collection error: not found
+  ///
+  /// In en, this message translates to:
+  /// **'This collection no longer exists.'**
+  String get collectionErrorNotFound;
+
+  /// Recommendation reason: similar to a game
+  ///
+  /// In en, this message translates to:
+  /// **'Because you liked {name}'**
+  String recommendationReasonSimilar(String name);
+
+  /// Recommendation reason without a source game
+  ///
+  /// In en, this message translates to:
+  /// **'Similar to games you like'**
+  String get recommendationReasonSimilarGeneric;
+
+  /// Recommendation reason: genre
+  ///
+  /// In en, this message translates to:
+  /// **'More {genre}'**
+  String recommendationReasonGenre(String genre);
+
+  /// Recommendation reason: genre without a name
+  ///
+  /// In en, this message translates to:
+  /// **'Matches your favorite genres'**
+  String get recommendationReasonGenreGeneric;
+
+  /// Recommendation reason: popular
+  ///
+  /// In en, this message translates to:
+  /// **'Popular now'**
+  String get recommendationReasonPopular;
+
+  /// Explore sort
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get exploreSortPopular;
+
+  /// Explore sort
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated'**
+  String get exploreSortRating;
+
+  /// Explore sort
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get exploreSortNewest;
+
+  /// Explore sort
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest'**
+  String get exploreSortOldest;
+
+  /// Explore sort by name
+  ///
+  /// In en, this message translates to:
+  /// **'A-Z'**
+  String get exploreSortName;
+
+  /// Filter panel: genres or platforms failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the options.'**
+  String get filterOptionsFailed;
+
+  /// Filter section title
+  ///
+  /// In en, this message translates to:
+  /// **'Release years'**
+  String get filterReleaseYears;
+
+  /// Year range value
+  ///
+  /// In en, this message translates to:
+  /// **'{from}-{to}'**
+  String filterYearRangeValue(int from, int to);
+
+  /// Filter section title
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum rating'**
+  String get filterMinRating;
+
+  /// No minimum rating
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get filterAnyRating;
+
+  /// Minimum rating chip
+  ///
+  /// In en, this message translates to:
+  /// **'Rating {rating}+'**
+  String filterRatingValue(int rating);
+
+  /// Chip label when the genre name is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get filterGenreFallback;
+
+  /// Chip label when the platform name is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get filterPlatformFallback;
+
+  /// Tooltip to remove a filter chip
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {label}'**
+  String filterRemoveChip(String label);
+
+  /// Explore screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get exploreTitle;
+
+  /// Search empty state action that opens Explore
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the catalog'**
+  String get searchExploreCatalog;
+
+  /// Caption when a client-side sort is active
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting reorders the results loaded so far.'**
+  String get searchSortLoadedScopeCaption;
+
+  /// Explore filters button
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get exploreFiltersButton;
+
+  /// Explore filters panel title
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get exploreFiltersTitle;
+
+  /// Explore empty title
+  ///
+  /// In en, this message translates to:
+  /// **'No games match'**
+  String get exploreEmptyTitle;
+
+  /// Explore empty hint
+  ///
+  /// In en, this message translates to:
+  /// **'Try fewer filters or a wider year range.'**
+  String get exploreEmptyHint;
+
+  /// Explore loaded result count
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 game shown} other{{count} games shown}}'**
+  String exploreResultCount(int count);
+
+  /// Explore end of results
+  ///
+  /// In en, this message translates to:
+  /// **'You reached the end.'**
+  String get exploreEndOfResults;
+
+  /// Snackbar undo action
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// Status picker title
+  ///
+  /// In en, this message translates to:
+  /// **'Change status of {name}'**
+  String libraryChangeStatusTitle(String name);
+
+  /// Collection edit dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit collection'**
+  String get collectionEditTitle;
+
+  /// Collection create dialog title and action
+  ///
+  /// In en, this message translates to:
+  /// **'New collection'**
+  String get collectionNewTitle;
+
+  /// Collection name field
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get collectionNameLabel;
+
+  /// Collection description field
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get collectionDescriptionLabel;
+
+  /// Collection create button
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get collectionCreateAction;
+
+  /// Delete collection dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete collection?'**
+  String get collectionDeleteTitle;
+
+  /// Delete collection confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" will be deleted. The games stay in your library.'**
+  String collectionDeleteConfirm(String name);
+
+  /// Delete collection action
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get collectionDeleteAction;
+
+  /// Collection picker title and menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Add to collections'**
+  String get collectionPickerTitle;
+
+  /// Collection picker empty
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet. Create one to group games your way.'**
+  String get collectionPickerEmpty;
+
+  /// Games in a collection
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No games} =1{1 game} other{{count} games}}'**
+  String collectionGameCount(int count);
+
+  /// Collections empty title
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet'**
+  String get collectionsEmptyTitle;
+
+  /// Collections empty hint
+  ///
+  /// In en, this message translates to:
+  /// **'Group games into lists like Couch co-op or Comfort games.'**
+  String get collectionsEmptyHint;
+
+  /// Snackbar after deleting a collection
+  ///
+  /// In en, this message translates to:
+  /// **'Collection deleted'**
+  String get collectionDeleted;
+
+  /// Collection card semantics
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {count, plural, =1{1 game} other{{count} games}}'**
+  String collectionCardLabel(String name, int count);
+
+  /// Collection menu tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Collection actions'**
+  String get collectionActions;
+
+  /// Stats label: total games
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get statsTotal;
+
+  /// Stats label: hours played
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get statsHours;
+
+  /// Library stats header for screen readers
+  ///
+  /// In en, this message translates to:
+  /// **'{total} games, {playing} playing, {finished} finished, {hours} hours'**
+  String libraryStatsSemantics(
+    int total,
+    int playing,
+    int finished,
+    String hours,
+  );
+
+  /// Library filters sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Filter library'**
+  String get libraryFiltersTitle;
+
+  /// Favorites filter chip
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get libraryFavoritesFilter;
+
+  /// Library filter: minimum score
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum score'**
+  String get libraryFilterMinScore;
+
+  /// Library filter: collection
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get libraryFilterCollection;
+
+  /// Active chip for minimum score
+  ///
+  /// In en, this message translates to:
+  /// **'Score {score}+'**
+  String libraryScoreChip(int score);
+
+  /// Snackbar after unfavoriting
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed from favorites'**
+  String libraryUnfavorited(String name);
+
+  /// Snackbar after favoriting
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to favorites'**
+  String libraryFavorited(String name);
+
+  /// Snackbar after a status change
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is now {status}'**
+  String libraryStatusChanged(String name, String status);
+
+  /// Library entry menu tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get libraryEntryActions;
+
+  /// Library entry action
+  ///
+  /// In en, this message translates to:
+  /// **'Change status'**
+  String get libraryChangeStatus;
+
+  /// Backlog roulette title and entry
+  ///
+  /// In en, this message translates to:
+  /// **'Pick for me'**
+  String get rouletteTitle;
+
+  /// Library segment
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get librarySegmentGames;
+
+  /// Library segment
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get librarySegmentCollections;
+
+  /// Library search field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Search titles'**
+  String get librarySearchHint;
+
+  /// Library sort menu tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get librarySortTooltip;
+
+  /// Toggle to list view
+  ///
+  /// In en, this message translates to:
+  /// **'Show as list'**
+  String get libraryViewList;
+
+  /// Toggle to grid view
+  ///
+  /// In en, this message translates to:
+  /// **'Show as grid'**
+  String get libraryViewGrid;
+
+  /// Library filtered match count
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No matches} =1{1 match} other{{count} matches}}'**
+  String libraryMatchCount(int count);
+
+  /// Library filtered empty title
+  ///
+  /// In en, this message translates to:
+  /// **'No games match'**
+  String get libraryNoMatchesTitle;
+
+  /// Library filtered empty hint
+  ///
+  /// In en, this message translates to:
+  /// **'Try another search or clear the filters.'**
+  String get libraryNoMatchesHint;
+
+  /// Roulette eyebrow
+  ///
+  /// In en, this message translates to:
+  /// **'Backlog roulette'**
+  String get rouletteEyebrow;
+
+  /// Roulette candidate count
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No games to pick from} =1{1 game in the draw} other{{count} games in the draw}}'**
+  String rouletteCandidates(int count);
+
+  /// Roulette platform filter
+  ///
+  /// In en, this message translates to:
+  /// **'Any platform'**
+  String get rouletteAnyPlatform;
+
+  /// Roulette hours filter
+  ///
+  /// In en, this message translates to:
+  /// **'Any time played'**
+  String get rouletteAnyLength;
+
+  /// Roulette max hours played chip
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {hours} h played'**
+  String rouletteMaxHours(int hours);
+
+  /// Roulette no candidate
+  ///
+  /// In en, this message translates to:
+  /// **'No backlog game matches these filters.'**
+  String get rouletteNoMatch;
+
+  /// Roulette intro
+  ///
+  /// In en, this message translates to:
+  /// **'Spin to let Picklog choose your next game from the backlog.'**
+  String get rouletteHint;
+
+  /// Roulette primary action
+  ///
+  /// In en, this message translates to:
+  /// **'Start playing'**
+  String get rouletteStartPlaying;
+
+  /// Roulette secondary action
+  ///
+  /// In en, this message translates to:
+  /// **'Spin again'**
+  String get rouletteSpinAgain;
+
+  /// Roulette first spin
+  ///
+  /// In en, this message translates to:
+  /// **'Spin'**
+  String get rouletteSpin;
+
+  /// Snackbar after starting the picked game
+  ///
+  /// In en, this message translates to:
+  /// **'Have fun with {name}!'**
+  String rouletteStarted(String name);
+
+  /// Roulette empty title
+  ///
+  /// In en, this message translates to:
+  /// **'Your backlog is empty'**
+  String get rouletteEmptyTitle;
+
+  /// Roulette empty hint
+  ///
+  /// In en, this message translates to:
+  /// **'Add games as Planned or On hold and Picklog will pick one for you.'**
+  String get rouletteEmptyHint;
+
+  /// Collection screen eyebrow
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get collectionEyebrow;
+
+  /// Empty collection title
+  ///
+  /// In en, this message translates to:
+  /// **'No games here yet'**
+  String get collectionEmptyTitle;
+
+  /// Empty collection hint
+  ///
+  /// In en, this message translates to:
+  /// **'Add games from a game\'s library sheet or the library menu.'**
+  String get collectionEmptyHint;
+
+  /// Snackbar after removing a game from a collection
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed from the collection'**
+  String collectionEntryRemoved(String name);
+
+  /// Remove a game from a collection
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from collection'**
+  String get collectionRemoveEntry;
+
+  /// Profile card title
+  ///
+  /// In en, this message translates to:
+  /// **'Top genres'**
+  String get profileTopGenres;
+
+  /// Profile card title
+  ///
+  /// In en, this message translates to:
+  /// **'Top platforms'**
+  String get profileTopPlatforms;
+
+  /// Profile stats error
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your stats.'**
+  String get profileStatsFailed;
+
+  /// Profile settings link subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Account, theme, privacy and language'**
+  String get profileSettingsHint;
+
+  /// Profile member line without stats
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog member'**
+  String get profileMemberLine;
+
+  /// Profile member line
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Picklog member · No games logged yet} =1{Picklog member · 1 game logged} other{Picklog member · {count} games logged}}'**
+  String profileMemberLineCount(int count);
+
+  /// Profile stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get profileStatGames;
+
+  /// Profile stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Avg score'**
+  String get profileStatAverage;
+
+  /// Profile stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Backlog'**
+  String get profileStatBacklog;
+
+  /// Profile status bar title
+  ///
+  /// In en, this message translates to:
+  /// **'By status'**
+  String get profileStatusDistribution;
+
+  /// Year in review card semantics
+  ///
+  /// In en, this message translates to:
+  /// **'Open your {year} in review'**
+  String profileYearInReviewLabel(int year);
+
+  /// Year in review eyebrow
+  ///
+  /// In en, this message translates to:
+  /// **'Year in review'**
+  String get yearInReviewEyebrow;
+
+  /// Year in review card hint
+  ///
+  /// In en, this message translates to:
+  /// **'Your year in games, card by card.'**
+  String get profileYearInReviewHint;
+
+  /// Profile achievements tile
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get profileAchievements;
+
+  /// Achievements tile value
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} of {total} unlocked'**
+  String profileAchievementsValue(int unlocked, int total);
+
+  /// Roulette tile value
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Backlog is empty} =1{1 game in backlog} other{{count} games in backlog}}'**
+  String profileBacklogValue(int count);
+
+  /// Favorites shelf title
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get profileFavorites;
+
+  /// Favorites shelf empty
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart on a game to see it here.'**
+  String get profileFavoritesEmpty;
+
+  /// Text sent with the shared image
+  ///
+  /// In en, this message translates to:
+  /// **'My {year} in games on Picklog'**
+  String yearShareText(int year);
+
+  /// Share failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share the image.'**
+  String get yearShareFailed;
+
+  /// Year in review app bar
+  ///
+  /// In en, this message translates to:
+  /// **'{year} in review'**
+  String yearInReviewTitle(int year);
+
+  /// Year picker tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Choose year'**
+  String get yearPickerTooltip;
+
+  /// Share action tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get yearShareTooltip;
+
+  /// Year intro title
+  ///
+  /// In en, this message translates to:
+  /// **'Your year in games'**
+  String get yearIntroTitle;
+
+  /// Year intro when empty
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged this year yet. Add games to fill your story.'**
+  String get yearIntroEmpty;
+
+  /// Year intro hint
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll through what you added, finished and loved.'**
+  String get yearIntroHint;
+
+  /// Year stat
+  ///
+  /// In en, this message translates to:
+  /// **'Games added'**
+  String get yearGamesAdded;
+
+  /// Year stat
+  ///
+  /// In en, this message translates to:
+  /// **'Games finished'**
+  String get yearGamesFinished;
+
+  /// Year stat
+  ///
+  /// In en, this message translates to:
+  /// **'Hours played'**
+  String get yearHoursPlayed;
+
+  /// Year chart title
+  ///
+  /// In en, this message translates to:
+  /// **'Month by month'**
+  String get yearByMonth;
+
+  /// Chart description for screen readers
+  ///
+  /// In en, this message translates to:
+  /// **'Chart by month: {added} added and {finished} finished in total'**
+  String yearByMonthSemantics(int added, int finished);
+
+  /// Chart legend
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get yearLegendAdded;
+
+  /// Chart legend
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get yearLegendFinished;
+
+  /// Year card title
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated'**
+  String get yearTopRated;
+
+  /// Year card title
+  ///
+  /// In en, this message translates to:
+  /// **'Top genres'**
+  String get yearTopGenres;
+
+  /// Genre with count
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {count}'**
+  String yearGenreChip(String name, int count);
+
+  /// Year card title
+  ///
+  /// In en, this message translates to:
+  /// **'First game finished'**
+  String get yearFirstFinished;
+
+  /// Share card title
+  ///
+  /// In en, this message translates to:
+  /// **'Share your year'**
+  String get yearShareEyebrow;
+
+  /// Share button
+  ///
+  /// In en, this message translates to:
+  /// **'Share image'**
+  String get yearShareAction;
+
+  /// Share card stat
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get yearShareAdded;
+
+  /// Share card stat
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get yearShareFinished;
+
+  /// Share card stat
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get yearShareHours;
+
+  /// Share card line
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated: {name}'**
+  String yearShareTopRated(String name);
+
+  /// Share card line
+  ///
+  /// In en, this message translates to:
+  /// **'Top genre: {genre}'**
+  String yearShareTopGenre(String genre);
+
+  /// Browse explore card title
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the catalog'**
+  String get browseExploreTitle;
+
+  /// Browse explore card hint
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by genre, platform, year and rating.'**
+  String get browseExploreHint;
 }
 
 class _AppLocalizationsDelegate

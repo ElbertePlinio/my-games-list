@@ -970,4 +970,571 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get routeNotFoundMessage =>
       'Esta página não existe ou mudou de lugar.';
+
+  @override
+  String get librarySortUpdated => 'Atualizados recentemente';
+
+  @override
+  String get librarySortAdded => 'Adicionados recentemente';
+
+  @override
+  String get librarySortName => 'Nome (A-Z)';
+
+  @override
+  String get librarySortScore => 'Sua nota';
+
+  @override
+  String get librarySortPlaytime => 'Mais jogados';
+
+  @override
+  String get librarySortRelease => 'Data de lançamento';
+
+  @override
+  String get librarySortRating => 'Nota da comunidade';
+
+  @override
+  String get collectionErrorDuplicateName =>
+      'Você já tem uma coleção com esse nome.';
+
+  @override
+  String get collectionErrorLimit =>
+      'Você pode ter até 50 coleções. Exclua uma para criar outra.';
+
+  @override
+  String get collectionErrorEntriesLimit =>
+      'Esta coleção está cheia (500 jogos).';
+
+  @override
+  String get collectionErrorNameInvalid => 'Use de 1 a 60 caracteres no nome.';
+
+  @override
+  String get collectionErrorDescriptionTooLong =>
+      'A descrição pode ter até 280 caracteres.';
+
+  @override
+  String get collectionErrorNotFound => 'Esta coleção não existe mais.';
+
+  @override
+  String recommendationReasonSimilar(String name) {
+    return 'Porque você curtiu $name';
+  }
+
+  @override
+  String get recommendationReasonSimilarGeneric =>
+      'Parecido com jogos que você curte';
+
+  @override
+  String recommendationReasonGenre(String genre) {
+    return 'Mais $genre';
+  }
+
+  @override
+  String get recommendationReasonGenreGeneric =>
+      'Combina com seus gêneros favoritos';
+
+  @override
+  String get recommendationReasonPopular => 'Em alta agora';
+
+  @override
+  String get exploreSortPopular => 'Populares';
+
+  @override
+  String get exploreSortRating => 'Mais bem avaliados';
+
+  @override
+  String get exploreSortNewest => 'Mais novos';
+
+  @override
+  String get exploreSortOldest => 'Mais antigos';
+
+  @override
+  String get exploreSortName => 'A-Z';
+
+  @override
+  String get filterOptionsFailed => 'Não foi possível carregar as opções.';
+
+  @override
+  String get filterReleaseYears => 'Anos de lançamento';
+
+  @override
+  String filterYearRangeValue(int from, int to) {
+    return '$from-$to';
+  }
+
+  @override
+  String get filterMinRating => 'Nota mínima';
+
+  @override
+  String get filterAnyRating => 'Qualquer';
+
+  @override
+  String filterRatingValue(int rating) {
+    return 'Nota $rating+';
+  }
+
+  @override
+  String get filterGenreFallback => 'Gênero';
+
+  @override
+  String get filterPlatformFallback => 'Plataforma';
+
+  @override
+  String filterRemoveChip(String label) {
+    return 'Remover $label';
+  }
+
+  @override
+  String get exploreTitle => 'Explorar';
+
+  @override
+  String get searchExploreCatalog => 'Explorar o catálogo';
+
+  @override
+  String get searchSortLoadedScopeCaption =>
+      'A ordenação reorganiza os resultados já carregados.';
+
+  @override
+  String get exploreFiltersButton => 'Filtros';
+
+  @override
+  String get exploreFiltersTitle => 'Filtros';
+
+  @override
+  String get exploreEmptyTitle => 'Nenhum jogo encontrado';
+
+  @override
+  String get exploreEmptyHint =>
+      'Tente menos filtros ou um intervalo de anos maior.';
+
+  @override
+  String exploreResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos exibidos',
+      one: '1 jogo exibido',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exploreEndOfResults => 'Você chegou ao fim.';
+
+  @override
+  String get undo => 'Desfazer';
+
+  @override
+  String libraryChangeStatusTitle(String name) {
+    return 'Mudar o status de $name';
+  }
+
+  @override
+  String get collectionEditTitle => 'Editar coleção';
+
+  @override
+  String get collectionNewTitle => 'Nova coleção';
+
+  @override
+  String get collectionNameLabel => 'Nome';
+
+  @override
+  String get collectionDescriptionLabel => 'Descrição (opcional)';
+
+  @override
+  String get collectionCreateAction => 'Criar';
+
+  @override
+  String get collectionDeleteTitle => 'Excluir coleção?';
+
+  @override
+  String collectionDeleteConfirm(String name) {
+    return '\"$name\" será excluída. Os jogos continuam na sua biblioteca.';
+  }
+
+  @override
+  String get collectionDeleteAction => 'Excluir';
+
+  @override
+  String get collectionPickerTitle => 'Adicionar às coleções';
+
+  @override
+  String get collectionPickerEmpty =>
+      'Nenhuma coleção ainda. Crie uma para agrupar jogos do seu jeito.';
+
+  @override
+  String collectionGameCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos',
+      one: '1 jogo',
+      zero: 'Nenhum jogo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get collectionsEmptyTitle => 'Nenhuma coleção ainda';
+
+  @override
+  String get collectionsEmptyHint =>
+      'Agrupe jogos em listas como Cooperativo no sofá ou Jogos de conforto.';
+
+  @override
+  String get collectionDeleted => 'Coleção excluída';
+
+  @override
+  String collectionCardLabel(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos',
+      one: '1 jogo',
+    );
+    return '$name, $_temp0';
+  }
+
+  @override
+  String get collectionActions => 'Ações da coleção';
+
+  @override
+  String get statsTotal => 'Total';
+
+  @override
+  String get statsHours => 'Horas';
+
+  @override
+  String libraryStatsSemantics(
+    int total,
+    int playing,
+    int finished,
+    String hours,
+  ) {
+    return '$total jogos, $playing jogando, $finished finalizados, $hours horas';
+  }
+
+  @override
+  String get libraryFiltersTitle => 'Filtrar biblioteca';
+
+  @override
+  String get libraryFavoritesFilter => 'Favoritos';
+
+  @override
+  String get libraryFilterMinScore => 'Nota mínima';
+
+  @override
+  String get libraryFilterCollection => 'Coleção';
+
+  @override
+  String libraryScoreChip(int score) {
+    return 'Nota $score+';
+  }
+
+  @override
+  String libraryUnfavorited(String name) {
+    return '$name saiu dos favoritos';
+  }
+
+  @override
+  String libraryFavorited(String name) {
+    return '$name entrou nos favoritos';
+  }
+
+  @override
+  String libraryStatusChanged(String name, String status) {
+    return '$name agora está como $status';
+  }
+
+  @override
+  String get libraryEntryActions => 'Mais ações';
+
+  @override
+  String get libraryChangeStatus => 'Mudar status';
+
+  @override
+  String get rouletteTitle => 'Escolha por mim';
+
+  @override
+  String get librarySegmentGames => 'Jogos';
+
+  @override
+  String get librarySegmentCollections => 'Coleções';
+
+  @override
+  String get librarySearchHint => 'Buscar títulos';
+
+  @override
+  String get librarySortTooltip => 'Ordenar';
+
+  @override
+  String get libraryViewList => 'Ver em lista';
+
+  @override
+  String get libraryViewGrid => 'Ver em grade';
+
+  @override
+  String libraryMatchCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados',
+      one: '1 resultado',
+      zero: 'Nenhum resultado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryNoMatchesTitle => 'Nenhum jogo encontrado';
+
+  @override
+  String get libraryNoMatchesHint => 'Tente outra busca ou limpe os filtros.';
+
+  @override
+  String get rouletteEyebrow => 'Roleta do backlog';
+
+  @override
+  String rouletteCandidates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos no sorteio',
+      one: '1 jogo no sorteio',
+      zero: 'Nenhum jogo para sortear',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rouletteAnyPlatform => 'Qualquer plataforma';
+
+  @override
+  String get rouletteAnyLength => 'Qualquer tempo jogado';
+
+  @override
+  String rouletteMaxHours(int hours) {
+    return 'Até $hours h jogadas';
+  }
+
+  @override
+  String get rouletteNoMatch =>
+      'Nenhum jogo do backlog combina com esses filtros.';
+
+  @override
+  String get rouletteHint =>
+      'Gire para o Picklog escolher seu próximo jogo do backlog.';
+
+  @override
+  String get rouletteStartPlaying => 'Começar a jogar';
+
+  @override
+  String get rouletteSpinAgain => 'Girar de novo';
+
+  @override
+  String get rouletteSpin => 'Girar';
+
+  @override
+  String rouletteStarted(String name) {
+    return 'Divirta-se com $name!';
+  }
+
+  @override
+  String get rouletteEmptyTitle => 'Seu backlog está vazio';
+
+  @override
+  String get rouletteEmptyHint =>
+      'Adicione jogos como Planejado ou Pausado e o Picklog escolhe um para você.';
+
+  @override
+  String get collectionEyebrow => 'Coleção';
+
+  @override
+  String get collectionEmptyTitle => 'Nenhum jogo aqui ainda';
+
+  @override
+  String get collectionEmptyHint =>
+      'Adicione jogos pela ficha do jogo ou pelo menu da biblioteca.';
+
+  @override
+  String collectionEntryRemoved(String name) {
+    return '$name saiu da coleção';
+  }
+
+  @override
+  String get collectionRemoveEntry => 'Remover da coleção';
+
+  @override
+  String get profileTopGenres => 'Gêneros favoritos';
+
+  @override
+  String get profileTopPlatforms => 'Plataformas favoritas';
+
+  @override
+  String get profileStatsFailed =>
+      'Não foi possível carregar suas estatísticas.';
+
+  @override
+  String get profileSettingsHint => 'Conta, tema, privacidade e idioma';
+
+  @override
+  String get profileMemberLine => 'Membro do Picklog';
+
+  @override
+  String profileMemberLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Membro do Picklog · $count jogos registrados',
+      one: 'Membro do Picklog · 1 jogo registrado',
+      zero: 'Membro do Picklog · Nenhum jogo registrado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileStatGames => 'Jogos';
+
+  @override
+  String get profileStatAverage => 'Nota média';
+
+  @override
+  String get profileStatBacklog => 'Backlog';
+
+  @override
+  String get profileStatusDistribution => 'Por status';
+
+  @override
+  String profileYearInReviewLabel(int year) {
+    return 'Abrir sua retrospectiva de $year';
+  }
+
+  @override
+  String get yearInReviewEyebrow => 'Retrospectiva';
+
+  @override
+  String get profileYearInReviewHint => 'Seu ano nos games, card a card.';
+
+  @override
+  String get profileAchievements => 'Conquistas';
+
+  @override
+  String profileAchievementsValue(int unlocked, int total) {
+    return '$unlocked de $total desbloqueadas';
+  }
+
+  @override
+  String profileBacklogValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos no backlog',
+      one: '1 jogo no backlog',
+      zero: 'Backlog vazio',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileFavorites => 'Favoritos';
+
+  @override
+  String get profileFavoritesEmpty =>
+      'Toque no coração de um jogo para vê-lo aqui.';
+
+  @override
+  String yearShareText(int year) {
+    return 'Meu $year nos games no Picklog';
+  }
+
+  @override
+  String get yearShareFailed => 'Não foi possível compartilhar a imagem.';
+
+  @override
+  String yearInReviewTitle(int year) {
+    return 'Retrospectiva $year';
+  }
+
+  @override
+  String get yearPickerTooltip => 'Escolher ano';
+
+  @override
+  String get yearShareTooltip => 'Compartilhar';
+
+  @override
+  String get yearIntroTitle => 'Seu ano nos games';
+
+  @override
+  String get yearIntroEmpty =>
+      'Nada registrado neste ano ainda. Adicione jogos para montar sua história.';
+
+  @override
+  String get yearIntroHint => 'Veja o que você adicionou, terminou e amou.';
+
+  @override
+  String get yearGamesAdded => 'Jogos adicionados';
+
+  @override
+  String get yearGamesFinished => 'Jogos finalizados';
+
+  @override
+  String get yearHoursPlayed => 'Horas jogadas';
+
+  @override
+  String get yearByMonth => 'Mês a mês';
+
+  @override
+  String yearByMonthSemantics(int added, int finished) {
+    return 'Gráfico por mês: $added adicionados e $finished finalizados no total';
+  }
+
+  @override
+  String get yearLegendAdded => 'Adicionados';
+
+  @override
+  String get yearLegendFinished => 'Finalizados';
+
+  @override
+  String get yearTopRated => 'Mais bem avaliados';
+
+  @override
+  String get yearTopGenres => 'Gêneros favoritos';
+
+  @override
+  String yearGenreChip(String name, int count) {
+    return '$name · $count';
+  }
+
+  @override
+  String get yearFirstFinished => 'Primeiro jogo finalizado';
+
+  @override
+  String get yearShareEyebrow => 'Compartilhe seu ano';
+
+  @override
+  String get yearShareAction => 'Compartilhar imagem';
+
+  @override
+  String get yearShareAdded => 'Adicionados';
+
+  @override
+  String get yearShareFinished => 'Finalizados';
+
+  @override
+  String get yearShareHours => 'Horas';
+
+  @override
+  String yearShareTopRated(String name) {
+    return 'Mais bem avaliado: $name';
+  }
+
+  @override
+  String yearShareTopGenre(String genre) {
+    return 'Gênero favorito: $genre';
+  }
+
+  @override
+  String get browseExploreTitle => 'Explore o catálogo';
+
+  @override
+  String get browseExploreHint => 'Filtre por gênero, plataforma, ano e nota.';
 }

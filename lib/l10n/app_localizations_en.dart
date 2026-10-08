@@ -960,4 +960,567 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get routeNotFoundMessage => 'This page doesn\'t exist or moved.';
+
+  @override
+  String get librarySortUpdated => 'Recently updated';
+
+  @override
+  String get librarySortAdded => 'Recently added';
+
+  @override
+  String get librarySortName => 'Name (A-Z)';
+
+  @override
+  String get librarySortScore => 'Your score';
+
+  @override
+  String get librarySortPlaytime => 'Most played';
+
+  @override
+  String get librarySortRelease => 'Release date';
+
+  @override
+  String get librarySortRating => 'Community rating';
+
+  @override
+  String get collectionErrorDuplicateName =>
+      'You already have a collection with this name.';
+
+  @override
+  String get collectionErrorLimit =>
+      'You can have up to 50 collections. Delete one to create another.';
+
+  @override
+  String get collectionErrorEntriesLimit =>
+      'This collection is full (500 games).';
+
+  @override
+  String get collectionErrorNameInvalid =>
+      'Use 1 to 60 characters for the name.';
+
+  @override
+  String get collectionErrorDescriptionTooLong =>
+      'Keep the description under 280 characters.';
+
+  @override
+  String get collectionErrorNotFound => 'This collection no longer exists.';
+
+  @override
+  String recommendationReasonSimilar(String name) {
+    return 'Because you liked $name';
+  }
+
+  @override
+  String get recommendationReasonSimilarGeneric => 'Similar to games you like';
+
+  @override
+  String recommendationReasonGenre(String genre) {
+    return 'More $genre';
+  }
+
+  @override
+  String get recommendationReasonGenreGeneric => 'Matches your favorite genres';
+
+  @override
+  String get recommendationReasonPopular => 'Popular now';
+
+  @override
+  String get exploreSortPopular => 'Popular';
+
+  @override
+  String get exploreSortRating => 'Top rated';
+
+  @override
+  String get exploreSortNewest => 'Newest';
+
+  @override
+  String get exploreSortOldest => 'Oldest';
+
+  @override
+  String get exploreSortName => 'A-Z';
+
+  @override
+  String get filterOptionsFailed => 'Could not load the options.';
+
+  @override
+  String get filterReleaseYears => 'Release years';
+
+  @override
+  String filterYearRangeValue(int from, int to) {
+    return '$from-$to';
+  }
+
+  @override
+  String get filterMinRating => 'Minimum rating';
+
+  @override
+  String get filterAnyRating => 'Any';
+
+  @override
+  String filterRatingValue(int rating) {
+    return 'Rating $rating+';
+  }
+
+  @override
+  String get filterGenreFallback => 'Genre';
+
+  @override
+  String get filterPlatformFallback => 'Platform';
+
+  @override
+  String filterRemoveChip(String label) {
+    return 'Remove $label';
+  }
+
+  @override
+  String get exploreTitle => 'Explore';
+
+  @override
+  String get searchExploreCatalog => 'Explore the catalog';
+
+  @override
+  String get searchSortLoadedScopeCaption =>
+      'Sorting reorders the results loaded so far.';
+
+  @override
+  String get exploreFiltersButton => 'Filters';
+
+  @override
+  String get exploreFiltersTitle => 'Filters';
+
+  @override
+  String get exploreEmptyTitle => 'No games match';
+
+  @override
+  String get exploreEmptyHint => 'Try fewer filters or a wider year range.';
+
+  @override
+  String exploreResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games shown',
+      one: '1 game shown',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exploreEndOfResults => 'You reached the end.';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String libraryChangeStatusTitle(String name) {
+    return 'Change status of $name';
+  }
+
+  @override
+  String get collectionEditTitle => 'Edit collection';
+
+  @override
+  String get collectionNewTitle => 'New collection';
+
+  @override
+  String get collectionNameLabel => 'Name';
+
+  @override
+  String get collectionDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get collectionCreateAction => 'Create';
+
+  @override
+  String get collectionDeleteTitle => 'Delete collection?';
+
+  @override
+  String collectionDeleteConfirm(String name) {
+    return '\"$name\" will be deleted. The games stay in your library.';
+  }
+
+  @override
+  String get collectionDeleteAction => 'Delete';
+
+  @override
+  String get collectionPickerTitle => 'Add to collections';
+
+  @override
+  String get collectionPickerEmpty =>
+      'No collections yet. Create one to group games your way.';
+
+  @override
+  String collectionGameCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games',
+      one: '1 game',
+      zero: 'No games',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get collectionsEmptyTitle => 'No collections yet';
+
+  @override
+  String get collectionsEmptyHint =>
+      'Group games into lists like Couch co-op or Comfort games.';
+
+  @override
+  String get collectionDeleted => 'Collection deleted';
+
+  @override
+  String collectionCardLabel(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games',
+      one: '1 game',
+    );
+    return '$name, $_temp0';
+  }
+
+  @override
+  String get collectionActions => 'Collection actions';
+
+  @override
+  String get statsTotal => 'Total';
+
+  @override
+  String get statsHours => 'Hours';
+
+  @override
+  String libraryStatsSemantics(
+    int total,
+    int playing,
+    int finished,
+    String hours,
+  ) {
+    return '$total games, $playing playing, $finished finished, $hours hours';
+  }
+
+  @override
+  String get libraryFiltersTitle => 'Filter library';
+
+  @override
+  String get libraryFavoritesFilter => 'Favorites';
+
+  @override
+  String get libraryFilterMinScore => 'Minimum score';
+
+  @override
+  String get libraryFilterCollection => 'Collection';
+
+  @override
+  String libraryScoreChip(int score) {
+    return 'Score $score+';
+  }
+
+  @override
+  String libraryUnfavorited(String name) {
+    return '$name removed from favorites';
+  }
+
+  @override
+  String libraryFavorited(String name) {
+    return '$name added to favorites';
+  }
+
+  @override
+  String libraryStatusChanged(String name, String status) {
+    return '$name is now $status';
+  }
+
+  @override
+  String get libraryEntryActions => 'More actions';
+
+  @override
+  String get libraryChangeStatus => 'Change status';
+
+  @override
+  String get rouletteTitle => 'Pick for me';
+
+  @override
+  String get librarySegmentGames => 'Games';
+
+  @override
+  String get librarySegmentCollections => 'Collections';
+
+  @override
+  String get librarySearchHint => 'Search titles';
+
+  @override
+  String get librarySortTooltip => 'Sort';
+
+  @override
+  String get libraryViewList => 'Show as list';
+
+  @override
+  String get libraryViewGrid => 'Show as grid';
+
+  @override
+  String libraryMatchCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count matches',
+      one: '1 match',
+      zero: 'No matches',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryNoMatchesTitle => 'No games match';
+
+  @override
+  String get libraryNoMatchesHint => 'Try another search or clear the filters.';
+
+  @override
+  String get rouletteEyebrow => 'Backlog roulette';
+
+  @override
+  String rouletteCandidates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games in the draw',
+      one: '1 game in the draw',
+      zero: 'No games to pick from',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rouletteAnyPlatform => 'Any platform';
+
+  @override
+  String get rouletteAnyLength => 'Any time played';
+
+  @override
+  String rouletteMaxHours(int hours) {
+    return 'Up to $hours h played';
+  }
+
+  @override
+  String get rouletteNoMatch => 'No backlog game matches these filters.';
+
+  @override
+  String get rouletteHint =>
+      'Spin to let Picklog choose your next game from the backlog.';
+
+  @override
+  String get rouletteStartPlaying => 'Start playing';
+
+  @override
+  String get rouletteSpinAgain => 'Spin again';
+
+  @override
+  String get rouletteSpin => 'Spin';
+
+  @override
+  String rouletteStarted(String name) {
+    return 'Have fun with $name!';
+  }
+
+  @override
+  String get rouletteEmptyTitle => 'Your backlog is empty';
+
+  @override
+  String get rouletteEmptyHint =>
+      'Add games as Planned or On hold and Picklog will pick one for you.';
+
+  @override
+  String get collectionEyebrow => 'Collection';
+
+  @override
+  String get collectionEmptyTitle => 'No games here yet';
+
+  @override
+  String get collectionEmptyHint =>
+      'Add games from a game\'s library sheet or the library menu.';
+
+  @override
+  String collectionEntryRemoved(String name) {
+    return '$name removed from the collection';
+  }
+
+  @override
+  String get collectionRemoveEntry => 'Remove from collection';
+
+  @override
+  String get profileTopGenres => 'Top genres';
+
+  @override
+  String get profileTopPlatforms => 'Top platforms';
+
+  @override
+  String get profileStatsFailed => 'Could not load your stats.';
+
+  @override
+  String get profileSettingsHint => 'Account, theme, privacy and language';
+
+  @override
+  String get profileMemberLine => 'Picklog member';
+
+  @override
+  String profileMemberLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Picklog member · $count games logged',
+      one: 'Picklog member · 1 game logged',
+      zero: 'Picklog member · No games logged yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileStatGames => 'Games';
+
+  @override
+  String get profileStatAverage => 'Avg score';
+
+  @override
+  String get profileStatBacklog => 'Backlog';
+
+  @override
+  String get profileStatusDistribution => 'By status';
+
+  @override
+  String profileYearInReviewLabel(int year) {
+    return 'Open your $year in review';
+  }
+
+  @override
+  String get yearInReviewEyebrow => 'Year in review';
+
+  @override
+  String get profileYearInReviewHint => 'Your year in games, card by card.';
+
+  @override
+  String get profileAchievements => 'Achievements';
+
+  @override
+  String profileAchievementsValue(int unlocked, int total) {
+    return '$unlocked of $total unlocked';
+  }
+
+  @override
+  String profileBacklogValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games in backlog',
+      one: '1 game in backlog',
+      zero: 'Backlog is empty',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileFavorites => 'Favorites';
+
+  @override
+  String get profileFavoritesEmpty => 'Tap the heart on a game to see it here.';
+
+  @override
+  String yearShareText(int year) {
+    return 'My $year in games on Picklog';
+  }
+
+  @override
+  String get yearShareFailed => 'Could not share the image.';
+
+  @override
+  String yearInReviewTitle(int year) {
+    return '$year in review';
+  }
+
+  @override
+  String get yearPickerTooltip => 'Choose year';
+
+  @override
+  String get yearShareTooltip => 'Share';
+
+  @override
+  String get yearIntroTitle => 'Your year in games';
+
+  @override
+  String get yearIntroEmpty =>
+      'Nothing logged this year yet. Add games to fill your story.';
+
+  @override
+  String get yearIntroHint =>
+      'Scroll through what you added, finished and loved.';
+
+  @override
+  String get yearGamesAdded => 'Games added';
+
+  @override
+  String get yearGamesFinished => 'Games finished';
+
+  @override
+  String get yearHoursPlayed => 'Hours played';
+
+  @override
+  String get yearByMonth => 'Month by month';
+
+  @override
+  String yearByMonthSemantics(int added, int finished) {
+    return 'Chart by month: $added added and $finished finished in total';
+  }
+
+  @override
+  String get yearLegendAdded => 'Added';
+
+  @override
+  String get yearLegendFinished => 'Finished';
+
+  @override
+  String get yearTopRated => 'Top rated';
+
+  @override
+  String get yearTopGenres => 'Top genres';
+
+  @override
+  String yearGenreChip(String name, int count) {
+    return '$name · $count';
+  }
+
+  @override
+  String get yearFirstFinished => 'First game finished';
+
+  @override
+  String get yearShareEyebrow => 'Share your year';
+
+  @override
+  String get yearShareAction => 'Share image';
+
+  @override
+  String get yearShareAdded => 'Added';
+
+  @override
+  String get yearShareFinished => 'Finished';
+
+  @override
+  String get yearShareHours => 'Hours';
+
+  @override
+  String yearShareTopRated(String name) {
+    return 'Top rated: $name';
+  }
+
+  @override
+  String yearShareTopGenre(String genre) {
+    return 'Top genre: $genre';
+  }
+
+  @override
+  String get browseExploreTitle => 'Explore the catalog';
+
+  @override
+  String get browseExploreHint => 'Filter by genre, platform, year and rating.';
 }

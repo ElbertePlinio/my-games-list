@@ -76,6 +76,60 @@ class _BodyState extends State<_Body> {
     }
   }
 
+  Widget _buildPromptForm(
+    BuildContext context,
+    DiscoverState state,
+    List<String> suggestions,
+  ) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _prompt,
+          maxLength: kDiscoverPromptMax,
+          maxLengthEnforcement: MaxLengthEnforcement.enforced,
+          minLines: 1,
+          maxLines: 3,
+          textInputAction: TextInputAction.search,
+          onSubmitted: (_) => _submit(),
+          decoration: InputDecoration(
+            labelText: l10n.aiDiscoverPromptLabel,
+            hintText: l10n.aiDiscoverPromptHint,
+          ),
+        ),
+        const SizedBox(height: PfSpace.sm),
+        Eyebrow(l10n.aiDiscoverSuggestionsLabel, muted: true),
+        const SizedBox(height: PfSpace.sm),
+        Wrap(
+          spacing: PfSpace.sm,
+          runSpacing: PfSpace.sm,
+          children: [
+            for (final s in suggestions)
+              ActionChip(
+                avatar: const Icon(Icons.north_east, size: 14),
+                label: Text(s),
+                onPressed: state.isLoading ? null : () => _submit(s),
+              ),
+          ],
+        ),
+        const SizedBox(height: PfSpace.lg),
+        Row(
+          children: [
+            PfButton(
+              label: l10n.aiDiscoverSubmit,
+              icon: Icons.auto_awesome_outlined,
+              isBusy: state.isLoading,
+              onPressed: _submit,
+            ),
+            const SizedBox(width: PfSpace.md),
+            const Expanded(child: _RemainingCounter()),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -120,56 +174,8 @@ class _BodyState extends State<_Body> {
               const SizedBox(height: PfSpace.xl),
               BlocBuilder<DiscoverCubit, DiscoverState>(
                 buildWhen: (p, c) => p.isLoading != c.isLoading,
-                builder: (context, state) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextField(
-                        controller: _prompt,
-                        maxLength: kDiscoverPromptMax,
-                        maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                        minLines: 1,
-                        maxLines: 3,
-                        textInputAction: TextInputAction.search,
-                        onSubmitted: (_) => _submit(),
-                        decoration: InputDecoration(
-                          labelText: l10n.aiDiscoverPromptLabel,
-                          hintText: l10n.aiDiscoverPromptHint,
-                        ),
-                      ),
-                      const SizedBox(height: PfSpace.sm),
-                      Eyebrow(l10n.aiDiscoverSuggestionsLabel, muted: true),
-                      const SizedBox(height: PfSpace.sm),
-                      Wrap(
-                        spacing: PfSpace.sm,
-                        runSpacing: PfSpace.sm,
-                        children: [
-                          for (final s in suggestions)
-                            ActionChip(
-                              avatar: const Icon(Icons.north_east, size: 14),
-                              label: Text(s),
-                              onPressed: state.isLoading
-                                  ? null
-                                  : () => _submit(s),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: PfSpace.lg),
-                      Row(
-                        children: [
-                          PfButton(
-                            label: l10n.aiDiscoverSubmit,
-                            icon: Icons.auto_awesome_outlined,
-                            isBusy: state.isLoading,
-                            onPressed: _submit,
-                          ),
-                          const SizedBox(width: PfSpace.md),
-                          const Expanded(child: _RemainingCounter()),
-                        ],
-                      ),
-                    ],
-                  );
-                },
+                builder: (context, state) =>
+                    _buildPromptForm(context, state, suggestions),
               ),
               const SizedBox(height: PfSpace.xl),
               const _Results(),

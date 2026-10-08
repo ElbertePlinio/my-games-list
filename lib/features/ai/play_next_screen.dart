@@ -78,6 +78,38 @@ class _BodyState extends State<_Body> {
     });
   }
 
+  Widget _buildWide() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: PfBreakpoints.content),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              width: 400,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(PfSpace.xl),
+                child: _PlayNextForm(),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  PfSpace.lg,
+                  PfSpace.xl,
+                  PfSpace.xl,
+                  PfSpace.xxl,
+                ),
+                child: _PlayNextResults(key: _resultsKey, showIdleHint: true),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -101,42 +133,7 @@ class _BodyState extends State<_Body> {
           );
           if (libraryEmpty) return const _EmptyBacklog();
           final wide = constraints.maxWidth >= PfBreakpoints.twoPane;
-          if (wide) {
-            return Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: PfBreakpoints.content,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      width: 400,
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.all(PfSpace.xl),
-                        child: _PlayNextForm(),
-                      ),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(
-                          PfSpace.lg,
-                          PfSpace.xl,
-                          PfSpace.xl,
-                          PfSpace.xxl,
-                        ),
-                        child: _PlayNextResults(
-                          key: _resultsKey,
-                          showIdleHint: true,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+          if (wide) return _buildWide();
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
               PfSpace.lg,
@@ -208,6 +205,68 @@ class _PlayNextFormState extends State<_PlayNextForm> {
     return formatAiDuration(l10n, kPlayNextMinuteStops[stop]);
   }
 
+  List<Widget> _buildTimeControls(BuildContext context, PlayNextState state) {
+    final l10n = context.l10n;
+    final colors = context.pfColors;
+    final cubit = context.read<PlayNextCubit>();
+    return [
+      _FieldLabel(
+        l10n.aiTimeLabel,
+        trailing: Text(
+          _stopLabel(context, state.minutesStop),
+          style: PfTypography.monoStyle(colors.textHi, size: 13),
+        ),
+      ),
+      Slider(
+        value: state.minutesStop.toDouble(),
+        max: (kPlayNextMinuteStops.length - 1).toDouble(),
+        divisions: kPlayNextMinuteStops.length - 1,
+        label: _stopLabel(context, state.minutesStop),
+        semanticFormatterCallback: (v) => _stopLabel(context, v.round()),
+        onChanged: (v) => cubit.setMinutesStop(v.round()),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: PfSpace.sm),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _stopLabel(context, 0),
+              style: PfTypography.monoStyle(colors.textMed, size: 11),
+            ),
+            Text(
+              _stopLabel(context, kPlayNextMinuteStops.length - 1),
+              style: PfTypography.monoStyle(colors.textMed, size: 11),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildPlatformChips(BuildContext context, PlayNextState state) {
+    final l10n = context.l10n;
+    final cubit = context.read<PlayNextCubit>();
+    return Wrap(
+      spacing: PfSpace.sm,
+      runSpacing: PfSpace.sm,
+      children: [
+        ChoiceChip(
+          label: Text(l10n.aiPlatformAny),
+          selected: state.platformId == null,
+          onSelected: (_) => cubit.selectPlatform(null),
+        ),
+        for (final p in state.platforms)
+          ChoiceChip(
+            label: Text(p.label),
+            selected: state.platformId == p.id,
+            onSelected: (_) =>
+                cubit.selectPlatform(state.platformId == p.id ? null : p.id),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -251,59 +310,11 @@ class _PlayNextFormState extends State<_PlayNextForm> {
               ],
             ),
             const SizedBox(height: PfSpace.xl),
-            _FieldLabel(
-              l10n.aiTimeLabel,
-              trailing: Text(
-                _stopLabel(context, state.minutesStop),
-                style: PfTypography.monoStyle(colors.textHi, size: 13),
-              ),
-            ),
-            Slider(
-              value: state.minutesStop.toDouble(),
-              max: (kPlayNextMinuteStops.length - 1).toDouble(),
-              divisions: kPlayNextMinuteStops.length - 1,
-              label: _stopLabel(context, state.minutesStop),
-              semanticFormatterCallback: (v) => _stopLabel(context, v.round()),
-              onChanged: (v) => cubit.setMinutesStop(v.round()),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: PfSpace.sm),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _stopLabel(context, 0),
-                    style: PfTypography.monoStyle(colors.textMed, size: 11),
-                  ),
-                  Text(
-                    _stopLabel(context, kPlayNextMinuteStops.length - 1),
-                    style: PfTypography.monoStyle(colors.textMed, size: 11),
-                  ),
-                ],
-              ),
-            ),
+            ..._buildTimeControls(context, state),
             if (state.platforms.isNotEmpty) ...[
               const SizedBox(height: PfSpace.xl),
               _FieldLabel(l10n.aiPlatformLabel),
-              Wrap(
-                spacing: PfSpace.sm,
-                runSpacing: PfSpace.sm,
-                children: [
-                  ChoiceChip(
-                    label: Text(l10n.aiPlatformAny),
-                    selected: state.platformId == null,
-                    onSelected: (_) => cubit.selectPlatform(null),
-                  ),
-                  for (final p in state.platforms)
-                    ChoiceChip(
-                      label: Text(p.label),
-                      selected: state.platformId == p.id,
-                      onSelected: (_) => cubit.selectPlatform(
-                        state.platformId == p.id ? null : p.id,
-                      ),
-                    ),
-                ],
-              ),
+              _buildPlatformChips(context, state),
             ],
             const SizedBox(height: PfSpace.xl),
             TextField(

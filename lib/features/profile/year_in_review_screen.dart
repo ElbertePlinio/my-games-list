@@ -660,7 +660,6 @@ class YearShareCard extends StatelessWidget {
                     ).textTheme.titleMedium!.copyWith(color: colors.textHi),
                   ),
                 ),
-
               ],
             ),
             const Spacer(),

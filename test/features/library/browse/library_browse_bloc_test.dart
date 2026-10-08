@@ -369,6 +369,82 @@ void main() {
     }
 
     blocTest<LibraryBrowseBloc, LibraryBrowseState>(
+      'an edit waits for its optimistic save before it reloads',
+      setUp: () => stubPage(_entries(0, 2), 2),
+      build: build,
+      seed: () => LibraryBrowseState(
+        status: LibraryBrowseStatus.success,
+        userId: 'u1',
+        entries: _entries(0, 2),
+        totalCount: 2,
+        nextOffset: 2,
+      ),
+      act: (b) async {
+        final favorite = [
+          entry(id: 'e0', igdbId: 0, name: 'Game 0', favorite: true),
+          ..._entries(1, 1),
+        ];
+        b.add(LibraryBrowseSourceChanged(_entries(0, 2)));
+        await Future<void>.delayed(Duration.zero);
+        b.add(LibraryBrowseSourceChanged(favorite, settled: false));
+        await Future<void>.delayed(Duration.zero);
+        // The row shows the change at once, but no read starts yet.
+        expect(b.state.entries.first.isFavorite, isTrue);
+        verifyNever(
+          () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+        );
+        b.add(LibraryBrowseSourceChanged(favorite));
+      },
+      verify: (_) => verify(
+        () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+      ).called(1),
+    );
+
+    test('a reload sent before a delete never brings the entry back', () async {
+      final read = Completer<LibraryEntriesResponse>();
+      when(
+        () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+      ).thenAnswer((_) => read.future);
+      final a = entry(id: 'a', igdbId: 1, name: 'Game A');
+      final aFavorite = entry(
+        id: 'a',
+        igdbId: 1,
+        name: 'Game A',
+        favorite: true,
+      );
+      final b = entry(id: 'b', igdbId: 2, name: 'Game B');
+      final bloc = build()
+        ..emit(
+          LibraryBrowseState(
+            status: LibraryBrowseStatus.success,
+            userId: 'u1',
+            entries: [a, b],
+            totalCount: 2,
+            nextOffset: 2,
+          ),
+        );
+      addTearDown(bloc.close);
+      Future<void> source(List<LibraryEntry> entries, {bool settled = true}) {
+        bloc.add(LibraryBrowseSourceChanged(entries, settled: settled));
+        return Future<void>.delayed(Duration.zero);
+      }
+
+      await source([a, b]);
+      // Favorite A: its save finishes and starts a reload.
+      await source([aFavorite, b], settled: false);
+      await source([aFavorite, b]);
+      // Delete B before that reload answers, and the delete succeeds.
+      await source([aFavorite], settled: false);
+      await source([aFavorite]);
+      // The older read still lists B.
+      read.complete(_page([aFavorite, b], 2));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(bloc.state.entries.map((e) => e.id), ['a']);
+      expect(bloc.state.totalCount, 1);
+    });
+
+    blocTest<LibraryBrowseBloc, LibraryBrowseState>(
       'a newly added library entry reloads the first page',
       setUp: () => stubPage(_entries(0, 4), 4),
       build: build,

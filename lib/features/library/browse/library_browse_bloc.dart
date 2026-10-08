@@ -53,7 +53,7 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
   /// replaces a newer one.
   int _generation = 0;
 
-  /// The shared library by entry id, and the ids its last change deleted.
+  /// The shared library by entry id, and the ids it deleted.
   Map<String, LibraryEntry>? _source;
   Set<String> _deletedIds = const {};
 
@@ -249,7 +249,12 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
     final previous = _source;
     _source = latest;
     if (previous == null) return;
-    _deletedIds = previous.keys.where((id) => !latest.containsKey(id)).toSet();
+    // Keep every deletion marker, so a read sent before a delete can never
+    // bring the row back. A rolled back delete brings its id back.
+    _deletedIds = {
+      ..._deletedIds,
+      ...previous.keys.where((id) => !latest.containsKey(id)),
+    }..removeAll(latest.keys);
     // A new or edited entry can change membership, order and totals.
     _reloadDue |= latest.entries.any((e) => previous[e.key] != e.value);
     _emitReconciled(emit);

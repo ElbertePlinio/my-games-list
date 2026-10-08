@@ -337,11 +337,11 @@ void main() {
       await t.pumpAndSettle();
       await t.tap(find.text('Change status'));
       await t.pumpAndSettle();
-      await t.tap(find.text('Finished').last);
+      await t.tap(find.text('Playing').last);
       await t.pumpAndSettle();
 
       final update = fromLibrary<LibraryUpdateEntryRequested>().single;
-      expect(update.status, GameStatus.finished);
+      expect(update.status, GameStatus.playing);
       expect(update.entry, row);
       expect(update.details, isNull);
     });

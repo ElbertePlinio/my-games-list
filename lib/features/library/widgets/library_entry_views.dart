@@ -35,8 +35,8 @@ String libraryEntrySemanticLabel(
 }
 
 /// Library list row: swipe right to toggle the favorite, swipe left to change
-/// the status. Both offer an undo. The menu repeats the actions for pointer
-/// and screen reader users.
+/// the status. Both offer an undo. The pencil opens the edit sheet, and the
+/// menu repeats the actions for pointer and screen reader users.
 class LibraryEntryRow extends StatelessWidget {
   const LibraryEntryRow({
     required this.entry,
@@ -83,6 +83,11 @@ class LibraryEntryRow extends StatelessWidget {
             addLabel: l10n.addToFavorites,
             removeLabel: l10n.favorited,
             onPressed: () => LibraryEntryActions.toggleFavorite(context, entry),
+          ),
+          IconButton(
+            tooltip: l10n.editEntry,
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => LibraryEntryActions.editEntry(context, entry),
           ),
           LibraryEntryMenuButton(entry: entry),
         ],
@@ -173,8 +178,8 @@ class _SwipeBackground extends StatelessWidget {
   }
 }
 
-/// Library grid card: cover with the user's score, status below, and a menu
-/// on the cover. Long press opens the status picker.
+/// Library grid card: cover with the user's score, status below, and edit
+/// and menu buttons on the cover. Long press opens the status picker.
 class LibraryEntryGridCard extends StatelessWidget {
   const LibraryEntryGridCard({
     required this.entry,
@@ -228,22 +233,50 @@ class LibraryEntryGridCard extends StatelessWidget {
           bottom:
               GameCard.captionHeightFor(MediaQuery.textScalerOf(context)) +
               PfSpace.xs,
-          child: Material(
-            color: PicklogColors.imageScrim.withValues(alpha: 0.6),
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: SizedBox.square(
-              dimension: 44,
-              child: LibraryEntryMenuButton(
-                entry: entry,
-                includeFavorite: true,
-                color: PicklogColors.onImage,
-                iconSize: 18,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _CoverAction(
+                child: IconButton(
+                  tooltip: l10n.editEntry,
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  color: PicklogColors.onImage,
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () =>
+                      LibraryEntryActions.editEntry(context, entry),
+                ),
               ),
-            ),
+              const SizedBox(height: PfSpace.xs),
+              _CoverAction(
+                child: LibraryEntryMenuButton(
+                  entry: entry,
+                  includeFavorite: true,
+                  color: PicklogColors.onImage,
+                  iconSize: 18,
+                ),
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Round 44px scrim button on a grid card cover.
+class _CoverAction extends StatelessWidget {
+  const _CoverAction({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: PicklogColors.imageScrim.withValues(alpha: 0.6),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox.square(dimension: 44, child: child),
     );
   }
 }

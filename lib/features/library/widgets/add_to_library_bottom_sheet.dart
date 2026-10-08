@@ -34,6 +34,8 @@ class AddToLibraryBottomSheet extends StatefulWidget {
     required this.gameName,
     required this.platforms,
     this.existingEntry,
+    this.initialStatus,
+    this.loadPlatforms,
     this.collectionsBloc,
   });
 
@@ -41,6 +43,14 @@ class AddToLibraryBottomSheet extends StatefulWidget {
   final String gameName;
   final List<Platform> platforms;
   final LibraryEntry? existingEntry;
+
+  /// Status to preselect instead of the entry's own, for example when the
+  /// user just picked Finished. Finished also fills an empty end date.
+  final GameStatus? initialStatus;
+
+  /// Loads the game's full platform list when [platforms] holds only the
+  /// entry's current platform.
+  final Future<List<Platform>> Function()? loadPlatforms;
 
   /// Source of the user's collections. Defaults to a provided bloc, then the
   /// shared instance in the service locator. Without one the collections
@@ -84,6 +94,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   String? _difficulty;
   bool _isFavorite = false;
   String? _notes;
+  late List<Platform> _platforms = widget.platforms;
 
   final _notesController = TextEditingController();
   final _difficultyController = TextEditingController();
@@ -108,6 +119,30 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   void initState() {
     super.initState();
     _initializeFromExisting();
+    _loadPlatforms();
+  }
+
+  Future<void> _loadPlatforms() async {
+    final load = widget.loadPlatforms;
+    if (load == null) return;
+    final List<Platform> loaded;
+    try {
+      loaded = await load();
+    } catch (_) {
+      // The current platform stays the only choice.
+      return;
+    }
+    if (!mounted || loaded.isEmpty) return;
+    final current = _selectedPlatform;
+    setState(() {
+      _platforms = [
+        ...loaded,
+        if (current != null && loaded.every((p) => p.id != current.id)) current,
+      ];
+      _selectedPlatform = current == null
+          ? null
+          : _platforms.firstWhere((p) => p.id == current.id);
+    });
   }
 
   @override
@@ -234,13 +269,21 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
       // Find matching platform
       if (entry.platform != null) {
-        _selectedPlatform = widget.platforms.cast<Platform?>().firstWhere(
+        _selectedPlatform = _platforms.cast<Platform?>().firstWhere(
           (p) => p?.id == entry.platform!.igdbPlatformId,
           orElse: () => null,
         );
       }
     } else {
       _selectedStatus = GameStatus.planned;
+    }
+    final initialStatus = widget.initialStatus;
+    if (initialStatus != null) {
+      _selectedStatus = initialStatus;
+      if (initialStatus == GameStatus.finished && _endDate == null) {
+        final now = DateTime.now();
+        _endDate = DateTime(now.year, now.month, now.day);
+      }
     }
     _detailsExpanded = _hasDetails;
   }
@@ -397,7 +440,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
                       // Step 1: the essentials.
                       _buildStatusSection(context),
-                      if (widget.platforms.isNotEmpty) ...[
+                      if (_platforms.isNotEmpty) ...[
                         const SizedBox(height: PfSpace.md),
                         _buildPlatformSection(context),
                       ],
@@ -571,6 +614,8 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     return _SheetSection(
       title: l10n.platformLabel,
       child: DropdownButtonFormField<Platform>(
+        // Rebuilds the field when the full platform list arrives.
+        key: ValueKey(_platforms.length),
         initialValue: _selectedPlatform,
         // Long platform names ellipsize instead of
         // overflowing at large text sizes.
@@ -578,7 +623,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
         decoration: InputDecoration(hintText: l10n.selectPlatformHint),
         items: [
           DropdownMenuItem<Platform>(value: null, child: Text(l10n.noneOption)),
-          ...widget.platforms.map((platform) {
+          ..._platforms.map((platform) {
             return DropdownMenuItem(
               value: platform,
               child: Text(platform.name, overflow: TextOverflow.ellipsis),

@@ -65,7 +65,12 @@ void main() {
 
     tearDown(() => libraryBloc.close());
 
-    Widget buildSubject({LibraryEntry? existingEntry}) {
+    Widget buildSubject({
+      LibraryEntry? existingEntry,
+      GameStatus? initialStatus,
+      List<Platform> sheetPlatforms = platforms,
+      Future<List<Platform>> Function()? loadPlatforms,
+    }) {
       return MaterialApp(
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -81,8 +86,10 @@ void main() {
             child: AddToLibraryBottomSheet(
               gameId: 42,
               gameName: 'Hollow Knight',
-              platforms: platforms,
+              platforms: sheetPlatforms,
               existingEntry: existingEntry,
+              initialStatus: initialStatus,
+              loadPlatforms: loadPlatforms,
             ),
           ),
         ),
@@ -312,6 +319,46 @@ void main() {
         find.text("Couldn't save your changes. Try again."),
         findsOneWidget,
       );
+    });
+
+    testWidgets('a Finished initial status keeps a set end date', (
+      tester,
+    ) async {
+      final entry = _buildEntry().copyWith(endDate: DateTime(2024, 3, 9));
+      await tester.pumpWidget(
+        buildSubject(existingEntry: entry, initialStatus: GameStatus.finished),
+      );
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      final event =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      expect(event.status, GameStatus.finished);
+      expect(event.details?.endDate, DateTime(2024, 3, 9));
+    });
+
+    testWidgets('loaded platforms replace the single current platform', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildSubject(
+          existingEntry: _buildEntry(),
+          sheetPlatforms: const [Platform(id: 6, name: 'PC')],
+          loadPlatforms: () async => platforms,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byType(DropdownButtonFormField<Platform>),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<Platform>));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PlayStation 4'), findsWidgets);
     });
   });
 }

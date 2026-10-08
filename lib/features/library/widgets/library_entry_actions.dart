@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/utils/service_locator.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
 import 'package:picklog/features/library/collections/widgets/collection_picker_sheet.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/widgets/add_to_library_bottom_sheet.dart';
 import 'package:picklog/features/library/widgets/status_picker_sheet.dart';
 import 'package:picklog/features/library/widgets/undo_snackbar.dart';
 
@@ -37,7 +41,59 @@ abstract final class LibraryEntryActions {
       gameName: entry.game.name,
     );
     if (next == null || next == entry.status || !context.mounted) return;
+    if (_editsOnStatus.contains(next)) {
+      // The sheet saves the status with the details. Closing it without
+      // saving still applies the status.
+      final saved = await editEntry(context, entry, initialStatus: next);
+      if (saved == true || !context.mounted) return;
+    }
     setStatus(context, entry, next);
+  }
+
+  /// Statuses that open the edit sheet, so the user can add a score, an end
+  /// date or a note while the game is fresh.
+  static const _editsOnStatus = {GameStatus.finished, GameStatus.dropped};
+
+  /// Opens the edit sheet for [entry]. Returns true when it saved or removed
+  /// the entry.
+  static Future<bool?> editEntry(
+    BuildContext context,
+    LibraryEntry entry, {
+    GameStatus? initialStatus,
+  }) {
+    final library = context.read<LibraryBloc>();
+    UserCollectionsBloc? collections;
+    try {
+      collections = context.read<UserCollectionsBloc>();
+    } on ProviderNotFoundException {
+      collections = null;
+    }
+    final platform = entry.platform;
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: false,
+      builder: (_) => BlocProvider.value(
+        value: library,
+        child: AddToLibraryBottomSheet(
+          gameId: entry.game.igdbId,
+          gameName: entry.game.name,
+          platforms: [
+            if (platform != null)
+              Platform(id: platform.igdbPlatformId, name: platform.name),
+          ],
+          loadPlatforms: sl.isRegistered<IGamesRepository>()
+              ? () async => (await sl<IGamesRepository>().getGameDetails(
+                  entry.game.igdbId,
+                )).platforms
+              : null,
+          existingEntry: entry,
+          initialStatus: initialStatus,
+          collectionsBloc: collections,
+        ),
+      ),
+    );
   }
 
   /// Saves [status] for [entry] and offers an undo.
@@ -75,7 +131,7 @@ abstract final class LibraryEntryActions {
 }
 
 /// Row and card overflow menu items.
-enum LibraryEntryMenuAction { changeStatus, collections, favorite }
+enum LibraryEntryMenuAction { edit, changeStatus, collections, favorite }
 
 /// Overflow menu for one entry.
 class LibraryEntryMenuButton extends StatelessWidget {
@@ -83,6 +139,7 @@ class LibraryEntryMenuButton extends StatelessWidget {
     required this.entry,
     this.color,
     this.includeFavorite = false,
+    this.includeEdit = false,
     this.iconSize,
     super.key,
   });
@@ -91,6 +148,7 @@ class LibraryEntryMenuButton extends StatelessWidget {
   final Color? color;
   final double? iconSize;
   final bool includeFavorite;
+  final bool includeEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +160,8 @@ class LibraryEntryMenuButton extends StatelessWidget {
       icon: Icon(Icons.more_vert, color: color),
       onSelected: (action) {
         switch (action) {
+          case LibraryEntryMenuAction.edit:
+            LibraryEntryActions.editEntry(context, entry);
           case LibraryEntryMenuAction.changeStatus:
             LibraryEntryActions.changeStatus(context, entry);
           case LibraryEntryMenuAction.collections:
@@ -111,6 +171,15 @@ class LibraryEntryMenuButton extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
+        if (includeEdit)
+          PopupMenuItem(
+            value: LibraryEntryMenuAction.edit,
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(l10n.editEntry),
+            ),
+          ),
         PopupMenuItem(
           value: LibraryEntryMenuAction.changeStatus,
           child: ListTile(

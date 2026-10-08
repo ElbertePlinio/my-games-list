@@ -63,10 +63,6 @@ class BacklogRouletteSheet extends StatelessWidget {
     final theme = Theme.of(context);
     return BlocBuilder<RouletteCubit, RouletteState>(
       builder: (context, state) {
-        final cubit = context.read<RouletteCubit>();
-        final candidates = state.candidates;
-        final platforms = state.platforms;
-
         if (state.backlog.isEmpty) {
           return Padding(
             padding: const EdgeInsets.only(bottom: PfSpace.xxl),
@@ -78,6 +74,7 @@ class BacklogRouletteSheet extends StatelessWidget {
           );
         }
 
+        final candidates = state.candidates;
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             PfSpace.xl,
@@ -103,41 +100,7 @@ class BacklogRouletteSheet extends StatelessWidget {
                     style: PfTypography.monoStyle(context.pfColors.textMed),
                   ),
                   const SizedBox(height: PfSpace.lg),
-                  if (platforms.length > 1) ...[
-                    _ChipRow(
-                      children: [
-                        ChoiceChip(
-                          label: Text(l10n.rouletteAnyPlatform),
-                          selected: state.platformId == null,
-                          onSelected: (_) => cubit.setPlatform(null),
-                        ),
-                        for (final p in platforms)
-                          ChoiceChip(
-                            label: Text(p.displayName),
-                            selected: state.platformId == p.igdbPlatformId,
-                            onSelected: (v) =>
-                                cubit.setPlatform(v ? p.igdbPlatformId : null),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: PfSpace.sm),
-                  ],
-                  _ChipRow(
-                    children: [
-                      ChoiceChip(
-                        label: Text(l10n.rouletteAnyLength),
-                        selected: state.maxHoursPlayed == null,
-                        onSelected: (_) => cubit.setMaxHoursPlayed(null),
-                      ),
-                      for (final h in hourOptions)
-                        ChoiceChip(
-                          label: Text(l10n.rouletteMaxHours(h)),
-                          selected: state.maxHoursPlayed == h,
-                          onSelected: (v) =>
-                              cubit.setMaxHoursPlayed(v ? h : null),
-                        ),
-                    ],
-                  ),
+                  ..._buildFilters(context, state),
                   const SizedBox(height: PfSpace.xl),
                   Center(
                     child: _SpinReel(
@@ -147,48 +110,9 @@ class BacklogRouletteSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: PfSpace.lg),
-                  if (candidates.isEmpty)
-                    Text(
-                      l10n.rouletteNoMatch,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium,
-                    )
-                  else if (state.picked != null)
-                    _PickDetails(entry: state.picked!)
-                  else
-                    Text(
-                      l10n.rouletteHint,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium!.copyWith(
-                        color: context.pfColors.textMed,
-                      ),
-                    ),
+                  _buildResult(context, state),
                   const SizedBox(height: PfSpace.xl),
-                  if (state.picked != null && candidates.isNotEmpty) ...[
-                    PfButton(
-                      key: const Key('roulette_start_button'),
-                      label: l10n.rouletteStartPlaying,
-                      icon: Icons.play_arrow_rounded,
-                      expand: true,
-                      onPressed: () => _start(context, state.picked!),
-                    ),
-                    const SizedBox(height: PfSpace.sm),
-                    PfButton(
-                      key: const Key('roulette_spin_button'),
-                      label: l10n.rouletteSpinAgain,
-                      icon: Icons.casino_outlined,
-                      variant: PfButtonVariant.secondary,
-                      expand: true,
-                      onPressed: candidates.length > 1 ? cubit.spin : null,
-                    ),
-                  ] else
-                    PfButton(
-                      key: const Key('roulette_spin_button'),
-                      label: l10n.rouletteSpin,
-                      icon: Icons.casino_outlined,
-                      expand: true,
-                      onPressed: candidates.isEmpty ? null : cubit.spin,
-                    ),
+                  ..._buildActions(context, state),
                 ],
               ),
             ),
@@ -196,6 +120,106 @@ class BacklogRouletteSheet extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// Platform chips (only with more than one platform) and length chips.
+  List<Widget> _buildFilters(BuildContext context, RouletteState state) {
+    final l10n = context.l10n;
+    final cubit = context.read<RouletteCubit>();
+    final platforms = state.platforms;
+    return [
+      if (platforms.length > 1) ...[
+        _ChipRow(
+          children: [
+            ChoiceChip(
+              label: Text(l10n.rouletteAnyPlatform),
+              selected: state.platformId == null,
+              onSelected: (_) => cubit.setPlatform(null),
+            ),
+            for (final p in platforms)
+              ChoiceChip(
+                label: Text(p.displayName),
+                selected: state.platformId == p.igdbPlatformId,
+                onSelected: (v) =>
+                    cubit.setPlatform(v ? p.igdbPlatformId : null),
+              ),
+          ],
+        ),
+        const SizedBox(height: PfSpace.sm),
+      ],
+      _ChipRow(
+        children: [
+          ChoiceChip(
+            label: Text(l10n.rouletteAnyLength),
+            selected: state.maxHoursPlayed == null,
+            onSelected: (_) => cubit.setMaxHoursPlayed(null),
+          ),
+          for (final h in hourOptions)
+            ChoiceChip(
+              label: Text(l10n.rouletteMaxHours(h)),
+              selected: state.maxHoursPlayed == h,
+              onSelected: (v) => cubit.setMaxHoursPlayed(v ? h : null),
+            ),
+        ],
+      ),
+    ];
+  }
+
+  /// The pick, a no-match note, or the spin hint.
+  Widget _buildResult(BuildContext context, RouletteState state) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    if (state.candidates.isEmpty) {
+      return Text(
+        l10n.rouletteNoMatch,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodyMedium,
+      );
+    }
+    if (state.picked != null) return _PickDetails(entry: state.picked!);
+    return Text(
+      l10n.rouletteHint,
+      textAlign: TextAlign.center,
+      style: theme.textTheme.bodyMedium!.copyWith(
+        color: context.pfColors.textMed,
+      ),
+    );
+  }
+
+  /// Start and spin again after a pick, else a single spin button.
+  List<Widget> _buildActions(BuildContext context, RouletteState state) {
+    final l10n = context.l10n;
+    final cubit = context.read<RouletteCubit>();
+    final candidates = state.candidates;
+    if (state.picked == null || candidates.isEmpty) {
+      return [
+        PfButton(
+          key: const Key('roulette_spin_button'),
+          label: l10n.rouletteSpin,
+          icon: Icons.casino_outlined,
+          expand: true,
+          onPressed: candidates.isEmpty ? null : cubit.spin,
+        ),
+      ];
+    }
+    return [
+      PfButton(
+        key: const Key('roulette_start_button'),
+        label: l10n.rouletteStartPlaying,
+        icon: Icons.play_arrow_rounded,
+        expand: true,
+        onPressed: () => _start(context, state.picked!),
+      ),
+      const SizedBox(height: PfSpace.sm),
+      PfButton(
+        key: const Key('roulette_spin_button'),
+        label: l10n.rouletteSpinAgain,
+        icon: Icons.casino_outlined,
+        variant: PfButtonVariant.secondary,
+        expand: true,
+        onPressed: candidates.length > 1 ? cubit.spin : null,
+      ),
+    ];
   }
 }
 

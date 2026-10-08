@@ -178,55 +178,6 @@ class _CollectionContent extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = context.pfColors;
     final wide = MediaQuery.sizeOf(context).width >= PfBreakpoints.twoPane;
-    final mosaicSize = wide ? 200.0 : 132.0;
-    final covers = collection.coverUrls.isNotEmpty
-        ? collection.coverUrls
-        : [
-            for (final e in entries.take(4))
-              if (e.game.coverUrl != null) e.game.coverUrl!,
-          ];
-
-    final header = Padding(
-      padding: const EdgeInsets.fromLTRB(
-        PfSpace.lg,
-        PfSpace.sm,
-        PfSpace.lg,
-        PfSpace.lg,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          SizedBox.square(
-            dimension: mosaicSize,
-            child: CollectionMosaic(
-              coverUrls: covers,
-              borderRadius: PfRadius.card,
-            ),
-          ),
-          const SizedBox(width: PfSpace.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Eyebrow(l10n.collectionEyebrow),
-                const SizedBox(height: PfSpace.xs),
-                Text(
-                  collection.name,
-                  style: theme.textTheme.headlineMedium,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: PfSpace.xs),
-                Text(
-                  l10n.collectionGameCount(entries.length),
-                  style: PfTypography.monoStyle(colors.textMed),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -238,7 +189,13 @@ class _CollectionContent extends StatelessWidget {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          SliverToBoxAdapter(child: header),
+          SliverToBoxAdapter(
+            child: _CollectionHeader(
+              collection: collection,
+              entries: entries,
+              wide: wide,
+            ),
+          ),
           if ((collection.description ?? '').isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
@@ -292,6 +249,75 @@ class _CollectionContent extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Cover mosaic, name and game count.
+class _CollectionHeader extends StatelessWidget {
+  const _CollectionHeader({
+    required this.collection,
+    required this.entries,
+    required this.wide,
+  });
+
+  final UserCollection collection;
+  final List<LibraryEntry> entries;
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final mosaicSize = wide ? 200.0 : 132.0;
+    final covers = collection.coverUrls.isNotEmpty
+        ? collection.coverUrls
+        : [
+            for (final e in entries.take(4))
+              if (e.game.coverUrl != null) e.game.coverUrl!,
+          ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        PfSpace.lg,
+        PfSpace.sm,
+        PfSpace.lg,
+        PfSpace.lg,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          SizedBox.square(
+            dimension: mosaicSize,
+            child: CollectionMosaic(
+              coverUrls: covers,
+              borderRadius: PfRadius.card,
+            ),
+          ),
+          const SizedBox(width: PfSpace.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Eyebrow(l10n.collectionEyebrow),
+                const SizedBox(height: PfSpace.xs),
+                Text(
+                  collection.name,
+                  style: theme.textTheme.headlineMedium,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: PfSpace.xs),
+                Text(
+                  l10n.collectionGameCount(entries.length),
+                  style: PfTypography.monoStyle(colors.textMed),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

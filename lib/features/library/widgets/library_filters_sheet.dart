@@ -59,22 +59,18 @@ class _LibraryFiltersSheetState extends State<LibraryFiltersSheet> {
     });
   }
 
+  void _reset() {
+    setState(() {
+      _draft = _draft.cleared().copyWith(query: _draft.query);
+      _score = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final colors = context.pfColors;
     final options = context.watch<FilterOptionsCubit>().state;
     final collections = context.watch<UserCollectionsBloc>().state;
-    final score = _score ?? (_draft.minScore ?? 0).toDouble();
-
-    Widget chips(List<Widget> children) => children.isEmpty
-        ? Text(
-            options.status == FilterOptionsStatus.failure
-                ? l10n.filterOptionsFailed
-                : l10n.loadingLabel,
-            style: Theme.of(context).textTheme.bodySmall,
-          )
-        : Wrap(spacing: PfSpace.sm, runSpacing: PfSpace.sm, children: children);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -92,166 +88,219 @@ class _LibraryFiltersSheetState extends State<LibraryFiltersSheet> {
               borderRadius: PfRadius.pillAll,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: PfSpace.sm),
-            child: Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.cancel),
-                ),
-                Expanded(
-                  child: Text(
-                    l10n.libraryFiltersTitle,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                TextButton(
-                  onPressed: _draft.hasActiveFilters
-                      ? () => setState(() {
-                          _draft = _draft.cleared().copyWith(
-                            query: _draft.query,
-                          );
-                          _score = null;
-                        })
-                      : null,
-                  child: Text(l10n.searchFiltersReset),
-                ),
-              ],
-            ),
-          ),
+          _buildHeader(context),
           Divider(height: 1, color: colors.hairline),
           Expanded(
             child: ListView(
               controller: controller,
               padding: const EdgeInsets.all(PfSpace.lg),
               children: [
-                FilterSectionCard(
-                  title: l10n.statusLabel,
-                  child: Wrap(
-                    spacing: PfSpace.sm,
-                    runSpacing: PfSpace.sm,
-                    children: [
-                      FilterChip(
-                        avatar: Icon(
-                          _draft.favoritesOnly
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          size: 16,
-                        ),
-                        label: Text(l10n.libraryFavoritesFilter),
-                        selected: _draft.favoritesOnly,
-                        onSelected: (v) => setState(
-                          () => _draft = _draft.copyWith(favoritesOnly: v),
-                        ),
-                      ),
-                      for (final status in GameStatus.values)
-                        FilterChip(
-                          avatar: Icon(status.icon, size: 16),
-                          label: Text(status.localizedName(context)),
-                          selected: _draft.statuses.contains(status),
-                          onSelected: (v) => setState(() {
-                            final next = {..._draft.statuses};
-                            v ? next.add(status) : next.remove(status);
-                            _draft = _draft.copyWith(statuses: next);
-                          }),
-                        ),
-                    ],
-                  ),
-                ),
+                _buildStatusCard(context),
                 const SizedBox(height: PfSpace.md),
-                FilterSectionCard(
-                  title: l10n.libraryFilterMinScore,
-                  trailing: Text(
-                    score <= 0
-                        ? l10n.filterAnyRating
-                        : l10n.filterRatingValue(score.round()),
-                    style: PfTypography.monoStyle(colors.textMed),
-                  ),
-                  child: Slider(
-                    value: score,
-                    max: 100,
-                    divisions: 20,
-                    label: '${score.round()}',
-                    onChanged: (v) => setState(() => _score = v),
-                    onChangeEnd: (v) => setState(() {
-                      _draft = v <= 0
-                          ? _draft.copyWith(clearMinScore: true)
-                          : _draft.copyWith(minScore: v.round());
-                    }),
-                  ),
-                ),
+                _buildScoreCard(context),
                 if (collections.hasCollections) ...[
                   const SizedBox(height: PfSpace.md),
-                  FilterSectionCard(
-                    title: l10n.libraryFilterCollection,
-                    child: Wrap(
-                      spacing: PfSpace.sm,
-                      runSpacing: PfSpace.sm,
-                      children: [
-                        for (final c in collections.collections)
-                          ChoiceChip(
-                            label: Text(c.name),
-                            selected: _draft.collectionId == c.id,
-                            onSelected: (v) => setState(
-                              () => _draft = v
-                                  ? _draft.copyWith(collectionId: c.id)
-                                  : _draft.copyWith(clearCollection: true),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                  _buildCollectionCard(context, collections),
                 ],
                 const SizedBox(height: PfSpace.md),
-                FilterSectionCard(
-                  title: l10n.searchFilterGenresLabel,
-                  child: chips([
-                    for (final g in options.genres)
-                      FilterChip(
-                        label: Text(g.name),
-                        selected: _draft.genreIds.contains(g.id),
-                        onSelected: (v) =>
-                            _toggleIds(_draft.genreIds, g.id, v, true),
-                      ),
-                  ]),
-                ),
-                const SizedBox(height: PfSpace.md),
-                FilterSectionCard(
-                  title: l10n.searchFilterPlatformsLabel,
-                  child: chips([
-                    for (final p in options.platforms)
-                      FilterChip(
-                        label: Text(p.label),
-                        tooltip: p.name,
-                        selected: _draft.platformIds.contains(p.id),
-                        onSelected: (v) =>
-                            _toggleIds(_draft.platformIds, p.id, v, false),
-                      ),
-                  ]),
-                ),
+                ..._buildFacetCards(context, options),
               ],
             ),
           ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                PfSpace.lg,
-                PfSpace.sm,
-                PfSpace.lg,
-                PfSpace.lg,
-              ),
-              child: PfButton(
-                key: const Key('library_filters_apply'),
-                label: l10n.searchFiltersApply,
-                expand: true,
-                onPressed: () => Navigator.of(context).pop(_draft),
-              ),
+          _buildApplyButton(context),
+        ],
+      ),
+    );
+  }
+
+  /// Cancel, title and reset.
+  Widget _buildHeader(BuildContext context) {
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: PfSpace.sm),
+      child: Row(
+        children: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.cancel),
+          ),
+          Expanded(
+            child: Text(
+              l10n.libraryFiltersTitle,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
+          TextButton(
+            onPressed: _draft.hasActiveFilters ? _reset : null,
+            child: Text(l10n.searchFiltersReset),
+          ),
         ],
+      ),
+    );
+  }
+
+  /// Favorites and status chips.
+  Widget _buildStatusCard(BuildContext context) {
+    final l10n = context.l10n;
+    return FilterSectionCard(
+      title: l10n.statusLabel,
+      child: Wrap(
+        spacing: PfSpace.sm,
+        runSpacing: PfSpace.sm,
+        children: [
+          FilterChip(
+            avatar: Icon(
+              _draft.favoritesOnly ? Icons.favorite : Icons.favorite_border,
+              size: 16,
+            ),
+            label: Text(l10n.libraryFavoritesFilter),
+            selected: _draft.favoritesOnly,
+            onSelected: (v) =>
+                setState(() => _draft = _draft.copyWith(favoritesOnly: v)),
+          ),
+          for (final status in GameStatus.values)
+            FilterChip(
+              avatar: Icon(status.icon, size: 16),
+              label: Text(status.localizedName(context)),
+              selected: _draft.statuses.contains(status),
+              onSelected: (v) => setState(() {
+                final next = {..._draft.statuses};
+                v ? next.add(status) : next.remove(status);
+                _draft = _draft.copyWith(statuses: next);
+              }),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Minimum score slider. Zero means any score.
+  Widget _buildScoreCard(BuildContext context) {
+    final l10n = context.l10n;
+    final score = _score ?? (_draft.minScore ?? 0).toDouble();
+    return FilterSectionCard(
+      title: l10n.libraryFilterMinScore,
+      trailing: Text(
+        score <= 0
+            ? l10n.filterAnyRating
+            : l10n.filterRatingValue(score.round()),
+        style: PfTypography.monoStyle(context.pfColors.textMed),
+      ),
+      child: Slider(
+        value: score,
+        max: 100,
+        divisions: 20,
+        label: '${score.round()}',
+        onChanged: (v) => setState(() => _score = v),
+        onChangeEnd: (v) => setState(() {
+          _draft = v <= 0
+              ? _draft.copyWith(clearMinScore: true)
+              : _draft.copyWith(minScore: v.round());
+        }),
+      ),
+    );
+  }
+
+  /// One-of collection chips.
+  Widget _buildCollectionCard(
+    BuildContext context,
+    UserCollectionsState collections,
+  ) {
+    return FilterSectionCard(
+      title: context.l10n.libraryFilterCollection,
+      child: Wrap(
+        spacing: PfSpace.sm,
+        runSpacing: PfSpace.sm,
+        children: [
+          for (final c in collections.collections)
+            ChoiceChip(
+              label: Text(c.name),
+              selected: _draft.collectionId == c.id,
+              onSelected: (v) => setState(
+                () => _draft = v
+                    ? _draft.copyWith(collectionId: c.id)
+                    : _draft.copyWith(clearCollection: true),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Genre and platform cards.
+  List<Widget> _buildFacetCards(
+    BuildContext context,
+    FilterOptionsState options,
+  ) {
+    final l10n = context.l10n;
+    return [
+      FilterSectionCard(
+        title: l10n.searchFilterGenresLabel,
+        child: _chips(context, options, [
+          for (final g in options.genres)
+            FilterChip(
+              label: Text(g.name),
+              selected: _draft.genreIds.contains(g.id),
+              onSelected: (v) => _toggleIds(_draft.genreIds, g.id, v, true),
+            ),
+        ]),
+      ),
+      const SizedBox(height: PfSpace.md),
+      FilterSectionCard(
+        title: l10n.searchFilterPlatformsLabel,
+        child: _chips(context, options, [
+          for (final p in options.platforms)
+            FilterChip(
+              label: Text(p.label),
+              tooltip: p.name,
+              selected: _draft.platformIds.contains(p.id),
+              onSelected: (v) => _toggleIds(_draft.platformIds, p.id, v, false),
+            ),
+        ]),
+      ),
+    ];
+  }
+
+  /// Chips, or a loading or failure note while options are missing.
+  Widget _chips(
+    BuildContext context,
+    FilterOptionsState options,
+    List<Widget> children,
+  ) {
+    if (children.isNotEmpty) {
+      return Wrap(
+        spacing: PfSpace.sm,
+        runSpacing: PfSpace.sm,
+        children: children,
+      );
+    }
+    final l10n = context.l10n;
+    return Text(
+      options.status == FilterOptionsStatus.failure
+          ? l10n.filterOptionsFailed
+          : l10n.loadingLabel,
+      style: Theme.of(context).textTheme.bodySmall,
+    );
+  }
+
+  /// Apply button that returns the draft.
+  Widget _buildApplyButton(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          PfSpace.lg,
+          PfSpace.sm,
+          PfSpace.lg,
+          PfSpace.lg,
+        ),
+        child: PfButton(
+          key: const Key('library_filters_apply'),
+          label: context.l10n.searchFiltersApply,
+          expand: true,
+          onPressed: () => Navigator.of(context).pop(_draft),
+        ),
       ),
     );
   }

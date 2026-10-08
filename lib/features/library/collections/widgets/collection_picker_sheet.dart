@@ -120,15 +120,12 @@ class _CollectionPickerSheetState extends State<CollectionPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final theme = Theme.of(context);
-    final colors = context.pfColors;
 
     return BlocConsumer<UserCollectionsBloc, UserCollectionsState>(
       listenWhen: (p, c) => p.mutation != c.mutation,
       listener: _onMutation,
       builder: (context, state) {
-        final pendingIds = {for (final p in _pending.values) p.$1};
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
           minChildSize: 0.35,
@@ -146,7 +143,7 @@ class _CollectionPickerSheetState extends State<CollectionPickerSheet> {
                   PfSpace.xs,
                 ),
                 child: Text(
-                  l10n.collectionPickerTitle,
+                  context.l10n.collectionPickerTitle,
                   style: theme.textTheme.titleLarge,
                 ),
               ),
@@ -160,99 +157,134 @@ class _CollectionPickerSheetState extends State<CollectionPickerSheet> {
                 ),
               ),
               const SizedBox(height: PfSpace.sm),
-              ListTile(
-                key: const Key('collection_picker_new'),
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: colors.surface2,
-                    borderRadius: PfRadius.mdAll,
-                    border: Border.all(color: colors.hairline),
-                  ),
-                  child: Icon(Icons.add, color: colors.textHi),
-                ),
-                title: Text(l10n.collectionNewTitle),
-                enabled: !state.atLimit,
-                subtitle: state.atLimit
-                    ? Text(l10n.collectionErrorLimit)
-                    : null,
-                onTap: _create,
-              ),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PfSpace.xl,
-                    vertical: PfSpace.xs,
-                  ),
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      _error!,
-                      style: theme.textTheme.bodySmall!.copyWith(
-                        color: colors.errorFg,
-                      ),
-                    ),
-                  ),
-                ),
-              if (state.isLoading && !state.hasCollections)
-                for (var i = 0; i < 3; i++)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: PfSpace.lg,
-                      vertical: PfSpace.sm,
-                    ),
-                    child: SkeletonBox(height: 44),
-                  )
-              else if (state.loadFailure != null && !state.hasCollections)
-                ListTile(
-                  title: Text(state.loadFailure!.message(context)),
-                  trailing: TextButton(
-                    onPressed: () => context.read<UserCollectionsBloc>().add(
-                      const UserCollectionsLoadRequested(),
-                    ),
-                    child: Text(l10n.browseRetry),
-                  ),
-                )
-              else if (!state.hasCollections)
-                Padding(
-                  padding: const EdgeInsets.all(PfSpace.xl),
-                  child: Text(
-                    l10n.collectionPickerEmpty,
-                    style: theme.textTheme.bodyMedium!.copyWith(
-                      color: colors.textMed,
-                    ),
-                  ),
-                )
-              else
-                for (final collection in state.collections)
-                  CheckboxListTile(
-                    key: ValueKey('collection_picker_${collection.id}'),
-                    value: _selected.contains(collection.id),
-                    onChanged: pendingIds.contains(collection.id)
-                        ? null
-                        : (checked) => _toggle(collection, checked ?? false),
-                    secondary: SizedBox.square(
-                      dimension: 44,
-                      child: CollectionMosaic(
-                        coverUrls: collection.coverUrls,
-                        borderRadius: PfRadius.sm,
-                        gap: 1,
-                      ),
-                    ),
-                    title: Text(
-                      collection.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      l10n.collectionGameCount(collection.gameCount),
-                    ),
-                  ),
+              _NewCollectionTile(atLimit: state.atLimit, onTap: _create),
+              if (_error != null) _buildError(context),
+              ..._buildCollections(context, state),
             ],
           ),
         );
       },
+    );
+  }
+
+  /// Save error, announced to screen readers.
+  Widget _buildError(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: PfSpace.xl,
+        vertical: PfSpace.xs,
+      ),
+      child: Semantics(
+        liveRegion: true,
+        child: Text(
+          _error!,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall!.copyWith(color: context.pfColors.errorFg),
+        ),
+      ),
+    );
+  }
+
+  /// Collection rows, or the loading, failure or empty state.
+  List<Widget> _buildCollections(
+    BuildContext context,
+    UserCollectionsState state,
+  ) {
+    final l10n = context.l10n;
+    if (state.isLoading && !state.hasCollections) {
+      return [
+        for (var i = 0; i < 3; i++)
+          const Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: PfSpace.lg,
+              vertical: PfSpace.sm,
+            ),
+            child: SkeletonBox(height: 44),
+          ),
+      ];
+    }
+    if (state.loadFailure != null && !state.hasCollections) {
+      return [
+        ListTile(
+          title: Text(state.loadFailure!.message(context)),
+          trailing: TextButton(
+            onPressed: () => context.read<UserCollectionsBloc>().add(
+              const UserCollectionsLoadRequested(),
+            ),
+            child: Text(l10n.browseRetry),
+          ),
+        ),
+      ];
+    }
+    if (!state.hasCollections) {
+      return [
+        Padding(
+          padding: const EdgeInsets.all(PfSpace.xl),
+          child: Text(
+            l10n.collectionPickerEmpty,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium!.copyWith(color: context.pfColors.textMed),
+          ),
+        ),
+      ];
+    }
+    final pendingIds = {for (final p in _pending.values) p.$1};
+    return [
+      for (final collection in state.collections)
+        CheckboxListTile(
+          key: ValueKey('collection_picker_${collection.id}'),
+          value: _selected.contains(collection.id),
+          onChanged: pendingIds.contains(collection.id)
+              ? null
+              : (checked) => _toggle(collection, checked ?? false),
+          secondary: SizedBox.square(
+            dimension: 44,
+            child: CollectionMosaic(
+              coverUrls: collection.coverUrls,
+              borderRadius: PfRadius.sm,
+              gap: 1,
+            ),
+          ),
+          title: Text(
+            collection.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(l10n.collectionGameCount(collection.gameCount)),
+        ),
+    ];
+  }
+}
+
+/// "New collection" row. Disabled at the collection limit.
+class _NewCollectionTile extends StatelessWidget {
+  const _NewCollectionTile({required this.atLimit, required this.onTap});
+
+  final bool atLimit;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.pfColors;
+    return ListTile(
+      key: const Key('collection_picker_new'),
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: colors.surface2,
+          borderRadius: PfRadius.mdAll,
+          border: Border.all(color: colors.hairline),
+        ),
+        child: Icon(Icons.add, color: colors.textHi),
+      ),
+      title: Text(l10n.collectionNewTitle),
+      enabled: !atLimit,
+      subtitle: atLimit ? Text(l10n.collectionErrorLimit) : null,
+      onTap: onTap,
     );
   }
 }

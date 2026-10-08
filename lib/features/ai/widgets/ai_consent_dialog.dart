@@ -10,7 +10,10 @@ import 'package:picklog/core/widgets/pf_button.dart';
 import 'package:picklog/core/widgets/pf_dialog.dart';
 import 'package:picklog/features/ai/bloc/ai_status_cubit.dart';
 
-/// Explicit opt-in for AI suggestions. Pops with `true` when the user agrees.
+/// What the user chose in [AiConsentDialog].
+enum AiConsentChoice { accept, decline, readPolicy }
+
+/// Explicit opt-in for AI suggestions. Pops with an [AiConsentChoice].
 ///
 /// It says in plain words what Picklog sends to OpenAI and what it never
 /// sends. Nothing is sent before the user accepts.
@@ -72,7 +75,11 @@ class AiConsentDialog extends StatelessWidget {
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: TextButton(
-                onPressed: () => context.pushNamed(AppRouter.privacyPolicyName),
+                // The dialog sits on a Navigator above the Router, so a
+                // route pushed from here would open under it. Close first;
+                // ensureAiConsent opens the policy and asks again.
+                onPressed: () =>
+                    Navigator.of(context).pop(AiConsentChoice.readPolicy),
                 style: TextButton.styleFrom(
                   foregroundColor: colors.textMed,
                   padding: EdgeInsets.zero,
@@ -87,11 +94,11 @@ class AiConsentDialog extends StatelessWidget {
         PfButton(
           label: l10n.aiConsentDecline,
           variant: PfButtonVariant.ghost,
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () => Navigator.of(context).pop(AiConsentChoice.decline),
         ),
         PfButton(
           label: l10n.aiConsentAccept,
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () => Navigator.of(context).pop(AiConsentChoice.accept),
         ),
       ],
     );
@@ -101,18 +108,29 @@ class AiConsentDialog extends StatelessWidget {
 /// Returns true when the user has AI consent, asking first if needed.
 ///
 /// Reads the route's [AiStatusCubit]. When the user accepts, consent is
-/// stored through the API before this returns.
+/// stored through the API before this returns. When the user opens the
+/// privacy policy, the dialog shows again after they come back.
 Future<bool> ensureAiConsent(BuildContext context) async {
   final cubit = context.read<AiStatusCubit>();
   if (cubit.state.isConsented) return true;
-  final accepted = await showPfDialog<bool>(
-    context: context,
-    builder: (_) => const AiConsentDialog(),
-  );
-  if (accepted != true) return false;
+  if (await _askAiConsent(context) != AiConsentChoice.accept) return false;
   final saved = await cubit.setConsent(true);
   if (!saved && context.mounted) {
     context.showErrorMessage(context.l10n.aiConsentSaveError);
   }
   return saved;
+}
+
+Future<AiConsentChoice?> _askAiConsent(BuildContext context) async {
+  while (true) {
+    if (!context.mounted) return null;
+    final choice = await showPfDialog<AiConsentChoice>(
+      context: context,
+      builder: (_) => const AiConsentDialog(),
+    );
+    if (choice != AiConsentChoice.readPolicy || !context.mounted) {
+      return choice;
+    }
+    await context.pushNamed<void>(AppRouter.privacyPolicyName);
+  }
 }

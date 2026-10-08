@@ -1,15 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/theme/app_theme.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/widgets/pf_dialog.dart';
 import 'package:picklog/features/ai/ai_models.dart';
 import 'package:picklog/features/ai/bloc/ai_status_cubit.dart';
 import 'package:picklog/features/ai/widgets/ai_consent_dialog.dart';
 import 'package:picklog/features/ai/widgets/ai_feature_gate.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../../helpers/stub_router_app.dart';
 import '../ai_fixtures.dart';
+
+/// Like the app: `MaterialApp.router` whose builder hosts its own Navigator
+/// above the Router, as `ConsentBanner` does. Dialogs use that outer
+/// Navigator, while named routes push onto the Router's Navigator.
+Widget _appWithOuterNavigator(Widget home) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(path: '/', builder: (_, _) => home),
+      GoRoute(
+        path: AppRouter.privacyPolicyPath,
+        name: AppRouter.privacyPolicyName,
+        builder: (context, _) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(),
+            child: const Text('policy page'),
+          ),
+        ),
+      ),
+    ],
+  );
+  return MaterialApp.router(
+    theme: AppTheme.dark(),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('en'),
+    routerConfig: router,
+    builder: (context, child) => Navigator(
+      onGenerateRoute: (settings) => PageRouteBuilder<void>(
+        settings: settings,
+        pageBuilder: (_, _, _) => child!,
+      ),
+    ),
+  );
+}
 
 void main() {
   late MockAiRepository repository;
@@ -35,16 +73,17 @@ void main() {
   testWidgets('dialog explains what is sent and what is never sent', (
     tester,
   ) async {
-    bool? result;
+    AiConsentChoice? result;
     await tester.pumpWidget(
       stubRouterApp(
         Builder(
           builder: (context) => Scaffold(
             body: TextButton(
-              onPressed: () async => result = await showPfDialog<bool>(
-                context: context,
-                builder: (_) => const AiConsentDialog(),
-              ),
+              onPressed: () async =>
+                  result = await showPfDialog<AiConsentChoice>(
+                    context: context,
+                    builder: (_) => const AiConsentDialog(),
+                  ),
               child: const Text('open'),
             ),
           ),
@@ -67,13 +106,13 @@ void main() {
 
     await tester.tap(find.text('Not now'));
     await tester.pumpAndSettle();
-    expect(result, isFalse);
+    expect(result, AiConsentChoice.decline);
 
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Turn on'));
     await tester.pumpAndSettle();
-    expect(result, isTrue);
+    expect(result, AiConsentChoice.accept);
   });
 
   testWidgets('gate opens the opt-in on first use and accepting stores it', (
@@ -93,6 +132,53 @@ void main() {
 
     verify(() => repository.setConsent(granted: true)).called(1);
     expect(find.text('ai content'), findsOneWidget);
+  });
+
+  testWidgets('the policy link opens the policy above the app and returns', (
+    tester,
+  ) async {
+    when(
+      () => repository.getStatus(),
+    ).thenAnswer((_) async => kStatusNoConsent);
+    when(
+      () => repository.setConsent(granted: true),
+    ).thenAnswer((_) async => const AiConsentResult(consented: true));
+    final cubit = AiStatusCubit(repository: repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    bool? accepted;
+    await tester.pumpWidget(
+      _appWithOuterNavigator(
+        BlocProvider.value(
+          value: cubit,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () async =>
+                    accepted = await ensureAiConsent(context),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Privacy Policy'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AiConsentDialog), findsNothing);
+    expect(find.text('policy page').hitTestable(), findsOneWidget);
+
+    await tester.tap(find.text('policy page'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AiConsentDialog), findsOneWidget);
+
+    await tester.tap(find.text('Turn on'));
+    await tester.pumpAndSettle();
+    expect(accepted, isTrue);
+    verify(() => repository.setConsent(granted: true)).called(1);
   });
 
   testWidgets('declining sends nothing and offers to review again', (

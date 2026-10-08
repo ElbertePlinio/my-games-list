@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:picklog/features/library/stats/library_stats_model.dart';
 
@@ -138,13 +139,18 @@ class MonthBarsPainter extends CustomPainter {
     }
   }
 
+  /// Inputs that change the drawing; lists compare by identity.
+  List<Object?> get _paintInputs => [
+    months,
+    addedColor,
+    finishedColor,
+    gridColor,
+    labelStyle,
+    monthLabels,
+    textScaler,
+  ];
+
   @override
   bool shouldRepaint(MonthBarsPainter old) =>
-      old.months != months ||
-      old.addedColor != addedColor ||
-      old.finishedColor != finishedColor ||
-      old.gridColor != gridColor ||
-      old.labelStyle != labelStyle ||
-      old.monthLabels != monthLabels ||
-      old.textScaler != textScaler;
+      !listEquals(old._paintInputs, _paintInputs);
 }

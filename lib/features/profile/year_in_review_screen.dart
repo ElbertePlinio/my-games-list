@@ -202,127 +202,178 @@ class _Story extends StatelessWidget {
   final GlobalKey shareKey;
   final VoidCallback? onShare;
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _introCard(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.pfColors;
     final theme = Theme.of(context);
+    return _StoryCard(
+      accent: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Eyebrow(l10n.yearInReviewEyebrow),
+          const SizedBox(height: PfSpace.md),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '$year',
+              maxLines: 1,
+              style: PfTypography.monoStyle(
+                colors.textHi,
+                size: 72,
+                weight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: PfSpace.sm),
+          Text(l10n.yearIntroTitle, style: theme.textTheme.headlineMedium),
+          const SizedBox(height: PfSpace.xs),
+          Text(
+            summary.isEmpty ? l10n.yearIntroEmpty : l10n.yearIntroHint,
+            style: theme.textTheme.bodyLarge!.copyWith(color: colors.textMed),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _totalsCard(BuildContext context) {
+    final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toString();
     final number = NumberFormat.decimalPattern(locale);
     final bigNumber = PfTypography.monoStyle(
-      colors.textHi,
+      context.pfColors.textHi,
       size: 56,
       weight: FontWeight.w600,
     );
+    return _StoryCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _BigStat(
+            label: l10n.yearGamesAdded,
+            child: CountUpText(
+              key: const Key('year_added_count'),
+              value: summary.added,
+              style: bigNumber,
+              format: number.format,
+            ),
+          ),
+          const SizedBox(height: PfSpace.xl),
+          _BigStat(
+            label: l10n.yearGamesFinished,
+            child: CountUpText(
+              key: const Key('year_finished_count'),
+              value: summary.finished,
+              style: bigNumber,
+              format: number.format,
+            ),
+          ),
+          const SizedBox(height: PfSpace.xl),
+          _BigStat(
+            label: l10n.yearHoursPlayed,
+            child: CountUpText(
+              key: const Key('year_hours_count'),
+              value: (summary.playtimeMinutes / 60).round(),
+              style: bigNumber,
+              format: number.format,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _monthsCard(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.pfColors;
+    final locale = Localizations.localeOf(context).toString();
     final monthLabels = [
       for (var m = 1; m <= 12; m++)
         DateFormat.MMM(
           locale,
         ).format(DateTime(2000, m)).substring(0, 1).toUpperCase(),
     ];
+    return _StoryCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Eyebrow(l10n.yearByMonth, muted: true),
+          const SizedBox(height: PfSpace.lg),
+          MonthBarsChart(
+            months: summary.byMonth,
+            addedColor: colors.toneFill(PfTone.info),
+            finishedColor: colors.toneFill(PfTone.connected),
+            gridColor: colors.hairlineStrong,
+            labelStyle: PfTypography.monoStyle(colors.textMed, size: 10),
+            monthLabels: monthLabels,
+            semanticLabel: l10n.yearByMonthSemantics(
+              summary.added,
+              summary.finished,
+            ),
+          ),
+          const SizedBox(height: PfSpace.md),
+          Wrap(
+            spacing: PfSpace.lg,
+            children: [
+              _Legend(
+                color: colors.toneFill(PfTone.info),
+                label: l10n.yearLegendAdded,
+              ),
+              _Legend(
+                color: colors.toneFill(PfTone.connected),
+                label: l10n.yearLegendFinished,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _shareCard(BuildContext context) {
+    final l10n = context.l10n;
+    return _StoryCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Eyebrow(l10n.yearShareEyebrow, muted: true),
+          const SizedBox(height: PfSpace.md),
+          Center(
+            child: RepaintBoundary(
+              key: shareKey,
+              child: YearShareCard(
+                year: year,
+                summary: summary,
+                topGenre: stats.topGenres.isEmpty
+                    ? null
+                    : stats.topGenres.first.name,
+              ),
+            ),
+          ),
+          const SizedBox(height: PfSpace.lg),
+          Center(
+            child: OutlinedButton.icon(
+              key: const Key('year_share_card_button'),
+              onPressed: onShare,
+              icon: const Icon(Icons.ios_share),
+              label: Text(l10n.yearShareAction),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
 
     final cards = <Widget>[
-      _StoryCard(
-        accent: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Eyebrow(l10n.yearInReviewEyebrow),
-            const SizedBox(height: PfSpace.md),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '$year',
-                maxLines: 1,
-                style: PfTypography.monoStyle(
-                  colors.textHi,
-                  size: 72,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: PfSpace.sm),
-            Text(l10n.yearIntroTitle, style: theme.textTheme.headlineMedium),
-            const SizedBox(height: PfSpace.xs),
-            Text(
-              summary.isEmpty ? l10n.yearIntroEmpty : l10n.yearIntroHint,
-              style: theme.textTheme.bodyLarge!.copyWith(color: colors.textMed),
-            ),
-          ],
-        ),
-      ),
-      _StoryCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _BigStat(
-              label: l10n.yearGamesAdded,
-              child: CountUpText(
-                key: const Key('year_added_count'),
-                value: summary.added,
-                style: bigNumber,
-                format: number.format,
-              ),
-            ),
-            const SizedBox(height: PfSpace.xl),
-            _BigStat(
-              label: l10n.yearGamesFinished,
-              child: CountUpText(
-                key: const Key('year_finished_count'),
-                value: summary.finished,
-                style: bigNumber,
-                format: number.format,
-              ),
-            ),
-            const SizedBox(height: PfSpace.xl),
-            _BigStat(
-              label: l10n.yearHoursPlayed,
-              child: CountUpText(
-                key: const Key('year_hours_count'),
-                value: (summary.playtimeMinutes / 60).round(),
-                style: bigNumber,
-                format: number.format,
-              ),
-            ),
-          ],
-        ),
-      ),
-      _StoryCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Eyebrow(l10n.yearByMonth, muted: true),
-            const SizedBox(height: PfSpace.lg),
-            MonthBarsChart(
-              months: summary.byMonth,
-              addedColor: colors.toneFill(PfTone.info),
-              finishedColor: colors.toneFill(PfTone.connected),
-              gridColor: colors.hairlineStrong,
-              labelStyle: PfTypography.monoStyle(colors.textMed, size: 10),
-              monthLabels: monthLabels,
-              semanticLabel: l10n.yearByMonthSemantics(
-                summary.added,
-                summary.finished,
-              ),
-            ),
-            const SizedBox(height: PfSpace.md),
-            Wrap(
-              spacing: PfSpace.lg,
-              children: [
-                _Legend(
-                  color: colors.toneFill(PfTone.info),
-                  label: l10n.yearLegendAdded,
-                ),
-                _Legend(
-                  color: colors.toneFill(PfTone.connected),
-                  label: l10n.yearLegendFinished,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      _introCard(context),
+      _totalsCard(context),
+      _monthsCard(context),
       if (summary.topRated.isNotEmpty)
         _StoryCard(
           child: Column(
@@ -360,36 +411,7 @@ class _Story extends StatelessWidget {
             entry: summary.firstFinished!,
           ),
         ),
-      _StoryCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Eyebrow(l10n.yearShareEyebrow, muted: true),
-            const SizedBox(height: PfSpace.md),
-            Center(
-              child: RepaintBoundary(
-                key: shareKey,
-                child: YearShareCard(
-                  year: year,
-                  summary: summary,
-                  topGenre: stats.topGenres.isEmpty
-                      ? null
-                      : stats.topGenres.first.name,
-                ),
-              ),
-            ),
-            const SizedBox(height: PfSpace.lg),
-            Center(
-              child: OutlinedButton.icon(
-                key: const Key('year_share_card_button'),
-                onPressed: onShare,
-                icon: const Icon(Icons.ios_share),
-                label: Text(l10n.yearShareAction),
-              ),
-            ),
-          ],
-        ),
-      ),
+      _shareCard(context),
     ];
 
     return ListView.separated(
@@ -594,6 +616,56 @@ class YearShareCard extends StatelessWidget {
 
   static const double width = 320;
 
+  static BoxDecoration _decoration(PicklogColors colors) => BoxDecoration(
+    color: colors.surface,
+    borderRadius: PfRadius.xlAll,
+    border: Border.all(color: colors.hairlineStrong),
+    gradient: RadialGradient(
+      center: const Alignment(0.9, -0.9),
+      radius: 1.2,
+      colors: [
+        Color.alphaBlend(colors.ember.withValues(alpha: 0.28), colors.surface),
+        colors.surface,
+      ],
+    ),
+  );
+
+  static Widget _brandRow(BuildContext context, PicklogColors colors) => Row(
+    children: [
+      const BrandMark(size: 28, variant: BrandMarkVariant.dark),
+      const SizedBox(width: PfSpace.sm),
+      Flexible(
+        child: Text(
+          context.l10n.appTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium!.copyWith(color: colors.textHi),
+        ),
+      ),
+    ],
+  );
+
+  static Widget _stat(String value, String caption, TextStyle valueStyle) =>
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(value, style: valueStyle),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              caption.toUpperCase(),
+              style: PfTypography.eyebrow(PicklogColors.dark.textMed),
+              maxLines: 1,
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     const colors = PicklogColors.dark;
@@ -606,62 +678,19 @@ class YearShareCard extends StatelessWidget {
       size: size,
       weight: FontWeight.w600,
     );
-    final label = PfTypography.eyebrow(colors.textMed);
-
-    Widget stat(String value, String caption) => Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(value, style: mono(30)),
-          ),
-          const SizedBox(height: 2),
-          Text(caption.toUpperCase(), style: label, maxLines: 1),
-        ],
-      ),
-    );
+    Widget stat(String value, String caption) =>
+        _stat(value, caption, mono(30));
 
     return MediaQuery.withNoTextScaling(
       child: Container(
         width: width,
         height: width * 5 / 4,
         padding: const EdgeInsets.all(PfSpace.xl),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: PfRadius.xlAll,
-          border: Border.all(color: colors.hairlineStrong),
-          gradient: RadialGradient(
-            center: const Alignment(0.9, -0.9),
-            radius: 1.2,
-            colors: [
-              Color.alphaBlend(
-                colors.ember.withValues(alpha: 0.28),
-                colors.surface,
-              ),
-              colors.surface,
-            ],
-          ),
-        ),
+        decoration: _decoration(colors),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const BrandMark(size: 28, variant: BrandMarkVariant.dark),
-                const SizedBox(width: PfSpace.sm),
-                Flexible(
-                  child: Text(
-                    l10n.appTitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium!.copyWith(color: colors.textHi),
-                  ),
-                ),
-              ],
-            ),
+            _brandRow(context, colors),
             const Spacer(),
             Text(
               l10n.yearInReviewEyebrow.toUpperCase(),

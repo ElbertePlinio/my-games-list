@@ -103,63 +103,16 @@ class _Dashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statsState = _maybeStats(context);
-    final stats = statsState?.stats;
-    final loading =
-        statsState != null &&
-        !statsState.hasStats &&
-        statsState.status != StatsStatus.failure;
-    final failed = statsState?.status == StatsStatus.failure && stats == null;
-
-    final header = _ProfileHeader(
-      name: name,
-      email: email,
-      totalGames: stats?.totalGames,
-    );
-    final statCards = _StatCards(stats: stats, loading: loading);
-    final distribution = stats == null
-        ? null
-        : _StatusDistribution(stats: stats);
-    final yearCard = _YearInReviewCard(year: year);
-    final tiles = _ActionTiles(stats: stats);
-    const favorites = _FavoritesShelf();
-    final genres = stats == null || stats.topGenres.isEmpty
-        ? null
-        : _RankedCard(
-            title: context.l10n.profileTopGenres,
-            items: [for (final g in stats.topGenres.take(5)) (g.name, g.count)],
-          );
-    final platforms = stats == null || stats.topPlatforms.isEmpty
-        ? null
-        : _RankedCard(
-            title: context.l10n.profileTopPlatforms,
-            items: [
-              for (final p in stats.topPlatforms.take(5))
-                (p.displayName, p.count),
-            ],
-          );
-    final error = failed
-        ? ErrorState(
-            compact: true,
-            message: context.l10n.profileStatsFailed,
-            onRetry: () => context.read<StatsCubit>().load(),
-          )
-        : null;
-    final settings = ListTile(
-      key: const Key('profile_settings_link'),
-      contentPadding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
-      shape: RoundedRectangleBorder(
-        borderRadius: PfRadius.cardAll,
-        side: BorderSide(color: context.pfColors.hairline),
+    final sections = _DashboardSections(
+      context,
+      statsState: statsState,
+      header: _ProfileHeader(
+        name: name,
+        email: email,
+        totalGames: statsState?.stats?.totalGames,
       ),
-      tileColor: context.pfColors.surface1,
-      leading: const Icon(Icons.settings_outlined),
-      title: Text(context.l10n.settingsTitle),
-      subtitle: Text(context.l10n.profileSettingsHint),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(AppRouter.settingsPath),
+      yearCard: _YearInReviewCard(year: year),
     );
-
-    const gap = SizedBox(height: PfSpace.lg);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -168,67 +121,7 @@ class _Dashboard extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= PfBreakpoints.twoPane;
-          final List<Widget> children;
-          if (wide) {
-            children = [
-              header,
-              const SizedBox(height: PfSpace.xl),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ?error,
-                        if (error != null) gap,
-                        statCards,
-                        if (distribution != null) ...[gap, distribution],
-                        gap,
-                        favorites,
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: PfSpace.xl),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        yearCard,
-                        gap,
-                        tiles,
-                        if (genres != null) ...[gap, genres],
-                        if (platforms != null) ...[gap, platforms],
-                        gap,
-                        settings,
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ];
-          } else {
-            children = [
-              header,
-              const SizedBox(height: PfSpace.xl),
-              ?error,
-              if (error != null) gap,
-              statCards,
-              gap,
-              yearCard,
-              gap,
-              tiles,
-              if (distribution != null) ...[gap, distribution],
-              gap,
-              favorites,
-              if (genres != null) ...[gap, genres],
-              if (platforms != null) ...[gap, platforms],
-              gap,
-              settings,
-            ];
-          }
+          final children = wide ? sections.wide() : sections.narrow();
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(
@@ -458,11 +351,171 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+/// The dashboard's sections, laid out in one column or two.
+class _DashboardSections {
+  _DashboardSections(
+    BuildContext context, {
+    required StatsState? statsState,
+    required this.header,
+    required this.yearCard,
+  }) : stats = statsState?.stats,
+       loading =
+           statsState != null &&
+           !statsState.hasStats &&
+           statsState.status != StatsStatus.failure,
+       failed =
+           statsState?.status == StatsStatus.failure &&
+           statsState?.stats == null {
+    settings = _settingsTile(context);
+    error = failed
+        ? ErrorState(
+            compact: true,
+            message: context.l10n.profileStatsFailed,
+            onRetry: () => context.read<StatsCubit>().load(),
+          )
+        : null;
+    final stats = this.stats;
+    genres = stats == null || stats.topGenres.isEmpty
+        ? null
+        : _RankedCard(
+            title: context.l10n.profileTopGenres,
+            items: [for (final g in stats.topGenres.take(5)) (g.name, g.count)],
+          );
+    platforms = stats == null || stats.topPlatforms.isEmpty
+        ? null
+        : _RankedCard(
+            title: context.l10n.profileTopPlatforms,
+            items: [
+              for (final p in stats.topPlatforms.take(5))
+                (p.displayName, p.count),
+            ],
+          );
+  }
+
+  static const _gap = SizedBox(height: PfSpace.lg);
+  static const _favorites = _FavoritesShelf();
+
+  final UserStats? stats;
+  final bool loading;
+  final bool failed;
+  final Widget header;
+  final Widget yearCard;
+  late final Widget settings;
+  late final Widget? error;
+  late final Widget? genres;
+  late final Widget? platforms;
+  late final Widget statCards = _StatCards(stats: stats, loading: loading);
+  late final Widget tiles = _ActionTiles(stats: stats);
+  late final Widget? distribution = switch (stats) {
+    final s? => _StatusDistribution(stats: s),
+    null => null,
+  };
+
+  static Widget _settingsTile(BuildContext context) => ListTile(
+    key: const Key('profile_settings_link'),
+    contentPadding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
+    shape: RoundedRectangleBorder(
+      borderRadius: PfRadius.cardAll,
+      side: BorderSide(color: context.pfColors.hairline),
+    ),
+    tileColor: context.pfColors.surface1,
+    leading: const Icon(Icons.settings_outlined),
+    title: Text(context.l10n.settingsTitle),
+    subtitle: Text(context.l10n.profileSettingsHint),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: () => context.push(AppRouter.settingsPath),
+  );
+
+  List<Widget> wide() => [
+    header,
+    const SizedBox(height: PfSpace.xl),
+    Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ?error,
+              if (error != null) _gap,
+              statCards,
+              if (distribution != null) ...[_gap, distribution!],
+              _gap,
+              _favorites,
+            ],
+          ),
+        ),
+        const SizedBox(width: PfSpace.xl),
+        Expanded(
+          flex: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              yearCard,
+              _gap,
+              tiles,
+              if (genres != null) ...[_gap, genres!],
+              if (platforms != null) ...[_gap, platforms!],
+              _gap,
+              settings,
+            ],
+          ),
+        ),
+      ],
+    ),
+  ];
+
+  List<Widget> narrow() => [
+    header,
+    const SizedBox(height: PfSpace.xl),
+    ?error,
+    if (error != null) _gap,
+    statCards,
+    _gap,
+    yearCard,
+    _gap,
+    tiles,
+    if (distribution != null) ...[_gap, distribution!],
+    _gap,
+    _favorites,
+    if (genres != null) ...[_gap, genres!],
+    if (platforms != null) ...[_gap, platforms!],
+    _gap,
+    settings,
+  ];
+}
+
 /// Stacked bar of the status counts with a legend.
 class _StatusDistribution extends StatelessWidget {
   const _StatusDistribution({required this.stats});
 
   final UserStats stats;
+
+  Widget _buildBar(PicklogColors colors, int total, List<GameStatus> visible) {
+    return ClipRRect(
+      borderRadius: PfRadius.pillAll,
+      child: SizedBox(
+        height: 12,
+        child: total == 0
+            ? ColoredBox(color: colors.surface3, child: const SizedBox.expand())
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < visible.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 2),
+                    Expanded(
+                      flex: stats.countFor(visible[i]),
+                      child: ColoredBox(
+                        color: colors.toneFill(visible[i].tone),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -488,31 +541,7 @@ class _StatusDistribution extends StatelessWidget {
               for (final s in visible)
                 '${s.localizedName(context)} ${stats.countFor(s)}',
             ].join(', '),
-            child: ClipRRect(
-              borderRadius: PfRadius.pillAll,
-              child: SizedBox(
-                height: 12,
-                child: total == 0
-                    ? ColoredBox(
-                        color: colors.surface3,
-                        child: const SizedBox.expand(),
-                      )
-                    : Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (var i = 0; i < visible.length; i++) ...[
-                            if (i > 0) const SizedBox(width: 2),
-                            Expanded(
-                              flex: stats.countFor(visible[i]),
-                              child: ColoredBox(
-                                color: colors.toneFill(visible[i].tone),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-              ),
-            ),
+            child: _buildBar(colors, total, visible),
           ),
           const SizedBox(height: PfSpace.md),
           ExcludeSemantics(

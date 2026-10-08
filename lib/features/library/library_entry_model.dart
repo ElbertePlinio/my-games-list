@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
 
 /// Enum representing the status of a game in the user's library
 enum GameStatus {
@@ -70,6 +71,9 @@ class CachedGame extends Equatable {
     this.coverUrl,
     this.firstReleaseDate,
     required this.lastSyncedAt,
+    this.totalRating,
+    this.slug,
+    this.genres = const [],
   });
 
   factory CachedGame.fromJson(Map<String, dynamic> json) {
@@ -82,6 +86,13 @@ class CachedGame extends Equatable {
           ? DateTime.parse(json['first_release_date'] as String)
           : null,
       lastSyncedAt: DateTime.parse(json['last_synced_at'] as String),
+      totalRating: (json['total_rating'] as num?)?.toDouble(),
+      slug: json['slug'] as String?,
+      genres:
+          (json['genres'] as List<dynamic>?)
+              ?.map((g) => Genre.fromJson(g as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
@@ -92,6 +103,11 @@ class CachedGame extends Equatable {
   final DateTime? firstReleaseDate;
   final DateTime lastSyncedAt;
 
+  /// IGDB community rating, 0-100.
+  final double? totalRating;
+  final String? slug;
+  final List<Genre> genres;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -100,6 +116,11 @@ class CachedGame extends Equatable {
       'cover_url': coverUrl,
       'first_release_date': firstReleaseDate?.toIso8601String(),
       'last_synced_at': lastSyncedAt.toIso8601String(),
+      'total_rating': totalRating,
+      'slug': slug,
+      'genres': [
+        for (final g in genres) {'id': g.id, 'name': g.name},
+      ],
     };
   }
 
@@ -111,6 +132,9 @@ class CachedGame extends Equatable {
     coverUrl,
     firstReleaseDate,
     lastSyncedAt,
+    totalRating,
+    slug,
+    genres,
   ];
 }
 
@@ -174,6 +198,7 @@ class LibraryEntry extends Equatable {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.collectionIds = const [],
   });
 
   factory LibraryEntry.fromJson(Map<String, dynamic> json) {
@@ -198,6 +223,11 @@ class LibraryEntry extends Equatable {
       notes: json['notes'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      collectionIds:
+          (json['collection_ids'] as List<dynamic>?)
+              ?.map((id) => id as String)
+              .toList() ??
+          const [],
     );
   }
 
@@ -216,6 +246,9 @@ class LibraryEntry extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// Ids of the caller's collections that hold this entry.
+  final List<String> collectionIds;
+
   /// Returns a copy of this entry with updated fields
   LibraryEntry copyWith({
     String? id,
@@ -232,6 +265,7 @@ class LibraryEntry extends Equatable {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<String>? collectionIds,
   }) {
     return LibraryEntry(
       id: id ?? this.id,
@@ -248,6 +282,7 @@ class LibraryEntry extends Equatable {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      collectionIds: collectionIds ?? this.collectionIds,
     );
   }
 
@@ -267,6 +302,7 @@ class LibraryEntry extends Equatable {
       'notes': notes,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'collection_ids': collectionIds,
     };
   }
 
@@ -286,6 +322,7 @@ class LibraryEntry extends Equatable {
     notes,
     createdAt,
     updatedAt,
+    collectionIds,
   ];
 }
 

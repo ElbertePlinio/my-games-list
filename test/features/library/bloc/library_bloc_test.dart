@@ -382,4 +382,62 @@ void main() {
       });
     });
   });
+
+  group('collection membership', () {
+    LibraryState seeded() => LibraryState(
+      status: LibraryStatus.success,
+      entries: [
+        _overhaulEntry('a', ['c-1', 'c-2']),
+        _overhaulEntry('b', ['c-2']),
+      ],
+    );
+
+    blocTest<LibraryBloc, LibraryState>(
+      'LibraryEntryCollectionsChanged patches one entry',
+      build: () => LibraryBloc(libraryRepository: _NoopRepository()),
+      seed: seeded,
+      act: (b) => b.add(
+        const LibraryEntryCollectionsChanged(
+          entryId: 'b',
+          collectionIds: ['c-3'],
+        ),
+      ),
+      verify: (b) {
+        expect(b.state.entries[0].collectionIds, ['c-1', 'c-2']);
+        expect(b.state.entries[1].collectionIds, ['c-3']);
+      },
+    );
+
+    blocTest<LibraryBloc, LibraryState>(
+      'LibraryCollectionRemoved drops the id everywhere',
+      build: () => LibraryBloc(libraryRepository: _NoopRepository()),
+      seed: seeded,
+      act: (b) => b.add(const LibraryCollectionRemoved(collectionId: 'c-2')),
+      verify: (b) {
+        expect(b.state.entries[0].collectionIds, ['c-1']);
+        expect(b.state.entries[1].collectionIds, isEmpty);
+      },
+    );
+  });
+}
+
+class _NoopRepository extends Mock implements LibraryRepository {}
+
+LibraryEntry _overhaulEntry(String id, List<String> collections) {
+  final now = DateTime(2026);
+  return LibraryEntry(
+    id: id,
+    userId: 'u',
+    game: CachedGame(
+      id: 'g$id',
+      igdbId: id.hashCode,
+      name: id,
+      lastSyncedAt: now,
+    ),
+    status: GameStatus.planned,
+    isFavorite: false,
+    createdAt: now,
+    updatedAt: now,
+    collectionIds: collections,
+  );
 }

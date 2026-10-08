@@ -1,6 +1,7 @@
 import 'package:picklog/core/data/services/http/i_http_client.dart';
 import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_query.dart';
 
 /// Repository for managing user's game library
 class LibraryRepository {
@@ -47,6 +48,31 @@ class LibraryRepository {
       response.dataOrThrow,
     );
     return libraryResponse.entries;
+  }
+
+  /// Fetches one page of the library with server-side [filters] and sort.
+  ///
+  /// Without [limit] the API returns every match. `total_count` in the
+  /// response is the match count before paging.
+  Future<LibraryEntriesResponse> queryLibrary(
+    String userId,
+    LibraryFilters filters, {
+    int? limit,
+    int? offset,
+  }) async {
+    final response = await _httpClient.get<Map<String, dynamic>>(
+      '/users/$userId/library',
+      queryParameters: filters.toQueryParameters(limit: limit, offset: offset),
+    );
+
+    if (response.isError) {
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch library',
+      );
+    }
+
+    return LibraryEntriesResponse.fromJson(response.dataOrThrow);
   }
 
   /// Adds a game to the user's library

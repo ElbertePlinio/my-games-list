@@ -17,6 +17,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<LibraryToggleFavoriteRequested>(_onToggleFavoriteRequested);
     on<LibraryFilterToggled>(_onFilterToggled);
     on<LibraryStatusFilterChanged>(_onStatusFilterChanged);
+    on<LibraryEntryCollectionsChanged>(_onEntryCollectionsChanged);
+    on<LibraryCollectionRemoved>(_onCollectionRemoved);
   }
 
   final LibraryRepository _libraryRepository;
@@ -228,5 +230,41 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     } else {
       emit(state.copyWith(statusFilter: event.status));
     }
+  }
+
+  void _onEntryCollectionsChanged(
+    LibraryEntryCollectionsChanged event,
+    Emitter<LibraryState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        entries: [
+          for (final entry in state.entries)
+            entry.id == event.entryId
+                ? entry.copyWith(collectionIds: event.collectionIds)
+                : entry,
+        ],
+      ),
+    );
+  }
+
+  void _onCollectionRemoved(
+    LibraryCollectionRemoved event,
+    Emitter<LibraryState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        entries: [
+          for (final entry in state.entries)
+            entry.collectionIds.contains(event.collectionId)
+                ? entry.copyWith(
+                    collectionIds: entry.collectionIds
+                        .where((id) => id != event.collectionId)
+                        .toList(),
+                  )
+                : entry,
+        ],
+      ),
+    );
   }
 }

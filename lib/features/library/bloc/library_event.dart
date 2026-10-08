@@ -150,3 +150,28 @@ class LibraryStatusFilterChanged extends LibraryEvent {
   @override
   List<Object?> get props => [status];
 }
+
+/// Applies a new collection membership to one entry after the collections
+/// API confirmed it. Local only; no request is sent.
+class LibraryEntryCollectionsChanged extends LibraryEvent {
+  const LibraryEntryCollectionsChanged({
+    required this.entryId,
+    required this.collectionIds,
+  });
+
+  final String entryId;
+  final List<String> collectionIds;
+
+  @override
+  List<Object?> get props => [entryId, collectionIds];
+}
+
+/// Drops a deleted collection id from every entry. Local only.
+class LibraryCollectionRemoved extends LibraryEvent {
+  const LibraryCollectionRemoved({required this.collectionId});
+
+  final String collectionId;
+
+  @override
+  List<Object?> get props => [collectionId];
+}

@@ -326,7 +326,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   void _save() {
     final bloc = context.read<LibraryBloc>();
     final requestId = LibraryBloc.newRequestId();
-    _requestId = requestId;
+    setState(() => _requestId = requestId);
     widget.onSavePending?.call(true);
 
     if (isEditing) {
@@ -510,7 +510,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     final requestId = _requestId;
     if (requestId == null) return;
     if (state.failure?.requestId == requestId) {
-      _requestId = null;
+      setState(() => _requestId = null);
       widget.onSavePending?.call(false);
       context.showErrorMessage(context.l10n.librarySaveFailed);
     }
@@ -589,7 +589,8 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
                 PfButton(
                   label: l10n.save,
                   size: PfButtonSize.sm,
-                  onPressed: _finishing ? null : _save,
+                  // One save at a time.
+                  onPressed: _finishing || _requestId != null ? null : _save,
                 ),
               ],
             ),

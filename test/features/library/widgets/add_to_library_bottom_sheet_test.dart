@@ -503,5 +503,16 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Edit entry'), findsNothing);
     });
+
+    testWidgets('Save is disabled while its save runs', (tester) async {
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      verify(() => libraryBloc.add(any())).called(1);
+    });
   });
 }

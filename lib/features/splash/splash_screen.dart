@@ -184,12 +184,16 @@ class _SplashMarkState extends State<_SplashMark>
           ),
         ),
         const SizedBox(height: PfSpace.xxxl),
-        const SizedBox(
+        // The bar moves on its own, so reduced motion keeps its space empty.
+        SizedBox(
           width: 96,
-          child: ClipRRect(
-            borderRadius: PfRadius.pillAll,
-            child: LinearProgressIndicator(minHeight: 2),
-          ),
+          height: 2,
+          child: PfMotion.reduced(context)
+              ? null
+              : const ClipRRect(
+                  borderRadius: PfRadius.pillAll,
+                  child: LinearProgressIndicator(minHeight: 2),
+                ),
         ),
       ],
     );

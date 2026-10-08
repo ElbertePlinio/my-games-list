@@ -85,6 +85,25 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
+    testWidgets('reduced motion shows a static loading state', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      whenListen(
+        mockAuthBloc,
+        const Stream<AuthState>.empty(),
+        initialState: const AuthInitial(),
+      );
+
+      await tester.pumpWidget(createSplashScreen());
+      await tester.pump();
+
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
     testWidgets('should dispatch AuthStateLoaded event on init', (
       tester,
     ) async {

@@ -55,8 +55,10 @@ class AiStatusCubit extends Cubit<AiStatusState> {
     emit(state.copyWith(load: AiStatusLoad.loading));
     try {
       final status = await _repository.getStatus();
+      if (isClosed) return;
       emit(state.copyWith(load: AiStatusLoad.ready, status: status));
     } catch (_) {
+      if (isClosed) return;
       emit(state.copyWith(load: AiStatusLoad.failure));
     }
   }
@@ -67,6 +69,7 @@ class AiStatusCubit extends Cubit<AiStatusState> {
     emit(state.copyWith(isSavingConsent: true));
     try {
       final result = await _repository.setConsent(granted: granted);
+      if (isClosed) return result.consented == granted;
       final current = state.status;
       emit(
         state.copyWith(
@@ -76,6 +79,7 @@ class AiStatusCubit extends Cubit<AiStatusState> {
       );
       return result.consented == granted;
     } catch (e) {
+      if (isClosed) return false;
       emit(
         state.copyWith(
           isSavingConsent: false,

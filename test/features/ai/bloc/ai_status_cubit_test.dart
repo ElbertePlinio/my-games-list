@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -140,5 +142,38 @@ void main() {
         ),
       ],
     );
+    for (final fails in [false, true]) {
+      test(
+        'closing before load finishes does not throw (fails: $fails)',
+        () async {
+          final pending = Completer<AiStatus>();
+          when(() => repository.getStatus()).thenAnswer((_) => pending.future);
+          final cubit = AiStatusCubit(repository: repository);
+          final loading = cubit.load();
+          await cubit.close();
+          fails
+              ? pending.completeError(const AiException(AiErrorKind.network))
+              : pending.complete(kStatusConsented);
+          await expectLater(loading, completes);
+        },
+      );
+
+      test(
+        'closing before setConsent finishes does not throw (fails: $fails)',
+        () async {
+          final pending = Completer<AiConsentResult>();
+          when(
+            () => repository.setConsent(granted: true),
+          ).thenAnswer((_) => pending.future);
+          final cubit = AiStatusCubit(repository: repository);
+          final saving = cubit.setConsent(true);
+          await cubit.close();
+          fails
+              ? pending.completeError(const AiException(AiErrorKind.network))
+              : pending.complete(const AiConsentResult(consented: true));
+          await expectLater(saving, completion(!fails));
+        },
+      );
+    }
   });
 }

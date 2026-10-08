@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/core/widgets/game_card.dart';
 import 'package:picklog/features/games/games_screen.dart';
 import 'package:picklog/features/games/widgets/skeletons/library_entry_skeleton.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/widgets/library_status_pill.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 
 import '../../mocks/mock_blocs.dart';
@@ -72,7 +76,7 @@ void main() {
     testWidgets('shows the library title', (tester) async {
       await tester.pumpWidget(buildSubject());
 
-      expect(find.widgetWithText(AppBar, 'My Library'), findsOneWidget);
+      expect(find.widgetWithText(AppBar, 'Library'), findsOneWidget);
     });
 
     testWidgets('loading with no entries renders the list skeleton', (
@@ -116,7 +120,7 @@ void main() {
       await tester.pumpWidget(buildSubject());
 
       expect(find.text('Your library is empty'), findsOneWidget);
-      expect(find.text('Add Your First Game'), findsOneWidget);
+      expect(find.text('Add your first game'), findsOneWidget);
     });
 
     testWidgets('a populated library renders a card per entry', (tester) async {
@@ -134,7 +138,94 @@ void main() {
 
       expect(find.text('Game A'), findsOneWidget);
       expect(find.text('Game B'), findsOneWidget);
-      expect(find.byType(Card), findsNWidgets(2));
+      expect(find.byType(GameTile), findsNWidgets(2));
+      // Status pills and the localized count header.
+      expect(find.byType(LibraryStatusPill), findsNWidgets(2));
+      expect(find.text('2 games'), findsOneWidget);
+    });
+
+    testWidgets('a failed favorite toggle shows a localized snackbar', (
+      tester,
+    ) async {
+      final entries = [_entry()];
+      whenListen(
+        bloc,
+        Stream<LibraryState>.fromIterable([
+          LibraryState(
+            status: LibraryStatus.success,
+            entries: entries,
+            failure: const LibraryFailure(
+              LibraryAction.toggleFavorite,
+              AppErrorKind.network,
+            ),
+          ),
+        ]),
+        initialState: LibraryState(
+          status: LibraryStatus.success,
+          entries: entries,
+        ),
+      );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump();
+
+      expect(
+        find.text("Couldn't update the favorite. Try again."),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a failed delete shows a localized snackbar', (tester) async {
+      whenListen(
+        bloc,
+        Stream<LibraryState>.fromIterable([
+          const LibraryState(
+            status: LibraryStatus.success,
+            failure: LibraryFailure(LibraryAction.delete, AppErrorKind.server),
+          ),
+        ]),
+        initialState: const LibraryState(status: LibraryStatus.success),
+      );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump();
+
+      expect(
+        find.text("Couldn't remove the game. It's back in your library."),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('playtime is localized', (tester) async {
+      final now = DateTime(2024, 1, 1);
+      when(() => bloc.state).thenReturn(
+        LibraryState(
+          status: LibraryStatus.success,
+          entries: [
+            LibraryEntry(
+              id: 'p',
+              userId: 'user-1',
+              game: CachedGame(
+                id: 'g',
+                igdbId: 9,
+                name: 'Long Game',
+                lastSyncedAt: now,
+              ),
+              status: GameStatus.finished,
+              playtimeMinutes: 750,
+              score: 88,
+              isFavorite: false,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(buildSubject());
+
+      expect(find.text('12.5 h'), findsOneWidget);
+      expect(find.text('88'), findsOneWidget);
     });
 
     testWidgets(

@@ -73,7 +73,7 @@ void main() {
       await tester.pumpWidget(createProfileScreen());
 
       // Assert
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     });
 
     testWidgets('should display user avatar', (tester) async {
@@ -88,8 +88,8 @@ void main() {
       await tester.pumpWidget(createProfileScreen());
 
       // Assert
-      expect(find.byType(CircleAvatar), findsOneWidget);
-      expect(find.byIcon(Icons.person), findsOneWidget);
+      // An initial-letter avatar on the ember tint.
+      expect(find.text('T'), findsOneWidget);
     });
 
     testWidgets('should display username from AuthBloc', (tester) async {
@@ -104,8 +104,9 @@ void main() {
       await tester.pumpWidget(createProfileScreen());
 
       // Assert
-      expect(find.text('Username'), findsOneWidget);
-      expect(find.text('Test User'), findsOneWidget);
+      expect(find.text('USERNAME'), findsOneWidget);
+      // Header and details card.
+      expect(find.text('Test User'), findsNWidgets(2));
     });
 
     testWidgets('should display email from AuthBloc', (tester) async {
@@ -120,8 +121,8 @@ void main() {
       await tester.pumpWidget(createProfileScreen());
 
       // Assert
-      expect(find.text('Email'), findsOneWidget);
-      expect(find.text('test@example.com'), findsOneWidget);
+      expect(find.text('EMAIL'), findsOneWidget);
+      expect(find.text('test@example.com'), findsNWidgets(2));
     });
 
     testWidgets('should display user info in a card', (tester) async {
@@ -151,8 +152,8 @@ void main() {
       await tester.pumpWidget(createProfileScreen());
 
       // Assert
-      expect(find.byIcon(Icons.account_circle), findsOneWidget);
-      expect(find.byIcon(Icons.email), findsOneWidget);
+      expect(find.byIcon(Icons.alternate_email), findsOneWidget);
+      expect(find.byIcon(Icons.mail_outline), findsOneWidget);
     });
 
     testWidgets('should navigate to settings when gear icon tapped', (
@@ -199,7 +200,7 @@ void main() {
       );
 
       // Act
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
 
       // Assert
@@ -243,14 +244,14 @@ void main() {
 
       // Act
       await tester.pumpWidget(createProfileScreen());
-      expect(find.text('Test User'), findsOneWidget);
+      expect(find.text('Test User'), findsNWidgets(2));
 
       // Pump to process state change
       await tester.pump();
 
       // Assert - Should show updated user
-      expect(find.text('Updated User'), findsOneWidget);
-      expect(find.text('updated@example.com'), findsOneWidget);
+      expect(find.text('Updated User'), findsNWidgets(2));
+      expect(find.text('updated@example.com'), findsNWidgets(2));
     });
 
     testWidgets('should have settings tooltip', (tester) async {

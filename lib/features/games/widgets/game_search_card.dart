@@ -1,22 +1,19 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:picklog/core/utils/image_utils.dart';
-import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/widgets/game_card.dart';
 import 'package:picklog/features/games/search_game_model.dart';
+import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
 
+/// Hero prefix for search result covers.
+const String kSearchHeroPrefix = 'search-';
+
+/// Search result row: cover, name, genres, platforms and release date.
 class GameSearchCard extends StatelessWidget {
   const GameSearchCard({super.key, required this.game});
 
   final SearchGame game;
-
-  void _openDetails(BuildContext context) {
-    context.pushNamed(
-      'gameDetails',
-      pathParameters: {'id': game.id.toString()},
-    );
-  }
 
   String _semanticsLabel() {
     final parts = <String>[game.name];
@@ -34,121 +31,31 @@ class GameSearchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Semantics(
-        label: _semanticsLabel(),
-        button: true,
-        excludeSemantics: true,
-        onTap: () => _openDetails(context),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _openDetails(context),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _GameCover(coverUrl: game.coverUrl, gameId: game.id),
-                const SizedBox(width: 16),
-                Expanded(child: _GameInfo(game: game)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GameCover extends StatelessWidget {
-  const _GameCover({this.coverUrl, required this.gameId});
-
-  final String? coverUrl;
-  final int gameId;
-
-  @override
-  Widget build(BuildContext context) {
-    // Use high-res cover URL
-    final highResCoverUrl = coverUrl != null
-        ? getHighResUrl(coverUrl!, ImageSize.coverBig)
-        : null;
-
-    return VisibilityHero(
-      tag: 'game-cover-$gameId',
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          width: 90,
-          height: 120,
-          child: highResCoverUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: highResCoverUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[800],
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => _PlaceholderCover(),
-                )
-              : _PlaceholderCover(),
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderCover extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.grey[800],
-      child: const Icon(Icons.videogame_asset, size: 48, color: Colors.white54),
-    );
-  }
-}
-
-class _GameInfo extends StatelessWidget {
-  const _GameInfo({required this.game});
-
-  final SearchGame game;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          game.name,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 8),
-        if (game.genres.isNotEmpty) ...[
+    final locale = Localizations.localeOf(context).toString();
+    return GameTile(
+      title: game.name,
+      coverUrl: game.coverUrl,
+      coverWidth: 64,
+      heroTag: gameCoverHeroTag(kSearchHeroPrefix, game.id),
+      semanticLabel: _semanticsLabel(),
+      onTap: () =>
+          openGameDetails(context, game.id, heroPrefix: kSearchHeroPrefix),
+      meta: [
+        if (game.genres.isNotEmpty)
           _InfoRow(
-            icon: Icons.category,
+            icon: Icons.category_outlined,
             text: game.genres.map((g) => g.name).take(2).join(', '),
           ),
-          const SizedBox(height: 4),
-        ],
-        if (game.platforms.isNotEmpty) ...[
+        if (game.platforms.isNotEmpty)
           _InfoRow(
-            icon: Icons.devices,
+            icon: Icons.devices_outlined,
             text: game.platforms.map((p) => p.name).take(2).join(', '),
           ),
-          const SizedBox(height: 4),
-        ],
-        if (game.firstReleaseDate != null) ...[
+        if (game.firstReleaseDate != null)
           _InfoRow(
-            icon: Icons.calendar_today,
-            text: DateFormat.yMMMd().format(game.firstReleaseDate!),
+            icon: Icons.calendar_today_outlined,
+            text: DateFormat.yMMMd(locale).format(game.firstReleaseDate!),
           ),
-        ],
       ],
     );
   }
@@ -162,21 +69,23 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+    final colors = context.pfColors;
+    return SizedBox(
+      width: double.infinity,
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: colors.textLow),
+          const SizedBox(width: PfSpace.xs + 2),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

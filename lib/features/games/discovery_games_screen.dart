@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/animated_state_switcher.dart';
+import 'package:picklog/core/widgets/app_scaffold.dart';
+import 'package:picklog/core/widgets/game_card.dart';
+import 'package:picklog/core/widgets/responsive_grid.dart';
+import 'package:picklog/core/widgets/staggered_reveal.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
 import 'package:picklog/features/games/bloc/discovery_games_event.dart';
 import 'package:picklog/features/games/bloc/discovery_games_state.dart';
@@ -79,185 +86,125 @@ class _DiscoveryGamesScreenState extends State<DiscoveryGamesScreen> {
   Widget _buildBody(BuildContext context, DiscoveryGamesState state) {
     final typeState = state.getStateForType(widget.discoveryType);
 
+    final Widget child;
+    final Object key;
     if (typeState.isLoading && !typeState.hasGames) {
-      return state.isGridView
+      key = 'loading-${state.isGridView}';
+      child = state.isGridView
           ? const DiscoveryGridSkeleton()
           : const DiscoveryListSkeleton();
-    }
-
-    if (typeState.status == DiscoveryGamesStatus.failure &&
+    } else if (typeState.status == DiscoveryGamesStatus.failure &&
         !typeState.hasGames) {
-      return _ErrorView(
+      key = 'error';
+      child = ErrorState(
         message: context.l10n.failedToLoadGames,
         onRetry: () => context.read<DiscoveryGamesBloc>().add(
           DiscoveryGamesLoadRequested(widget.discoveryType),
         ),
       );
+    } else if (!typeState.hasGames) {
+      key = 'empty';
+      child = EmptyState(
+        icon: Icons.games_outlined,
+        title: context.l10n.noGamesFound,
+        message: context.l10n.noGamesInCategory,
+      );
+    } else {
+      key = 'content-${state.isGridView}';
+      child = RefreshIndicator(
+        onRefresh: () async {
+          context.read<DiscoveryGamesBloc>().add(
+            const DiscoveryGamesRefreshRequested(),
+          );
+          // Wait for the bloc to finish loading
+          await context.read<DiscoveryGamesBloc>().stream.firstWhere(
+            (s) => !s.getStateForType(widget.discoveryType).isLoading,
+          );
+        },
+        child: state.isGridView
+            ? _buildGridView(context, typeState)
+            : _buildListView(context, typeState),
+      );
     }
 
-    if (!typeState.hasGames) {
-      return const _EmptyView();
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<DiscoveryGamesBloc>().add(
-          const DiscoveryGamesRefreshRequested(),
-        );
-        // Wait for the bloc to finish loading
-        await context.read<DiscoveryGamesBloc>().stream.firstWhere(
-          (s) => !s.getStateForType(widget.discoveryType).isLoading,
-        );
-      },
-      child: state.isGridView
-          ? _buildGridView(context, typeState)
-          : _buildListView(context, typeState),
+    return AnimatedStateSwitcher(
+      stateKey: key,
+      child: MaxWidthBox(maxWidth: 1440, child: child),
     );
   }
+
+  String get _heroPrefix => 'discovery-${widget.discoveryType.queryParam}-';
 
   Widget _buildGridView(BuildContext context, DiscoveryTypeState typeState) {
     return CustomScrollView(
       controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+          padding: const EdgeInsets.all(PfSpace.lg),
+          sliver: SliverResponsiveGrid(
+            itemCount: typeState.games.length,
+            childAspectRatio: kGameCardGridAspectRatio,
+            itemBuilder: (context, index) => StaggeredReveal(
+              index: index % 20,
+              child: DiscoveryGameTile(
+                game: typeState.games[index],
+                heroTagPrefix: _heroPrefix,
+              ),
             ),
-            delegate: SliverChildBuilderDelegate((context, index) {
-              if (index < typeState.games.length) {
-                return DiscoveryGameTile(game: typeState.games[index]);
-              }
-              return null;
-            }, childCount: typeState.games.length),
           ),
         ),
         if (typeState.isLoadingMore)
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          ),
+          const SliverToBoxAdapter(child: _LoadingMore()),
         if (typeState.offsetLimitReached)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(PfSpace.lg),
               child: Center(
                 child: Text(
                   context.l10n.reachedEnd,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             ),
           ),
-        // Bottom padding
-        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        const SliverToBoxAdapter(child: SizedBox(height: PfSpace.lg)),
       ],
     );
   }
 
   Widget _buildListView(BuildContext context, DiscoveryTypeState typeState) {
-    return ListView.builder(
+    return ListView.separated(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(PfSpace.lg),
       itemCount: typeState.games.length + (typeState.isLoadingMore ? 1 : 0),
+      separatorBuilder: (_, _) => const SizedBox(height: PfSpace.sm),
       itemBuilder: (context, index) {
-        if (index >= typeState.games.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final game = typeState.games[index];
-        return DiscoveryGameListTile(game: game);
+        if (index >= typeState.games.length) return const _LoadingMore();
+        return StaggeredReveal(
+          index: index % 20,
+          child: DiscoveryGameListTile(
+            game: typeState.games[index],
+            heroTagPrefix: _heroPrefix,
+          ),
+        );
       },
     );
   }
 }
 
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
+class _LoadingMore extends StatelessWidget {
+  const _LoadingMore();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.somethingWentWrong,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.browseRetry),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyView extends StatelessWidget {
-  const _EmptyView();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.games_outlined,
-              size: 72,
-              color: theme.colorScheme.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              context.l10n.noGamesFound,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              context.l10n.noGamesInCategory,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+    return const Padding(
+      padding: EdgeInsets.all(PfSpace.xl),
+      child: Center(
+        child: SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
         ),
       ),
     );

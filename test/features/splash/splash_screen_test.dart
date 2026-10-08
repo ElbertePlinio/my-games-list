@@ -9,7 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:picklog/core/data/services/storage/local_storage_service.dart';
 import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/service_locator.dart';
-import 'package:picklog/core/widgets/brand_logo.dart';
+import 'package:picklog/core/widgets/brand_mark.dart';
 import 'package:picklog/features/auth/auth_repository.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
 import 'package:picklog/features/auth/bloc/auth_event.dart';
@@ -68,7 +68,7 @@ void main() {
       );
     }
 
-    testWidgets('should display brand logo and name', (tester) async {
+    testWidgets('should display the brand mark and name', (tester) async {
       // Arrange
       whenListen(
         mockAuthBloc,
@@ -80,10 +80,9 @@ void main() {
       await tester.pumpWidget(createSplashScreen());
 
       // Assert
-      expect(find.byType(BrandLogo), findsOneWidget);
-      expect(find.byIcon(Icons.games), findsOneWidget);
+      expect(find.byType(BrandMark), findsOneWidget);
       expect(find.text('Picklog'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
     testWidgets('should dispatch AuthStateLoaded event on init', (

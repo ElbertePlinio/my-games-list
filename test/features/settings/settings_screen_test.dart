@@ -14,6 +14,7 @@ import 'package:picklog/features/consent/bloc/consent_state.dart';
 import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
 import 'package:picklog/features/settings/bloc/account_management_state.dart';
 import 'package:picklog/features/settings/bloc/settings_bloc.dart';
+import 'package:picklog/features/settings/bloc/settings_event.dart';
 import 'package:picklog/features/settings/bloc/settings_state.dart';
 import 'package:picklog/features/settings/services/account_export_saver.dart';
 import 'package:picklog/features/settings/settings_screen.dart';
@@ -128,7 +129,7 @@ void main() {
   testWidgets('shows the privacy & data actions', (tester) async {
     await tester.pumpWidget(buildScreen());
 
-    expect(find.text('Privacy & data'), findsOneWidget);
+    expect(find.text('PRIVACY & DATA'), findsOneWidget);
     expect(find.text('Export my data'), findsOneWidget);
     expect(find.text('Delete my account'), findsOneWidget);
   });
@@ -220,5 +221,42 @@ void main() {
     verify(
       () => mockConsentCubit.setCategory(ConsentCategory.crash, granted: true),
     ).called(1);
+  });
+
+  testWidgets('the theme selector offers System, Light and Dark', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    expect(find.text('System'), findsOneWidget);
+    expect(find.text('Light'), findsOneWidget);
+    expect(find.text('Dark'), findsOneWidget);
+    final selector = tester.widget<SegmentedButton<ThemeMode>>(
+      find.byType(SegmentedButton<ThemeMode>),
+    );
+    expect(selector.selected, {ThemeMode.system});
+
+    await tester.tap(find.text('Dark'));
+    await tester.pump();
+
+    verify(
+      () => mockSettingsBloc.add(const SettingsThemeModeSet(ThemeMode.dark)),
+    ).called(1);
+  });
+
+  testWidgets('logout is a destructive outlined button', (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    final logout = find.widgetWithText(OutlinedButton, 'Logout');
+    await tester.ensureVisible(logout);
+    await tester.pumpAndSettle();
+    expect(logout, findsOneWidget);
+
+    await tester.tap(logout);
+    await tester.pump();
+
+    verify(() => mockAuthBloc.add(const AuthLogoutRequested())).called(1);
   });
 }

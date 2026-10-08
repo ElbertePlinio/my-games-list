@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/features/games/bloc/game_details_event.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/games/bloc/game_details_bloc.dart';
 import 'package:picklog/features/games/bloc/game_details_state.dart';
@@ -47,6 +49,10 @@ LibraryEntry _entry({GameStatus status = GameStatus.playing}) {
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(const GameDetailsLoadRequested(0));
+  });
+
   group('GameDetailsScreen', () {
     late MockGameDetailsBloc detailsBloc;
     late MockLibraryBloc libraryBloc;
@@ -92,21 +98,27 @@ void main() {
       expect(find.byType(GameDetailsSkeleton), findsOneWidget);
     });
 
-    testWidgets('failure state renders the error message and icon', (
+    testWidgets('failure state renders a localized message and retries', (
       tester,
     ) async {
       when(() => detailsBloc.state).thenReturn(
         const GameDetailsState(
           status: GameDetailsStatus.failure,
-          errorMessage: 'Boom',
+          errorKind: AppErrorKind.notFound,
         ),
       );
 
       await tester.pumpWidget(buildSubject());
+      await tester.pumpAndSettle();
 
       expect(find.text('Error loading data'), findsOneWidget);
-      expect(find.text('Boom'), findsOneWidget);
+      expect(find.text("We couldn't find that."), findsOneWidget);
       expect(find.byIcon(Icons.error_outline), findsOneWidget);
+
+      await tester.tap(find.text('Try again'));
+      verify(
+        () => detailsBloc.add(any(that: isA<GameDetailsLoadRequested>())),
+      ).called(1);
     });
 
     testWidgets('success state renders the game name, genres and platforms', (
@@ -117,13 +129,38 @@ void main() {
       );
 
       await tester.pumpWidget(buildSubject());
+      await tester.pumpAndSettle();
 
-      expect(find.text('Hollow Knight'), findsOneWidget);
+      // The name shows in the title block (the collapsed bar title is hidden).
+      expect(find.text('Hollow Knight'), findsWidgets);
       expect(find.text('Metroidvania'), findsOneWidget);
       expect(find.text('PC'), findsOneWidget);
+      // No absent section leaves a header behind.
+      expect(find.text('Screenshots'), findsNothing);
+      expect(find.text('Similar games'), findsNothing);
     });
 
-    testWidgets('FAB shows the add label when the game is not in the library', (
+    testWidgets('uses a two-pane layout from 840 wide', (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => detailsBloc.state).thenReturn(
+        const GameDetailsState(status: GameDetailsStatus.success, game: _game),
+      );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pumpAndSettle();
+
+      final addButton = tester.getTopLeft(find.text('Add to library'));
+      final description = tester.getTopLeft(
+        find.text('A challenging Metroidvania.'),
+      );
+      // The action sits in the left pane, the description to its right.
+      expect(addButton.dx, lessThan(description.dx));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shows an add button when the game is not in the library', (
       tester,
     ) async {
       when(() => detailsBloc.state).thenReturn(
@@ -133,12 +170,16 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
 
-      expect(find.widgetWithText(FloatingActionButton, 'Add'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Add to library'),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.add), findsOneWidget);
+      expect(find.text('IN YOUR LIBRARY'), findsNothing);
     });
 
-    testWidgets('FAB shows the status label and edit icon when the game is in '
-        'the library', (tester) async {
+    testWidgets('shows the in-library card with status and edit when the game '
+        'is in the library', (tester) async {
       when(() => detailsBloc.state).thenReturn(
         const GameDetailsState(status: GameDetailsStatus.success, game: _game),
       );
@@ -151,16 +192,14 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
 
-      expect(
-        find.widgetWithText(FloatingActionButton, 'Playing'),
-        findsOneWidget,
-      );
-      expect(find.byIcon(Icons.edit), findsOneWidget);
+      expect(find.text('IN YOUR LIBRARY'), findsOneWidget);
+      expect(find.text('Playing'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Edit entry'), findsOneWidget);
       // The favorite action appears only for library entries.
       expect(find.byIcon(Icons.favorite_border), findsOneWidget);
     });
 
-    testWidgets('tapping the FAB opens the add-to-library bottom sheet', (
+    testWidgets('tapping add opens the add-to-library bottom sheet', (
       tester,
     ) async {
       when(() => detailsBloc.state).thenReturn(
@@ -169,11 +208,12 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.widgetWithText(FilledButton, 'Add to library'));
       await tester.pumpAndSettle();
 
-      // The sheet header confirms it opened.
-      expect(find.text('Add to Library'), findsOneWidget);
+      // The sheet header confirms it opened (the screen button is covered).
+      expect(find.text('Add to library'), findsNWidgets(2));
+      expect(find.text('Save'), findsOneWidget);
     });
   });
 }

@@ -224,8 +224,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('New Releases'), findsOneWidget);
-    expect(find.text('Coming Soon'), findsOneWidget);
+    expect(find.text('New releases'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
     // The same game appears in both release rows; each row carries a distinct
     // Hero prefix so they don't collide with each other (both stay alive) nor
     // with the Home tab.
@@ -302,8 +302,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // Each loading release row shimmers a skeleton row; the titles still show.
-    expect(find.text('New Releases'), findsOneWidget);
-    expect(find.text('Coming Soon'), findsOneWidget);
+    expect(find.text('New releases'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
     expect(find.byType(DiscoveryRowSkeleton), findsWidgets);
   });
 
@@ -329,7 +329,7 @@ void main() {
     expect(find.text('Collections'), findsNothing);
   });
 
-  testWidgets('collapses the collections block on failure', (tester) async {
+  testWidgets('shows an inline retry when collections fail', (tester) async {
     when(() => genresBloc.state).thenReturn(
       const BrowseGenresState(
         status: BrowseGenresStatus.success,
@@ -345,11 +345,14 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Editorial content hides on error rather than showing an empty placeholder;
-    // with the group header dropped there is no dangling label/gap.
+    // A failed load is visible with a retry instead of silently hiding.
     expect(find.byType(CollectionsWidget), findsOneWidget);
-    expect(find.text('Collections'), findsNothing);
-    expect(find.byType(DiscoveryRowSkeleton), findsNothing);
+    expect(find.text('Collections'), findsOneWidget);
+    await tester.ensureVisible(find.text('Try again').last);
+    await tester.tap(find.text('Try again').last);
+    verify(
+      () => collectionsBloc.add(const CollectionsLoadRequested()),
+    ).called(greaterThanOrEqualTo(1));
   });
 
   testWidgets('collapses the collections block when empty', (tester) async {

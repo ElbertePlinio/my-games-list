@@ -3,11 +3,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/widgets/app_scaffold.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
+import 'package:picklog/core/widgets/section_header.dart';
 import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/staggered_reveal.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/browse/bloc/browse_genres_bloc.dart';
 import 'package:picklog/features/browse/bloc/browse_genres_event.dart';
 import 'package:picklog/features/browse/bloc/browse_genres_state.dart';
-import 'package:picklog/features/browse/widgets/browse_status_views.dart';
 import 'package:picklog/features/games/bloc/collections_bloc.dart';
 import 'package:picklog/features/games/bloc/collections_event.dart';
 import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
@@ -39,16 +45,26 @@ class BrowseScreen extends StatelessWidget {
       appBar: AppBar(title: Text(context.l10n.browseTitle)),
       body: RefreshIndicator(
         onRefresh: () => _refreshAll(context),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            _GenresSection(),
-            SizedBox(height: 8),
-            _ReleasesSection(),
-            SizedBox(height: 8),
-            _CollectionsSection(),
-            SizedBox(height: 16),
-          ],
+        child: MaxWidthBox(
+          maxWidth: 1440,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  PfSpace.lg,
+                  PfSpace.xs,
+                  PfSpace.lg,
+                  0,
+                ),
+                child: Eyebrow(context.l10n.browseEyebrow),
+              ),
+              const _GenresSection(),
+              const _ReleasesSection(),
+              const _CollectionsSection(),
+              const SizedBox(height: PfSpace.xxl),
+            ],
+          ),
         ),
       ),
     );
@@ -77,29 +93,6 @@ class BrowseScreen extends StatelessWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Semantics(
-        header: true,
-        child: Text(
-          title,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _GenresSection extends StatelessWidget {
   const _GenresSection();
 
@@ -110,7 +103,15 @@ class _GenresSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionHeader(title: context.l10n.browseGenresSection),
+            SectionHeader(
+              title: context.l10n.browseGenresSection,
+              padding: const EdgeInsets.fromLTRB(
+                PfSpace.lg,
+                PfSpace.md,
+                PfSpace.lg,
+                PfSpace.md,
+              ),
+            ),
             _GenresBody(state: state),
           ],
         );
@@ -131,7 +132,8 @@ class _GenresBody extends StatelessWidget {
     }
 
     if (state.status == BrowseGenresStatus.failure && !state.hasGenres) {
-      return BrowseErrorView(
+      return ErrorState(
+        compact: true,
         message: context.l10n.browseGenresError,
         onRetry: () => context.read<BrowseGenresBloc>().add(
           const BrowseGenresLoadRequested(),
@@ -140,9 +142,10 @@ class _GenresBody extends StatelessWidget {
     }
 
     if (!state.hasGenres) {
-      return BrowseEmptyView(
+      return EmptyState(
+        compact: true,
         icon: Icons.category_outlined,
-        message: context.l10n.browseGenresEmpty,
+        title: context.l10n.browseGenresEmpty,
       );
     }
 
@@ -151,10 +154,13 @@ class _GenresBody extends StatelessWidget {
 }
 
 int _genresCrossAxisCount(double width) {
+  if (width >= 1200) return 5;
   if (width >= 900) return 4;
   if (width >= 600) return 3;
   return 2;
 }
+
+const double _genreAspectRatio = 2.6;
 
 class _GenresGrid extends StatelessWidget {
   const _GenresGrid({required this.genres});
@@ -164,21 +170,24 @@ class _GenresGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final crossAxisCount = _genresCrossAxisCount(
-      MediaQuery.sizeOf(context).width,
+      MediaQuery.sizeOf(context).width.clamp(0, 1440).toDouble(),
     );
 
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 2.4,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        childAspectRatio: _genreAspectRatio,
+        crossAxisSpacing: PfSpace.md,
+        mainAxisSpacing: PfSpace.md,
       ),
       itemCount: genres.length,
-      itemBuilder: (context, index) => _GenreCard(genre: genres[index]),
+      itemBuilder: (context, index) => StaggeredReveal(
+        index: index,
+        child: _GenreCard(genre: genres[index]),
+      ),
     );
   }
 }
@@ -194,63 +203,115 @@ class _GenresGridSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final crossAxisCount = _genresCrossAxisCount(
-      MediaQuery.sizeOf(context).width,
+      MediaQuery.sizeOf(context).width.clamp(0, 1440).toDouble(),
     );
 
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 2.4,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        childAspectRatio: _genreAspectRatio,
+        crossAxisSpacing: PfSpace.md,
+        mainAxisSpacing: PfSpace.md,
       ),
       itemCount: _itemCount,
-      itemBuilder: (context, index) => const SkeletonBox(),
+      itemBuilder: (context, index) =>
+          const SkeletonBox(borderRadius: PfRadius.card),
     );
   }
 }
+
+/// Icon for an IGDB genre id, with a neutral fallback.
+IconData genreIcon(int id) => switch (id) {
+  2 => Icons.ads_click,
+  4 => Icons.sports_mma,
+  5 => Icons.gps_fixed,
+  7 => Icons.music_note_outlined,
+  8 => Icons.stairs_outlined,
+  9 => Icons.extension_outlined,
+  10 => Icons.speed,
+  11 || 15 || 16 => Icons.castle_outlined,
+  12 => Icons.auto_fix_high_outlined,
+  13 => Icons.flight_outlined,
+  14 => Icons.sports_soccer,
+  24 => Icons.grid_view,
+  25 => Icons.bolt_outlined,
+  26 => Icons.quiz_outlined,
+  30 => Icons.blur_circular,
+  31 => Icons.explore_outlined,
+  32 => Icons.lightbulb_outline,
+  33 => Icons.videogame_asset_outlined,
+  34 => Icons.menu_book_outlined,
+  35 => Icons.style_outlined,
+  36 => Icons.groups_outlined,
+  _ => Icons.category_outlined,
+};
+
+/// Tint for a genre card. Ember is reserved for accents, so genres cycle
+/// through the status tones.
+PfTone genreTone(int id) => const [
+  PfTone.info,
+  PfTone.connected,
+  PfTone.warning,
+  PfTone.error,
+  PfTone.neutral,
+][id % 5];
 
 class _GenreCard extends StatelessWidget {
   const _GenreCard({required this.genre});
 
   final Genre genre;
 
+  void _open(BuildContext context) => context.pushNamed(
+    AppRouter.genreGamesName,
+    pathParameters: {'genreId': genre.id.toString()},
+    queryParameters: {'name': genre.name},
+  );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final tone = genreTone(genre.id);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Semantics(
-        label: context.l10n.genreCardLabel(genre.name),
-        button: true,
-        onTap: () => context.pushNamed(
-          AppRouter.genreGamesName,
-          pathParameters: {'genreId': genre.id.toString()},
-          queryParameters: {'name': genre.name},
-        ),
-        child: InkWell(
-          onTap: () => context.pushNamed(
-            AppRouter.genreGamesName,
-            pathParameters: {'genreId': genre.id.toString()},
-            queryParameters: {'name': genre.name},
+    return PressScale(
+      onTap: () => _open(context),
+      semanticLabel: context.l10n.genreCardLabel(genre.name),
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: PfSpace.md),
+          decoration: BoxDecoration(
+            color: colors.surface1,
+            borderRadius: PfRadius.cardAll,
+            border: Border.all(color: colors.hairline),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Center(
-              child: Text(
-                genre.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colors.toneBackground(tone),
+                  borderRadius: PfRadius.mdAll,
+                ),
+                child: Icon(
+                  genreIcon(genre.id),
+                  size: 20,
+                  color: colors.toneForeground(tone),
                 ),
               ),
-            ),
+              const SizedBox(width: PfSpace.md),
+              Expanded(
+                child: Text(
+                  genre.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -269,13 +330,12 @@ class _ReleasesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         LazyDiscoveryGamesWidget(
           discoveryType: DiscoveryType.newReleases,
           heroTagPrefix: BrowseScreen._newReleasesHeroPrefix,
         ),
-        SizedBox(height: 8),
         LazyDiscoveryGamesWidget(
           discoveryType: DiscoveryType.comingSoon,
           heroTagPrefix: BrowseScreen._comingSoonHeroPrefix,

@@ -1,106 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/animated_state_switcher.dart';
+import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/games/bloc/recommendations_bloc.dart';
+import 'package:picklog/features/games/bloc/recommendations_event.dart';
 import 'package:picklog/features/games/bloc/recommendations_state.dart';
-import 'package:picklog/features/games/discovery_game_model.dart';
 import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
+import 'package:picklog/features/games/widgets/game_rail.dart';
 import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
 
-const double _rowHeight = 200;
-const double _tileAspectRatio = 0.7;
-
-/// Personalized "Recommended for You" row, derived from the user's library
-/// genres (GET /games/recommendations). Shows a skeleton while loading (the
-/// common path thanks to the popular fallback) and hides on empty/error.
+/// Personalized "Recommended for you" rail, derived from the user's library
+/// genres (GET /games/recommendations). Shows a skeleton while loading, an
+/// inline error with retry on failure, and hides when there is nothing yet.
 class RecommendationsWidget extends StatelessWidget {
-  const RecommendationsWidget({super.key});
+  const RecommendationsWidget({this.heroTagPrefix = 'rec-', super.key});
+
+  final String heroTagPrefix;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<RecommendationsBloc, RecommendationsState>(
       builder: (context, state) {
+        final Widget body;
         if (state.isLoading && !state.hasGames) {
-          return const _Section(child: DiscoveryRowSkeleton());
-        }
-        if (!state.hasGames) {
-          return const SizedBox.shrink();
-        }
-        return _Section(child: _GamesRow(games: state.games));
-      },
-    );
-  }
-}
-
-/// Shared header (icon + title) + a row body, matching the discovery sections.
-class _Section extends StatelessWidget {
-  const _Section({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-          child: Row(
-            children: [
-              ExcludeSemantics(
-                child: Icon(
-                  Icons.auto_awesome,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  context.l10n.recommendationsTitle,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        child,
-      ],
-    );
-  }
-}
-
-class _GamesRow extends StatelessWidget {
-  const _GamesRow({required this.games});
-
-  final List<DiscoveryGame> games;
-
-  @override
-  Widget build(BuildContext context) {
-    final count = games.length > 20 ? 20 : games.length;
-    return SizedBox(
-      height: _rowHeight,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: count,
-        itemBuilder: (context, index) {
-          final game = games[index];
-          return Padding(
-            padding: EdgeInsets.only(right: index < count - 1 ? 12 : 0),
-            child: AspectRatio(
-              aspectRatio: _tileAspectRatio,
-              child: DiscoveryGameTile(
-                game: game,
-                isCompact: true,
-                heroTagPrefix: 'rec-',
-              ),
+          body = const DiscoveryRowSkeleton();
+        } else if (state.status == RecommendationsStatus.failure &&
+            !state.hasGames) {
+          body = ErrorState(
+            compact: true,
+            message: context.l10n.failedToLoadGames,
+            onRetry: () => context.read<RecommendationsBloc>().add(
+              const RecommendationsLoadRequested(),
             ),
           );
-        },
-      ),
+        } else if (!state.hasGames) {
+          return const SizedBox.shrink();
+        } else {
+          final count = state.games.length > 20 ? 20 : state.games.length;
+          body = GameRail(
+            itemCount: count,
+            itemBuilder: (context, index) => DiscoveryGameTile(
+              game: state.games[index],
+              isCompact: true,
+              heroTagPrefix: heroTagPrefix,
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SectionHeader(
+              title: context.l10n.recommendationsTitle,
+              subtitle: context.l10n.recommendationsSubtitle,
+            ),
+            AnimatedStateSwitcher(stateKey: state.status, child: body),
+          ],
+        );
+      },
     );
   }
 }

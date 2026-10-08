@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
+import 'package:picklog/core/widgets/score_badge.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/core/widgets/shimmer_loading.dart';
 import 'package:picklog/features/games/discovery_game_model.dart';
@@ -63,6 +65,9 @@ void main() {
 
     Widget createTile({required DiscoveryGame game}) {
       return MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Scaffold(
           body: SizedBox(
             width: 140,
@@ -86,7 +91,7 @@ void main() {
       await tester.pumpWidget(createTile(game: mockGame));
       await tester.pump();
 
-      expect(find.text('93%'), findsOneWidget);
+      expect(find.text('93'), findsOneWidget);
     });
 
     testWidgets('should not display rating badge when rating is null', (
@@ -96,7 +101,7 @@ void main() {
       await tester.pump();
 
       // No rating badge should be shown at all
-      expect(find.textContaining('%'), findsNothing);
+      expect(find.byType(ScoreBadge), findsNothing);
     });
 
     testWidgets('should display cover image when cover URL exists', (
@@ -113,7 +118,7 @@ void main() {
       await tester.pump();
 
       // Should show the game-art placeholder glyph
-      expect(find.byIcon(Icons.videogame_asset), findsOneWidget);
+      expect(find.byIcon(Icons.videogame_asset_outlined), findsOneWidget);
     });
 
     testWidgets('should be tappable with a hover/focus affordance', (
@@ -122,10 +127,17 @@ void main() {
       await tester.pumpWidget(createTile(game: mockGame));
       await tester.pump();
 
-      // The tap target is an InkWell so web users get hover + focus highlights.
-      final inkWell = tester.widget<InkWell>(find.byType(InkWell));
-      expect(inkWell.onTap, isNotNull);
-      expect(inkWell.mouseCursor, SystemMouseCursors.click);
+      // The whole card is a focusable press target with a click cursor, so
+      // web users get hover and keyboard focus.
+      final press = tester.widget<PressScale>(find.byType(PressScale));
+      expect(press.onTap, isNotNull);
+      final focusable = tester.widget<FocusableActionDetector>(
+        find.descendant(
+          of: find.byType(PressScale),
+          matching: find.byType(FocusableActionDetector),
+        ),
+      );
+      expect(focusable.mouseCursor, SystemMouseCursors.click);
     });
   });
 
@@ -140,6 +152,9 @@ void main() {
 
     Widget createListTile({required DiscoveryGame game}) {
       return MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
         home: Scaffold(body: DiscoveryGameListTile(game: game)),
       );
     }
@@ -155,7 +170,7 @@ void main() {
       await tester.pumpWidget(createListTile(game: mockGame));
       await tester.pump();
 
-      expect(find.text('93%'), findsOneWidget);
+      expect(find.text('93'), findsOneWidget);
     });
 
     testWidgets('should display cover image', (tester) async {
@@ -233,7 +248,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Trending Now'), findsOneWidget);
+      expect(find.text('Trending now'), findsOneWidget);
     });
 
     testWidgets('should display loading indicator when loading', (
@@ -335,7 +350,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('See All'), findsOneWidget);
+      expect(find.text('See all'), findsOneWidget);
     });
 
     testWidgets('should display localized title for indie type', (
@@ -364,7 +379,7 @@ void main() {
       await tester.pump();
 
       // Should display "Indie Gems" (localized title)
-      expect(find.text('Indie Gems'), findsOneWidget);
+      expect(find.text('Indie gems'), findsOneWidget);
     });
   });
 
@@ -450,7 +465,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // Loading state shows the title with loading placeholder
-      expect(find.text('Indie Gems'), findsOneWidget);
+      expect(find.text('Indie gems'), findsOneWidget);
       expect(find.byType(ShimmerLoading), findsWidgets);
     });
 
@@ -479,7 +494,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Indie Gems'), findsOneWidget);
+      expect(find.text('Indie gems'), findsOneWidget);
     });
 
     testWidgets('should trigger load when widget becomes visible', (
@@ -538,7 +553,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Indie Gems'), findsOneWidget);
+      expect(find.text('Indie gems'), findsOneWidget);
       expect(find.text('Indie Game 1'), findsOneWidget);
       expect(find.text('Indie Game 2'), findsOneWidget);
     });

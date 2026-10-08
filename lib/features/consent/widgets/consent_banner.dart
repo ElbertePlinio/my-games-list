@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/widgets/bottom_nav_bar.dart';
 import 'package:picklog/features/consent/bloc/consent_cubit.dart';
@@ -85,7 +87,8 @@ class _ConsentBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
     final cubit = context.read<ConsentCubit>();
     final media = MediaQuery.of(context);
     // Same breakpoint the app shell uses: compact (< 600px) shows the bottom
@@ -98,53 +101,91 @@ class _ConsentBannerCard extends StatelessWidget {
         ? _navigationBarHeight + media.viewPadding.bottom
         : 0.0;
 
-    return Material(
-      color: colors.surfaceContainerHigh,
-      elevation: 8,
-      child: SafeArea(
-        top: false,
-        bottom: !isCompact,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 12 + bottomOffset),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.consentBannerTitle,
-                    style: Theme.of(context).textTheme.titleMedium,
+    // A floating card on the brand surface. Reject and accept share one
+    // style so neither choice is pushed (no dark patterns).
+    return SafeArea(
+      top: false,
+      bottom: !isCompact,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              PfSpace.md,
+              0,
+              PfSpace.md,
+              PfSpace.md + bottomOffset,
+            ),
+            child: Material(
+              color: colors.surface2,
+              shape: RoundedRectangleBorder(
+                borderRadius: PfRadius.xlAll,
+                side: BorderSide(color: colors.hairlineStrong),
+              ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: PfRadius.xlAll,
+                  boxShadow: colors.shadowOverlay,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    PfSpace.lg + 4,
+                    PfSpace.lg + 2,
+                    PfSpace.lg,
+                    PfSpace.md,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    context.l10n.consentBannerBody,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 8,
-                    runSpacing: 4,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton(
-                        onPressed: isSaving
-                            ? null
-                            : () => _openCustomize(context, cubit),
-                        child: Text(context.l10n.consentCustomize),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.shield_outlined,
+                            size: 18,
+                            color: colors.textMed,
+                          ),
+                          const SizedBox(width: PfSpace.sm),
+                          Expanded(
+                            child: Text(
+                              context.l10n.consentBannerTitle,
+                              style: theme.textTheme.titleMedium,
+                            ),
+                          ),
+                        ],
                       ),
-                      FilledButton.tonal(
-                        onPressed: isSaving ? null : cubit.rejectAll,
-                        child: Text(context.l10n.consentRejectAll),
+                      const SizedBox(height: PfSpace.xs + 2),
+                      Text(
+                        context.l10n.consentBannerBody,
+                        style: theme.textTheme.bodyMedium!.copyWith(
+                          color: colors.textMed,
+                        ),
                       ),
-                      FilledButton.tonal(
-                        onPressed: isSaving ? null : cubit.acceptAll,
-                        child: Text(context.l10n.consentAcceptAll),
+                      const SizedBox(height: PfSpace.md),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: PfSpace.sm,
+                        runSpacing: PfSpace.xs,
+                        children: [
+                          TextButton(
+                            onPressed: isSaving
+                                ? null
+                                : () => _openCustomize(context, cubit),
+                            child: Text(context.l10n.consentCustomize),
+                          ),
+                          OutlinedButton(
+                            onPressed: isSaving ? null : cubit.rejectAll,
+                            child: Text(context.l10n.consentRejectAll),
+                          ),
+                          OutlinedButton(
+                            onPressed: isSaving ? null : cubit.acceptAll,
+                            child: Text(context.l10n.consentAcceptAll),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -160,7 +201,6 @@ class _ConsentBannerCard extends StatelessWidget {
     final choices = await showModalBottomSheet<Map<ConsentCategory, bool>>(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
       builder: (_) => BlocProvider.value(
         value: cubit,
         child: const ConsentCustomizeSheet(),

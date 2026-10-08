@@ -176,10 +176,10 @@ void main() {
     // All three actions are disabled while the save is in flight.
     expect(
       tester
-          .widget<FilledButton>(
+          .widget<OutlinedButton>(
             find.ancestor(
               of: find.text('Accept all'),
-              matching: find.byType(FilledButton),
+              matching: find.byType(OutlinedButton),
             ),
           )
           .onPressed,
@@ -187,10 +187,10 @@ void main() {
     );
     expect(
       tester
-          .widget<FilledButton>(
+          .widget<OutlinedButton>(
             find.ancestor(
               of: find.text('Reject all'),
-              matching: find.byType(FilledButton),
+              matching: find.byType(OutlinedButton),
             ),
           )
           .onPressed,

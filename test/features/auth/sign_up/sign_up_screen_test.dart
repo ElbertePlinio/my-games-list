@@ -92,7 +92,8 @@ void main() {
       );
     }
 
-    Finder signUpButton() => find.widgetWithText(FilledButton, 'Sign Up');
+    Finder signUpButton() =>
+        find.widgetWithText(FilledButton, 'Create account');
 
     Future<void> acceptTerms(WidgetTester tester) async {
       await tester.ensureVisible(find.byType(Checkbox));
@@ -107,7 +108,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TextFormField), findsNWidgets(4));
-      expect(find.widgetWithText(AppBar, 'Sign Up'), findsOneWidget);
+      // No generic app bar title: the brand header carries the page title.
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.text('Create your account'), findsOneWidget);
+      expect(find.text('PICKLOG · CREATE ACCOUNT'), findsOneWidget);
       expect(signUpButton(), findsOneWidget);
     });
 

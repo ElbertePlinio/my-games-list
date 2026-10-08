@@ -1,19 +1,32 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/image_utils.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/game_cover.dart';
+import 'package:picklog/core/widgets/pf_network_image.dart';
+import 'package:picklog/core/widgets/pf_page_indicator.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
+import 'package:picklog/core/widgets/section_header.dart';
 import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/games/bloc/featured_banners_bloc.dart';
+import 'package:picklog/features/games/bloc/featured_banners_event.dart';
 import 'package:picklog/features/games/bloc/featured_banners_state.dart';
 import 'package:picklog/features/games/featured_banner_model.dart';
 
+/// Banner height for the available width (taller on wide screens).
+double featuredBannerHeight(double width) =>
+    (width * 0.42).clamp(180.0, 320.0).toDouble();
+
 /// Hero carousel of editorial featured banners at the top of the home feed.
 ///
-/// Banners are optional editorial content, so the section hides itself entirely
-/// when there is nothing to show (empty/error) rather than rendering an error.
+/// Hides when there is nothing curated. A failed load shows an inline retry
+/// instead of silently disappearing.
 class FeaturedBannersCarousel extends StatelessWidget {
   const FeaturedBannersCarousel({super.key});
 
@@ -24,6 +37,19 @@ class FeaturedBannersCarousel extends StatelessWidget {
         if (state.isLoading && !state.hasBanners) {
           return const _BannersLoading();
         }
+        if (state.status == FeaturedBannersStatus.failure &&
+            !state.hasBanners) {
+          return Padding(
+            padding: const EdgeInsets.only(top: PfSpace.lg),
+            child: ErrorState(
+              compact: true,
+              message: context.l10n.featuredError,
+              onRetry: () => context.read<FeaturedBannersBloc>().add(
+                const FeaturedBannersLoadRequested(),
+              ),
+            ),
+          );
+        }
         if (!state.hasBanners) {
           return const SizedBox.shrink();
         }
@@ -33,31 +59,56 @@ class FeaturedBannersCarousel extends StatelessWidget {
   }
 }
 
-class _BannersContent extends StatelessWidget {
+class _BannersContent extends StatefulWidget {
   const _BannersContent({required this.banners});
 
   final List<FeaturedBanner> banners;
 
   @override
+  State<_BannersContent> createState() => _BannersContentState();
+}
+
+class _BannersContentState extends State<_BannersContent> {
+  int _index = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final banners = widget.banners;
+    final width = MediaQuery.sizeOf(context).width;
+    final reduced = PfMotion.reduced(context);
+    final wide = width >= PfBreakpoints.twoPane;
+
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: CarouselSlider.builder(
-        itemCount: banners.length,
-        itemBuilder: (context, index, realIndex) {
-          return _BannerCard(banner: banners[index]);
-        },
-        options: CarouselOptions(
-          height: 180,
-          viewportFraction: 0.92,
-          enlargeCenterPage: true,
-          enlargeFactor: 0.15,
-          enableInfiniteScroll: banners.length > 1,
-          autoPlay: banners.length > 1,
-          autoPlayInterval: const Duration(seconds: 6),
-          autoPlayAnimationDuration: const Duration(milliseconds: 800),
-          autoPlayCurve: Curves.easeInOutCubic,
-        ),
+      padding: const EdgeInsets.only(top: PfSpace.sm),
+      child: Column(
+        children: [
+          CarouselSlider.builder(
+            itemCount: banners.length,
+            itemBuilder: (context, index, realIndex) =>
+                _BannerCard(banner: banners[index]),
+            options: CarouselOptions(
+              height: featuredBannerHeight(width),
+              viewportFraction: wide ? 0.72 : 0.92,
+              enlargeCenterPage: true,
+              enlargeFactor: 0.12,
+              enableInfiniteScroll: banners.length > 1,
+              autoPlay: banners.length > 1 && !reduced,
+              autoPlayInterval: const Duration(seconds: 6),
+              autoPlayAnimationDuration: PfMotion.reveal,
+              autoPlayCurve: PfMotion.forge,
+              onPageChanged: (index, _) => setState(() => _index = index),
+            ),
+          ),
+          const SizedBox(height: PfSpace.md),
+          PfPageIndicator(
+            count: banners.length,
+            index: _index,
+            semanticLabel: context.l10n.pageIndicatorLabel(
+              _index + 1,
+              banners.length,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -79,101 +130,83 @@ class _BannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CachedNetworkImage(
-              imageUrl: getHighResUrl(banner.imageUrl, ImageSize.hd720),
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: Colors.grey[800]),
-              errorWidget: (context, url, error) => Container(
-                color: Colors.grey[800],
-                child: const Icon(Icons.videogame_asset, size: 48),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.75),
-                  ],
-                  stops: const [0.35, 1.0],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    banner.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (banner.subtitle != null &&
-                      banner.subtitle!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      banner.subtitle!,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ],
-              ),
-            ),
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final hasSubtitle = banner.subtitle != null && banner.subtitle!.isNotEmpty;
 
-            // Tap target with web hover/focus affordance, overlaid so the
-            // ripple covers the whole banner without altering the layout.
-            Positioned.fill(
-              child: Material(
-                type: MaterialType.transparency,
-                child: Semantics(
-                  label: banner.title,
-                  button: banner.game != null,
-                  child: InkWell(
-                    // Banners may have no linked game — don't offer a dead tap.
-                    onTap: banner.game == null ? null : () => _onTap(context),
-                    mouseCursor: banner.game == null
-                        ? SystemMouseCursors.basic
-                        : SystemMouseCursors.click,
+    return PressScale(
+      onTap: banner.game == null ? null : () => _onTap(context),
+      semanticLabel: banner.title,
+      scale: 0.985,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: PfSpace.xs),
+        decoration: BoxDecoration(
+          borderRadius: PfRadius.xlAll,
+          border: Border.all(color: colors.hairline),
+          boxShadow: colors.shadowRaised,
+        ),
+        child: ClipRRect(
+          borderRadius: PfRadius.xlAll,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              PfNetworkImage(
+                url: getHighResUrl(banner.imageUrl, ImageSize.hd720),
+                placeholder: const CoverPlaceholder(showIcon: false),
+                error: const CoverPlaceholder(),
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      PicklogColors.imageScrim.withValues(alpha: 0),
+                      PicklogColors.imageScrim.withValues(alpha: 0.82),
+                    ],
+                    stops: const [0.3, 1.0],
                   ),
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                left: PfSpace.lg + 4,
+                right: PfSpace.lg + 4,
+                bottom: PfSpace.lg + 2,
+                child: ExcludeSemantics(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Eyebrow(
+                        context.l10n.featuredEyebrow,
+                        color: PicklogColors.onImage.withValues(alpha: 0.72),
+                      ),
+                      const SizedBox(height: PfSpace.xs + 2),
+                      Text(
+                        banner.title,
+                        style: theme.textTheme.headlineMedium!.copyWith(
+                          color: PicklogColors.onImage,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (hasSubtitle) ...[
+                        const SizedBox(height: PfSpace.xs),
+                        Text(
+                          banner.subtitle!,
+                          style: theme.textTheme.bodyMedium!.copyWith(
+                            color: PicklogColors.dark.textMed,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -185,9 +218,18 @@ class _BannersLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: SkeletonBox(height: 180, borderRadius: 16),
+    final width = MediaQuery.sizeOf(context).width;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        PfSpace.xl,
+        PfSpace.sm,
+        PfSpace.xl,
+        PfSpace.xl + 6,
+      ),
+      child: SkeletonBox(
+        height: featuredBannerHeight(width),
+        borderRadius: PfRadius.xl,
+      ),
     );
   }
 }

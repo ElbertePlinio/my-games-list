@@ -1,88 +1,153 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/pf_typography.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/image_utils.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/game_cover.dart';
+import 'package:picklog/core/widgets/pf_page_indicator.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
+import 'package:picklog/core/widgets/section_header.dart';
 import 'package:picklog/core/widgets/skeleton_box.dart';
-import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/games/anticipated_game_model.dart';
 import 'package:picklog/features/games/bloc/anticipated_games_bloc.dart';
 import 'package:picklog/features/games/bloc/anticipated_games_event.dart';
 import 'package:picklog/features/games/bloc/anticipated_games_state.dart';
+import 'package:picklog/features/games/discovery_game_model.dart';
+import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
 
-/// A carousel widget displaying the most anticipated upcoming games
+const double _carouselHeight = 232;
+
+/// Localized countdown to [game]'s release ("12d 4h 30m", or "Out now").
+String anticipatedCountdownLabel(BuildContext context, AnticipatedGame game) {
+  final l10n = context.l10n;
+  if (game.isReleased) return l10n.countdownReleased;
+  final duration = game.timeUntilRelease;
+  final days = duration.inDays;
+  final hours = duration.inHours % 24;
+  final minutes = duration.inMinutes % 60;
+  if (days > 0) return l10n.countdownDaysHoursMinutes(days, hours, minutes);
+  if (hours > 0) return l10n.countdownHoursMinutes(hours, minutes);
+  return l10n.countdownMinutes(minutes);
+}
+
+/// A carousel of the most anticipated upcoming games with live countdowns.
 class AnticipatedGamesCarousel extends StatelessWidget {
-  const AnticipatedGamesCarousel({super.key});
+  const AnticipatedGamesCarousel({
+    this.heroTagPrefix = 'anticipated-',
+    super.key,
+  });
+
+  final String heroTagPrefix;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AnticipatedGamesBloc, AnticipatedGamesState>(
       builder: (context, state) {
-        if (state.isLoading && !state.hasGames) {
-          return const _CarouselLoading();
-        }
+        final l10n = context.l10n;
+        final hasContent = state.hasGames;
 
-        if (state.status == AnticipatedGamesStatus.failure && !state.hasGames) {
-          return _CarouselError(
-            message: state.errorMessage ?? context.l10n.failedToLoadGames,
+        final Widget body;
+        if (state.isLoading && !state.hasGames) {
+          body = const _CarouselLoading();
+        } else if (state.status == AnticipatedGamesStatus.failure &&
+            !state.hasGames) {
+          body = ErrorState(
+            compact: true,
+            message: l10n.failedToLoadGames,
             onRetry: () => context.read<AnticipatedGamesBloc>().add(
               const AnticipatedGamesLoadRequested(),
             ),
           );
+        } else if (!state.hasGames) {
+          body = EmptyState(
+            compact: true,
+            icon: Icons.event_outlined,
+            title: l10n.noUpcomingGames,
+          );
+        } else {
+          body = _CarouselContent(
+            games: state.games,
+            heroTagPrefix: heroTagPrefix,
+          );
         }
 
-        if (!state.hasGames) {
-          return const _CarouselEmpty();
-        }
-
-        return _CarouselContent(games: state.games);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SectionHeader(
+              title: l10n.mostAnticipated,
+              seeAllLabel: l10n.seeAll,
+              onSeeAll: hasContent
+                  ? () => context.pushNamed(
+                      AppRouter.discoveryName,
+                      pathParameters: {
+                        'type': DiscoveryType.upcoming.queryParam,
+                      },
+                    )
+                  : null,
+            ),
+            body,
+          ],
+        );
       },
     );
   }
 }
 
-class _CarouselContent extends StatelessWidget {
-  const _CarouselContent({required this.games});
+class _CarouselContent extends StatefulWidget {
+  const _CarouselContent({required this.games, required this.heroTagPrefix});
 
   final List<AnticipatedGame> games;
+  final String heroTagPrefix;
+
+  @override
+  State<_CarouselContent> createState() => _CarouselContentState();
+}
+
+class _CarouselContentState extends State<_CarouselContent> {
+  int _index = 0;
 
   @override
   Widget build(BuildContext context) {
+    final games = widget.games;
+    final width = MediaQuery.sizeOf(context).width;
+    final fraction = (300 / width).clamp(0.28, 0.78).toDouble();
+    final reduced = PfMotion.reduced(context);
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-          child: Row(
-            children: [
-              const Icon(Icons.local_fire_department, color: Colors.orange),
-              const SizedBox(width: 8),
-              Text(
-                context.l10n.mostAnticipated,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
         CarouselSlider.builder(
           itemCount: games.length,
-          itemBuilder: (context, index, realIndex) {
-            return _GameCard(game: games[index]);
-          },
+          itemBuilder: (context, index, realIndex) => _GameCard(
+            game: games[index],
+            heroTagPrefix: widget.heroTagPrefix,
+          ),
           options: CarouselOptions(
-            height: 220,
-            viewportFraction: 0.75,
+            height: _carouselHeight,
+            viewportFraction: fraction,
             enlargeCenterPage: true,
-            enlargeFactor: 0.2,
+            enlargeFactor: 0.16,
             enableInfiniteScroll: games.length > 2,
-            autoPlay: games.length > 1,
+            autoPlay: games.length > 1 && !reduced,
             autoPlayInterval: const Duration(seconds: 5),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.easeInOutCubic,
+            autoPlayAnimationDuration: PfMotion.reveal,
+            autoPlayCurve: PfMotion.forge,
+            onPageChanged: (index, _) => setState(() => _index = index),
+          ),
+        ),
+        const SizedBox(height: PfSpace.md),
+        PfPageIndicator(
+          count: games.length,
+          index: _index,
+          semanticLabel: context.l10n.pageIndicatorLabel(
+            _index + 1,
+            games.length,
           ),
         ),
       ],
@@ -91,177 +156,115 @@ class _CarouselContent extends StatelessWidget {
 }
 
 class _GameCard extends StatelessWidget {
-  const _GameCard({required this.game});
+  const _GameCard({required this.game, required this.heroTagPrefix});
 
   final AnticipatedGame game;
+  final String heroTagPrefix;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.pfColors;
+    const dark = PicklogColors.dark;
 
-    // Use high-res cover URL
-    final highResCoverUrl = game.coverUrl.isNotEmpty
-        ? getHighResUrl(game.coverUrl, ImageSize.hd720)
-        : game.coverUrl;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.4)
-                : Colors.black.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Background image with Hero animation
-            VisibilityHero(
-              tag: 'game-cover-${game.id}',
-              child: _GameCoverImage(coverUrl: highResCoverUrl),
-            ),
-
-            // Gradient overlay
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
-                  ],
-                  stops: const [0.4, 1.0],
+    return PressScale(
+      onTap: () => openGameDetails(context, game.id, heroPrefix: heroTagPrefix),
+      semanticLabel: game.name,
+      scale: 0.985,
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: PfSpace.xs,
+          vertical: PfSpace.sm,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: PfRadius.xlAll,
+          border: Border.all(color: colors.hairline),
+          boxShadow: colors.shadowRaised,
+        ),
+        child: ClipRRect(
+          borderRadius: PfRadius.xlAll,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              GameCover(
+                url: game.coverUrl,
+                imageSize: ImageSize.hd720,
+                borderRadius: 0,
+                heroTag: gameCoverHeroTag(heroTagPrefix, game.id),
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      PicklogColors.imageScrim.withValues(alpha: 0),
+                      PicklogColors.imageScrim.withValues(alpha: 0.85),
+                    ],
+                    stops: const [0.35, 1.0],
+                  ),
                 ),
               ),
-            ),
-
-            // Countdown badge
-            Positioned(
-              top: 12,
-              right: 12,
-              child: _CountdownBadge(countdownText: game.countdownText),
-            ),
-
-            // Game info
-            Positioned(
-              left: 12,
-              right: 12,
-              bottom: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    game.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
+              Positioned(
+                top: PfSpace.md,
+                right: PfSpace.md,
+                child: _CountdownBadge(
+                  label: anticipatedCountdownLabel(context, game),
+                ),
+              ),
+              Positioned(
+                left: PfSpace.md + 2,
+                right: PfSpace.md + 2,
+                bottom: PfSpace.md + 2,
+                child: ExcludeSemantics(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.whatshot,
-                        color: Colors.orange,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        '${game.hypes} hypes',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 12,
+                        game.name,
+                        style: theme.textTheme.titleLarge!.copyWith(
+                          color: PicklogColors.onImage,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (game.platforms.isNotEmpty) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            game.platformNames,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 11,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: PfSpace.xs),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.local_fire_department_outlined,
+                            color: dark.textMed,
+                            size: 14,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: PfSpace.xs),
+                          Text(
+                            context.l10n.anticipatedHypes(game.hypes),
+                            style: theme.textTheme.labelSmall!.copyWith(
+                              color: dark.textHi,
+                            ),
+                          ),
+                          if (game.platforms.isNotEmpty) ...[
+                            const SizedBox(width: PfSpace.sm),
+                            Expanded(
+                              child: Text(
+                                game.platformNames,
+                                style: theme.textTheme.labelSmall!.copyWith(
+                                  color: dark.textMed,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-
-            // Tap target with web hover/focus affordance, overlaid so the
-            // ripple covers the whole card without altering the layout.
-            Positioned.fill(
-              child: Material(
-                type: MaterialType.transparency,
-                child: Semantics(
-                  label: game.name,
-                  button: true,
-                  child: InkWell(
-                    onTap: () {
-                      context.pushNamed(
-                        'gameDetails',
-                        pathParameters: {'id': game.id.toString()},
-                      );
-                    },
-                    mouseCursor: SystemMouseCursors.click,
-                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GameCoverImage extends StatelessWidget {
-  const _GameCoverImage({required this.coverUrl});
-
-  final String coverUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    if (coverUrl.isEmpty) {
-      return Container(
-        color: Colors.grey[800],
-        child: const Center(
-          child: Icon(Icons.videogame_asset, size: 48, color: Colors.white38),
-        ),
-      );
-    }
-
-    return CachedNetworkImage(
-      imageUrl: coverUrl,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => Container(
-        color: Colors.grey[800],
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: Colors.grey[800],
-        child: const Center(
-          child: Icon(Icons.videogame_asset, size: 48, color: Colors.white38),
+            ],
+          ),
         ),
       ),
     );
@@ -269,35 +272,26 @@ class _GameCoverImage extends StatelessWidget {
 }
 
 class _CountdownBadge extends StatelessWidget {
-  const _CountdownBadge({required this.countdownText});
+  const _CountdownBadge({required this.label});
 
-  final String countdownText;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
+    const dark = PicklogColors.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
+        color: PicklogColors.imageScrim.withValues(alpha: 0.72),
+        borderRadius: PfRadius.pillAll,
+        border: Border.all(color: dark.hairlineStrong),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.timer_outlined, color: Colors.white, size: 14),
-          const SizedBox(width: 4),
-          Text(
-            countdownText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Icon(Icons.schedule, color: dark.textHi, size: 12),
+          const SizedBox(width: PfSpace.xs),
+          Text(label, style: PfTypography.monoStyle(dark.textHi, size: 11)),
         ],
       ),
     );
@@ -309,104 +303,20 @@ class _CarouselLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    final width = MediaQuery.sizeOf(context).width;
+    final fraction = (300 / width).clamp(0.28, 0.78).toDouble();
     return Semantics(
       label: context.l10n.loadingLabel,
       liveRegion: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              children: [
-                const Icon(Icons.local_fire_department, color: Colors.orange),
-                const SizedBox(width: 8),
-                Text(
-                  context.l10n.mostAnticipated,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+      child: SizedBox(
+        height: _carouselHeight + PfSpace.md + 6,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: width * fraction,
+            height: _carouselHeight - PfSpace.lg,
+            child: const SkeletonBox(borderRadius: PfRadius.xl),
           ),
-          SizedBox(
-            height: 220,
-            child: Center(
-              child: SizedBox(
-                width: MediaQuery.sizeOf(context).width * 0.75,
-                height: 180,
-                child: const SkeletonBox(borderRadius: 16),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CarouselError extends StatelessWidget {
-  const _CarouselError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 260,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.failedToLoadGames,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.browseRetry),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CarouselEmpty extends StatelessWidget {
-  const _CarouselEmpty();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 260,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.games_outlined,
-              size: 48,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.noUpcomingGames,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
         ),
       ),
     );

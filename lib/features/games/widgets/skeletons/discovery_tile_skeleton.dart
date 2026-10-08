@@ -1,26 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/widgets/game_card.dart';
 import 'package:picklog/core/widgets/skeleton_box.dart';
+import 'package:picklog/features/games/widgets/game_rail.dart';
 
-/// Skeleton placeholder mirroring [DiscoveryGameTile]'s rounded cover.
-///
-/// The tile itself only draws a 12px-radius cover that fills its parent, so the
-/// skeleton is a single full-bleed [SkeletonBox]. Callers must wrap it in the
-/// same sizing the real tile uses (an `AspectRatio(0.7)` inside a 200px row for
-/// compact tiles, or the grid cell for the full tile) so there is no layout
-/// jump when the real tile replaces it.
+/// Skeleton placeholder mirroring [GameCard]: a rounded cover that fills the
+/// cell plus a title line in the caption area. Callers size it like the real
+/// card (a rail slot or a grid cell) so nothing jumps on load.
 class DiscoveryTileSkeleton extends StatelessWidget {
   const DiscoveryTileSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const SkeletonBox();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Expanded(child: SkeletonBox()),
+        SizedBox(
+          height: GameCard.captionHeightFor(MediaQuery.textScalerOf(context)),
+          child: const Padding(
+            padding: EdgeInsets.only(top: PfSpace.sm, right: PfSpace.xl),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SkeletonBox(height: 12, borderRadius: PfRadius.sm),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
-/// A horizontally scrolling row of [DiscoveryTileSkeleton]s that matches the
-/// real discovery row layout (200px tall, `AspectRatio(0.7)` tiles, 16px side
-/// padding, 12px gaps). Used for the home discovery sections and
-/// recommendations row while their first page loads.
+/// A horizontally scrolling row of [DiscoveryTileSkeleton]s that matches
+/// [GameRail] (same card width, height, padding and gaps).
 class DiscoveryRowSkeleton extends StatelessWidget {
   const DiscoveryRowSkeleton({this.itemCount = 5, super.key});
 
@@ -29,21 +41,17 @@ class DiscoveryRowSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200,
-      child: ListView.builder(
+      height: railHeight(context),
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
         itemCount: itemCount,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(right: index < itemCount - 1 ? 12 : 0),
-            child: const AspectRatio(
-              aspectRatio: 0.7,
-              child: DiscoveryTileSkeleton(),
-            ),
-          );
-        },
+        separatorBuilder: (_, _) => const SizedBox(width: PfSpace.md),
+        itemBuilder: (context, index) => const SizedBox(
+          width: kRailCardWidth,
+          child: DiscoveryTileSkeleton(),
+        ),
       ),
     );
   }

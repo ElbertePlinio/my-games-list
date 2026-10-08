@@ -45,7 +45,8 @@ void main() {
     await tester.pumpWidget(_wrap(const DiscoveryRowSkeleton(itemCount: 4)));
 
     expect(find.byType(DiscoveryTileSkeleton), findsNWidgets(4));
-    expect(find.byType(ShimmerLoading), findsNWidgets(4));
+    // Each tile shimmers its cover and its title line.
+    expect(find.byType(ShimmerLoading), findsNWidgets(8));
   });
 
   testWidgets('DiscoveryGridSkeleton renders shimmering tiles', (tester) async {
@@ -60,7 +61,7 @@ void main() {
   testWidgets('DiscoveryListSkeleton renders shimmering rows', (tester) async {
     await tester.pumpWidget(_wrap(const DiscoveryListSkeleton(itemCount: 3)));
 
-    expect(find.byType(Card), findsNWidgets(3));
+    expect(find.byType(GameTileSkeleton), findsNWidgets(3));
     expect(find.byType(ShimmerLoading), findsWidgets);
   });
 

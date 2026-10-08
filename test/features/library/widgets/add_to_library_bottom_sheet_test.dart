@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/widgets/score_badge.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
@@ -92,25 +94,47 @@ void main() {
     ) async {
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Add to Library'), findsOneWidget);
+      expect(find.text('Add to library'), findsOneWidget);
       expect(find.text('Hollow Knight'), findsOneWidget);
       // Add mode does not show the delete affordance.
-      expect(find.text('Remove from Library'), findsNothing);
+      expect(find.text('Remove from library'), findsNothing);
     });
 
-    testWidgets('renders all section titles and a status chip per status', (
+    testWidgets('groups essentials first and keeps details collapsed', (
       tester,
     ) async {
+      // A tall window so the whole first step fits in the sheet.
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Status'), findsOneWidget);
-      expect(find.text('Platform'), findsOneWidget);
-      expect(find.text('Rating'), findsOneWidget);
-      expect(find.text('Playtime'), findsOneWidget);
-      expect(find.text('Dates'), findsOneWidget);
-      expect(find.text('Difficulty'), findsOneWidget);
-      expect(find.text('Notes'), findsOneWidget);
+      expect(find.text('STATUS'), findsOneWidget);
+      expect(find.text('PLATFORM'), findsOneWidget);
+      expect(find.text('RATING'), findsOneWidget);
       expect(find.byType(ChoiceChip), findsNWidgets(GameStatus.values.length));
+      expect(find.byType(ScoreRing), findsOneWidget);
+      // Optional details stay folded away in add mode.
+      expect(find.text('More details'), findsOneWidget);
+      expect(find.text('PLAYTIME'), findsNothing);
+
+      await tester.tap(find.text('More details'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PLAYTIME'), findsOneWidget);
+      expect(find.text('DATES'), findsOneWidget);
+      expect(find.text('DIFFICULTY'), findsOneWidget);
+      expect(find.text('NOTES'), findsOneWidget);
+    });
+
+    testWidgets('the score preview follows the slider in the 0-100 format', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+
+      final ring = tester.widget<ScoreRing>(find.byType(ScoreRing));
+      expect(ring.score, 80);
+      expect(find.text('80'), findsWidgets);
     });
 
     testWidgets('Save in add mode dispatches LibraryAddGameRequested with the '
@@ -171,9 +195,10 @@ void main() {
       (tester) async {
         await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
 
-        expect(find.text('Edit Entry'), findsOneWidget);
-        expect(find.text('Remove from Library'), findsOneWidget);
-        // Notes and difficulty controllers are pre-populated.
+        expect(find.text('Edit entry'), findsOneWidget);
+        expect(find.text('Remove from library'), findsOneWidget);
+        // Details that already have values start expanded, and the notes and
+        // difficulty controllers are pre-populated.
         expect(find.text('Great game'), findsOneWidget);
         expect(find.text('Hard'), findsOneWidget);
       },
@@ -204,9 +229,9 @@ void main() {
       await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
 
       // The delete button sits at the bottom of the draggable sheet.
-      await tester.ensureVisible(find.text('Remove from Library'));
+      await tester.ensureVisible(find.text('Remove from library'));
       await tester.pump();
-      await tester.tap(find.text('Remove from Library'));
+      await tester.tap(find.text('Remove from library'));
       await tester.pumpAndSettle();
 
       // The confirmation dialog is shown.
@@ -235,16 +260,16 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
-      expect(find.text('Game added to library successfully.'), findsOneWidget);
+      expect(find.text('Added to your library'), findsOneWidget);
     });
 
-    testWidgets('shows an error message when the bloc reports an error', (
-      tester,
-    ) async {
+    testWidgets('shows a localized message when saving fails', (tester) async {
       whenListen(
         libraryBloc,
         Stream<LibraryState>.fromIterable([
-          const LibraryState(errorMessage: 'Network down'),
+          const LibraryState(
+            failure: LibraryFailure(LibraryAction.add, AppErrorKind.network),
+          ),
         ]),
         initialState: const LibraryState(),
       );
@@ -252,7 +277,10 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
-      expect(find.text('Network down'), findsOneWidget);
+      expect(
+        find.text("Couldn't save your changes. Try again."),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/theme/app_theme.dart';
 import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
 import 'package:picklog/features/games/bloc/discovery_games_event.dart';
@@ -39,7 +40,7 @@ Widget _host({
       GoRoute(path: '/', builder: (context, state) => child),
       GoRoute(
         path: '/games/:id',
-        name: 'gameDetails',
+        name: AppRouter.gameDetailsName,
         builder: (context, state) => const SizedBox.shrink(),
       ),
     ],
@@ -184,7 +185,8 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
+      // Let the staggered entry finish so the golden shows the settled rail.
+      await tester.pumpAndSettle();
 
       await expectLater(
         find.byType(DiscoveryGamesWidget),

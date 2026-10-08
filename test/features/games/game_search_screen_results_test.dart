@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/games/bloc/game_search_bloc.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
@@ -61,8 +62,8 @@ void main() {
     testWidgets('renders the title and the search field', (tester) async {
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Search Games'), findsOneWidget);
-      expect(find.widgetWithText(AppBar, 'Search Games'), findsOneWidget);
+      expect(find.text('Search'), findsOneWidget);
+      expect(find.widgetWithText(AppBar, 'Search'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
     });
 
@@ -103,23 +104,30 @@ void main() {
       expect(find.bySemanticsLabel('Loading'), findsOneWidget);
     });
 
-    testWidgets('failure state shows the error message and icon', (
+    testWidgets('failure state shows a localized message with retry', (
       tester,
     ) async {
       when(() => bloc.state).thenReturn(
         const GameSearchState(
           status: GameSearchStatus.failure,
-          errorMessage: 'Search failed',
+          query: 'zelda',
+          errorKind: AppErrorKind.network,
         ),
       );
 
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Search failed'), findsOneWidget);
+      expect(
+        find.text("Can't reach Picklog right now. Check your connection."),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.error_outline), findsOneWidget);
+
+      await tester.tap(find.text('Try again'));
+      verify(() => bloc.add(const GameSearchRetryRequested())).called(1);
     });
 
-    testWidgets('failure state falls back to the default message', (
+    testWidgets('failure state falls back to the generic message', (
       tester,
     ) async {
       when(
@@ -128,7 +136,7 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('An error occurred'), findsOneWidget);
+      expect(find.text('Something went wrong. Try again.'), findsOneWidget);
     });
 
     testWidgets('success with results renders a card per game', (tester) async {

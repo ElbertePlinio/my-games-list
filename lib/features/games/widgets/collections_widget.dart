@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/games/bloc/collections_bloc.dart';
+import 'package:picklog/features/games/bloc/collections_event.dart';
 import 'package:picklog/features/games/bloc/collections_state.dart';
 import 'package:picklog/features/games/collection_model.dart';
 import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
+import 'package:picklog/features/games/widgets/game_rail.dart';
 import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
 
-const double _rowHeight = 200;
-const double _tileAspectRatio = 0.7;
 const int _maxTiles = 20;
 // Default per-surface cap on how many collection rows render, so editorial
 // content doesn't push the primary discovery rows off-screen. The Home surface
@@ -15,8 +19,8 @@ const int _maxTiles = 20;
 const int _defaultMaxCollections = 3;
 
 /// Curated collections rows on the home (GET /home/collections). Collections
-/// are editorial/optional content, so the whole block hides when there is
-/// nothing to show (loading/empty/error) rather than flashing an empty skeleton.
+/// are editorial content: the block hides when there is nothing curated and
+/// shows an inline retry when loading fails.
 class CollectionsWidget extends StatelessWidget {
   const CollectionsWidget({
     this.heroTagPrefix = '',
@@ -49,19 +53,33 @@ class CollectionsWidget extends StatelessWidget {
                     : nonEmpty.take(maxCollections))
                 .toList();
         if (visible.isEmpty) {
-          // Match Trending/Recommendations: shimmer a row while the first load
-          // is in flight, then hide entirely on empty/error so editorial
-          // content never flashes a placeholder it can't fill.
+          // Shimmer a rail while the first load is in flight, show an inline
+          // retry on failure, and hide when there is simply nothing curated.
           if (state.isLoading) {
             return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
+              padding: EdgeInsets.only(top: PfSpace.xl),
               child: DiscoveryRowSkeleton(),
+            );
+          }
+          if (state.status == CollectionsStatus.failure) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SectionHeader(title: context.l10n.collectionsSectionTitle),
+                ErrorState(
+                  compact: true,
+                  message: context.l10n.failedToLoadGames,
+                  onRetry: () => context.read<CollectionsBloc>().add(
+                    const CollectionsLoadRequested(),
+                  ),
+                ),
+              ],
             );
           }
           return const SizedBox.shrink();
         }
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (final collection in visible)
               _CollectionSection(
@@ -83,82 +101,27 @@ class _CollectionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final count = collection.games.length > _maxTiles
         ? _maxTiles
         : collection.games.length;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ExcludeSemantics(
-                child: Icon(
-                  Icons.collections_bookmark_outlined,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        collection.title,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (collection.description != null &&
-                        collection.description!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        collection.description!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+        SectionHeader(
+          title: collection.title,
+          subtitle: collection.description,
+        ),
+        GameRail(
+          itemCount: count,
+          // Per-collection Hero prefix so the same game across
+          // collections/rows doesn't collide.
+          itemBuilder: (context, index) => DiscoveryGameTile(
+            game: collection.games[index],
+            isCompact: true,
+            heroTagPrefix: '${heroTagPrefix}col-${collection.id}-',
           ),
         ),
-        SizedBox(
-          height: _rowHeight,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: count,
-            itemBuilder: (context, index) {
-              final game = collection.games[index];
-              return Padding(
-                padding: EdgeInsets.only(right: index < count - 1 ? 12 : 0),
-                child: AspectRatio(
-                  aspectRatio: _tileAspectRatio,
-                  // Per-collection Hero prefix so the same game across
-                  // collections/rows doesn't collide.
-                  child: DiscoveryGameTile(
-                    game: game,
-                    isCompact: true,
-                    heroTagPrefix: '${heroTagPrefix}col-${collection.id}-',
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
       ],
     );
   }

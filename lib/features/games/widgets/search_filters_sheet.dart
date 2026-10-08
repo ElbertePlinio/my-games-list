@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/section_header.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/search_game_model.dart';
 
@@ -47,7 +50,7 @@ class SearchFiltersSheet extends StatefulWidget {
     return showModalBottomSheet<GameSearchFilters>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      showDragHandle: false,
       builder: (_) => SearchFiltersSheet(
         filters: filters,
         genres: genres,
@@ -105,17 +108,7 @@ class _SearchFiltersSheetState extends State<SearchFiltersSheet> {
       top: false,
       child: Container(
         clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
+        decoration: const BoxDecoration(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -264,8 +257,8 @@ class _Header extends StatelessWidget {
           width: 40,
           height: 4,
           decoration: BoxDecoration(
-            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(2),
+            color: context.pfColors.hairlineStrong,
+            borderRadius: PfRadius.pillAll,
           ),
         ),
         Padding(
@@ -279,9 +272,7 @@ class _Header extends StatelessWidget {
               ),
               Text(
                 context.l10n.searchFiltersTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.titleMedium,
               ),
               TextButton(
                 onPressed: onReset,
@@ -295,8 +286,8 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Carded section matching [AddToLibraryBottomSheet]: surfaceContainerLow,
-/// 16px radius, a soft shadow and a primary-tinted section title.
+/// Carded section matching the add-to-library sheet: surface-2 card with a
+/// hairline border and a muted eyebrow title.
 class _SectionCard extends StatelessWidget {
   const _SectionCard({
     required this.theme,
@@ -312,28 +303,16 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: context.pfColors.surface2,
+        borderRadius: PfRadius.cardAll,
+        border: Border.all(color: context.pfColors.hairline),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(PfSpace.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 12),
+          Eyebrow(title, muted: true),
+          const SizedBox(height: PfSpace.md),
           child,
         ],
       ),

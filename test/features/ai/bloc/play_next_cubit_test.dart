@@ -3,12 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/core/data/services/http/i_http_client.dart';
 import 'package:picklog/core/domain/models/api_response.dart';
+import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/features/ai/ai_models.dart';
 import 'package:picklog/features/ai/ai_repository.dart';
 import 'package:picklog/features/ai/bloc/play_next_cubit.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/library_repository.dart';
 
+import '../../../mocks/mock_blocs.dart';
 import '../../library/library_fixtures.dart';
 
 import '../ai_fixtures.dart';
@@ -203,6 +207,27 @@ void main() {
         ),
       ],
     );
+
+    test('startPlaying refreshes the shared library on success', () async {
+      final shared = MockLibraryBloc();
+      sl.registerSingleton<LibraryBloc>(shared);
+      addTearDown(() => sl.unregister<LibraryBloc>());
+      final current = detailedEntry();
+      when(
+        () => library.getLibraryEntry('entry-1'),
+      ).thenAnswer((_) async => current);
+      when(
+        () => library.updateLibraryEntry(current, status: GameStatus.playing),
+      ).thenAnswer((_) async => _entry('entry-1', GameStatus.playing));
+      final cubit = build();
+      addTearDown(cubit.close);
+
+      await cubit.startPlaying(kPickHades);
+
+      verify(
+        () => shared.add(const LibraryRefreshRequested(userId: 'u1')),
+      ).called(1);
+    });
 
     blocTest<PlayNextCubit, PlayNextState>(
       'a failed startPlaying bumps the failure counter',

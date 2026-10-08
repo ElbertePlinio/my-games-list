@@ -1,7 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picklog/features/ai/ai_models.dart';
+import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/features/ai/ai_repository.dart';
+import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/library_repository.dart';
 
@@ -223,6 +226,13 @@ class PlayNextCubit extends Cubit<PlayNextState> {
     }
   }
 
+  /// Tells the shared library, used by the Library tab and the roulette,
+  /// that an entry changed on the server.
+  void _refreshSharedLibrary() {
+    if (_userId.isEmpty || !sl.isRegistered<LibraryBloc>()) return;
+    sl<LibraryBloc>().add(LibraryRefreshRequested(userId: _userId));
+  }
+
   /// Sets the pick's library entry to playing.
   Future<void> startPlaying(PlayNextPick pick) async {
     final id = pick.libraryEntryId;
@@ -235,6 +245,7 @@ class PlayNextCubit extends Cubit<PlayNextState> {
       // update sends back its score, dates, difficulty and notes.
       final current = await _library.getLibraryEntry(id);
       await _library.updateLibraryEntry(current, status: GameStatus.playing);
+      _refreshSharedLibrary();
       if (isClosed) return;
       emit(
         state.copyWith(

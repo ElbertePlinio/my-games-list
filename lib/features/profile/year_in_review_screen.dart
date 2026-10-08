@@ -332,6 +332,24 @@ class _Story extends StatelessWidget {
     );
   }
 
+  Widget _summaryCard() => YearShareCard(
+    year: year,
+    summary: summary,
+    topGenre: stats.topGenres.isEmpty ? null : stats.topGenres.first.name,
+  );
+
+  /// The copy that share renders to PNG. It stays built off screen, because
+  /// the lazy list may not have built the visible card yet.
+  Widget _captureCard() => Positioned(
+    left: -2 * YearShareCard.width,
+    top: 0,
+    child: IgnorePointer(
+      child: ExcludeSemantics(
+        child: RepaintBoundary(key: shareKey, child: _summaryCard()),
+      ),
+    ),
+  );
+
   Widget _shareCard(BuildContext context) {
     final l10n = context.l10n;
     return _StoryCard(
@@ -340,18 +358,7 @@ class _Story extends StatelessWidget {
         children: [
           Eyebrow(l10n.yearShareEyebrow, muted: true),
           const SizedBox(height: PfSpace.md),
-          Center(
-            child: RepaintBoundary(
-              key: shareKey,
-              child: YearShareCard(
-                year: year,
-                summary: summary,
-                topGenre: stats.topGenres.isEmpty
-                    ? null
-                    : stats.topGenres.first.name,
-              ),
-            ),
-          ),
+          Center(child: _summaryCard()),
           const SizedBox(height: PfSpace.lg),
           Center(
             child: OutlinedButton.icon(
@@ -414,19 +421,28 @@ class _Story extends StatelessWidget {
       _shareCard(context),
     ];
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        PfSpace.lg,
-        PfSpace.sm,
-        PfSpace.lg,
-        PfSpace.xxxl,
-      ),
-      itemCount: cards.length,
-      separatorBuilder: (_, _) => const SizedBox(height: PfSpace.lg),
-      itemBuilder: (context, index) => MaxWidthBox(
-        maxWidth: PfBreakpoints.narrow,
-        child: StaggeredReveal(index: index, offset: 24, child: cards[index]),
-      ),
+    return Stack(
+      children: [
+        _captureCard(),
+        ListView.separated(
+          padding: const EdgeInsets.fromLTRB(
+            PfSpace.lg,
+            PfSpace.sm,
+            PfSpace.lg,
+            PfSpace.xxxl,
+          ),
+          itemCount: cards.length,
+          separatorBuilder: (_, _) => const SizedBox(height: PfSpace.lg),
+          itemBuilder: (context, index) => MaxWidthBox(
+            maxWidth: PfBreakpoints.narrow,
+            child: StaggeredReveal(
+              index: index,
+              offset: 24,
+              child: cards[index],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

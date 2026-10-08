@@ -54,8 +54,9 @@ void main() {
     WidgetTester t, {
     bool reducedMotion = false,
     YearShareHandler? onShare,
+    Size size = const Size(390, 4000),
   }) async {
-    t.view.physicalSize = const Size(390, 4000);
+    t.view.physicalSize = size;
     t.view.devicePixelRatio = 1;
     addTearDown(t.view.reset);
     await pumpPicklog(
@@ -111,7 +112,13 @@ void main() {
     expect(find.text('Hades'), findsOneWidget);
     expect(find.text('Celeste'), findsOneWidget);
     expect(find.text('RPG · 9'), findsOneWidget);
-    expect(find.byType(YearShareCard), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ListView),
+        matching: find.byType(YearShareCard),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the year picker loads another year', (t) async {
@@ -144,6 +151,25 @@ void main() {
     expect(name, 'picklog-2026.png');
     expect(png, isNotNull);
     // PNG signature.
+    expect(png!.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
+  });
+
+  testWidgets('the app bar share works on a phone-sized screen', (t) async {
+    Uint8List? png;
+    await pump(
+      t,
+      reducedMotion: true,
+      size: const Size(390, 844),
+      onShare: (bytes, fileName, text) async => png = bytes,
+    );
+    await t.pump();
+    expect(find.byKey(const Key('year_share_card_button')), findsNothing);
+    await t.runAsync(() async {
+      await t.tap(find.byKey(const Key('year_share_button')));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    });
+    await t.pump();
+    expect(png, isNotNull);
     expect(png!.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
   });
 

@@ -350,18 +350,8 @@ class _LinkedBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // The Syncing pill in the identity row is the one syncing cue.
         _AccountIdentity(account: account),
-        if (syncing && !PfMotion.reduced(context)) ...[
-          const SizedBox(height: PfSpace.md),
-          ClipRRect(
-            borderRadius: PfRadius.pillAll,
-            child: LinearProgressIndicator(
-              minHeight: 3,
-              color: colors.info,
-              backgroundColor: colors.surface3,
-            ),
-          ),
-        ],
         const SizedBox(height: PfSpace.sm),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,

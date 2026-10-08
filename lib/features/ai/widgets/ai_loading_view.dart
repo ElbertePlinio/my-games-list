@@ -63,35 +63,23 @@ class _AiLoadingViewState extends State<AiLoadingView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.auto_awesome_outlined,
-                size: 18,
+          AnimatedSwitcher(
+            duration: PfMotion.of(context, PfMotion.standard),
+            switchInCurve: PfMotion.forge,
+            switchOutCurve: PfMotion.out,
+            layoutBuilder: (current, previous) => Stack(
+              alignment: AlignmentDirectional.centerStart,
+              children: [...previous, ?current],
+            ),
+            child: Text(
+              line,
+              key: ValueKey(line),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium!.copyWith(
                 color: colors.textMed,
               ),
-              const SizedBox(width: PfSpace.sm),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: PfMotion.of(context, PfMotion.standard),
-                  switchInCurve: PfMotion.forge,
-                  switchOutCurve: PfMotion.out,
-                  layoutBuilder: (current, previous) => Stack(
-                    alignment: AlignmentDirectional.centerStart,
-                    children: [...previous, ?current],
-                  ),
-                  child: Text(
-                    line,
-                    key: ValueKey(line),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium!.copyWith(
-                      color: colors.textMed,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: PfSpace.lg),
           for (var i = 0; i < widget.cardCount; i++) ...[

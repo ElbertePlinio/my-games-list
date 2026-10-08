@@ -181,7 +181,7 @@ void main() {
     expect(find.text('Unlink'), findsOneWidget);
   });
 
-  testWidgets('a syncing account shows progress and disables sync', (
+  testWidgets('a syncing account shows one Syncing pill and disables sync', (
     tester,
   ) async {
     await pump(
@@ -191,7 +191,7 @@ void main() {
     );
 
     expect(find.text('Syncing'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
     final sync = tester.widget<OutlinedButton>(
       find.widgetWithText(OutlinedButton, 'Sync now'),
     );

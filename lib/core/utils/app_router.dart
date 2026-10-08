@@ -558,8 +558,18 @@ class AppRouter {
   }
 
   static Widget _gameDetailsPage(BuildContext context, GoRouterState state) {
-    final gameIdStr = state.pathParameters['id']!;
-    final gameId = int.parse(gameIdStr);
+    final gameId = int.tryParse(state.pathParameters['id'] ?? '');
+    final auth = sl<AuthBloc>().state;
+    // A malformed link (e.g. /games/abc) must not throw inside the builder.
+    if (gameId == null || auth is! AuthAuthenticated) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: EmptyState(
+          icon: Icons.videogame_asset_off_outlined,
+          title: context.l10n.errorNotFound,
+        ),
+      );
+    }
     // Hero tag prefix passed from the source tile (e.g. recommendations
     // row) so the cover transition matches the source card.
     final heroTagPrefix = state.extra is String ? state.extra! as String : '';
@@ -578,11 +588,7 @@ class AppRouter {
         ),
         BlocProvider.value(
           value: sl<LibraryBloc>()
-            ..add(
-              LibraryLoadRequested(
-                userId: (sl<AuthBloc>().state as AuthAuthenticated).user.id,
-              ),
-            ),
+            ..add(LibraryLoadRequested(userId: auth.user.id)),
         ),
         BlocProvider(
           create: (_) {

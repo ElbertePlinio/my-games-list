@@ -28,6 +28,8 @@ import 'package:picklog/features/games/bloc/anticipated_games_bloc.dart';
 import 'package:picklog/features/games/bloc/anticipated_games_event.dart';
 import 'package:picklog/features/games/bloc/discovery_games_bloc.dart';
 import 'package:picklog/features/games/bloc/discovery_games_event.dart';
+import 'package:picklog/features/games/bloc/explore_bloc.dart';
+import 'package:picklog/features/games/bloc/filter_options_cubit.dart';
 import 'package:picklog/features/games/bloc/featured_banners_bloc.dart';
 import 'package:picklog/features/games/bloc/featured_banners_event.dart';
 import 'package:picklog/features/games/bloc/collections_bloc.dart';
@@ -39,6 +41,7 @@ import 'package:picklog/features/games/bloc/game_details_event.dart';
 import 'package:picklog/features/games/bloc/game_search_bloc.dart';
 import 'package:picklog/features/games/discovery_game_model.dart';
 import 'package:picklog/features/games/discovery_games_screen.dart';
+import 'package:picklog/features/games/explore_screen.dart';
 import 'package:picklog/features/games/game_details_screen.dart';
 import 'package:picklog/features/games/game_search_screen.dart';
 import 'package:picklog/features/games/games_repository.dart';
@@ -50,10 +53,21 @@ import 'package:picklog/features/legal/legal_document.dart';
 import 'package:picklog/features/legal/presentation/legal_document_screen.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
+import 'package:picklog/features/library/browse/library_browse_bloc.dart';
+import 'package:picklog/features/library/browse/library_browse_event.dart';
+import 'package:picklog/features/library/collections/bloc/collection_detail_cubit.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_event.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_state.dart';
+import 'package:picklog/features/library/collections/collection_detail_screen.dart';
+import 'package:picklog/features/library/collections/user_collections_repository.dart';
 import 'package:picklog/features/library/library_repository.dart';
+import 'package:picklog/features/library/stats/stats_cubit.dart';
+import 'package:picklog/features/library/stats/stats_repository.dart';
 import 'package:picklog/features/onboarding/onboarding_screen.dart';
 import 'package:picklog/features/onboarding/onboarding_service.dart';
 import 'package:picklog/features/profile/profile_screen.dart';
+import 'package:picklog/features/profile/year_in_review_screen.dart';
 import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
 import 'package:picklog/features/settings/settings_screen.dart';
 import 'package:picklog/features/splash/splash_screen.dart';
@@ -329,6 +343,8 @@ class AppRouter {
                   builder: (context, state) {
                     // Register library repository lazily
                     _ensureLibraryRepositoryAndBlocRegistered();
+                    _ensureStatsRepositoryRegistered();
+                    _ensureGamesRepositoryRegistered();
 
                     // Get the current user ID from AuthBloc
                     final authState = sl<AuthBloc>().state;
@@ -336,10 +352,32 @@ class AppRouter {
                         ? authState.user.id
                         : '';
 
-                    // Provide LibraryBloc (auto-disposed by BlocProvider)
-                    return BlocProvider.value(
-                      value: sl<LibraryBloc>()
-                        ..add(LibraryLoadRequested(userId: userId)),
+                    // The shared LibraryBloc keeps the whole library; the
+                    // route-scoped browse bloc pages the filtered list.
+                    return MultiBlocProvider(
+                      providers: [
+                        BlocProvider.value(
+                          value: sl<LibraryBloc>()
+                            ..add(LibraryLoadRequested(userId: userId)),
+                        ),
+                        BlocProvider.value(value: sl<UserCollectionsBloc>()),
+                        BlocProvider(
+                          create: (_) => LibraryBrowseBloc(
+                            libraryRepository: sl<LibraryRepository>(),
+                            storage: sl<LocalStorageService>(),
+                          )..add(LibraryBrowseStarted(userId: userId)),
+                        ),
+                        BlocProvider(
+                          create: (_) =>
+                              StatsCubit(statsRepository: sl<StatsRepository>())
+                                ..load(),
+                        ),
+                        BlocProvider(
+                          create: (_) => FilterOptionsCubit(
+                            gamesRepository: sl<IGamesRepository>(),
+                          ),
+                        ),
+                      ],
                       child: const GamesScreen(),
                     );
                   },
@@ -353,7 +391,28 @@ class AppRouter {
                 GoRoute(
                   path: profilePath,
                   name: profileName,
-                  builder: (context, state) => const ProfileScreen(),
+                  builder: (context, state) {
+                    _ensureLibraryRepositoryAndBlocRegistered();
+                    _ensureStatsRepositoryRegistered();
+                    final authState = sl<AuthBloc>().state;
+                    final userId = authState is AuthAuthenticated
+                        ? authState.user.id
+                        : '';
+                    return MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create: (_) =>
+                              StatsCubit(statsRepository: sl<StatsRepository>())
+                                ..load(),
+                        ),
+                        BlocProvider.value(
+                          value: sl<LibraryBloc>()
+                            ..add(LibraryLoadRequested(userId: userId)),
+                        ),
+                      ],
+                      child: const ProfileScreen(),
+                    );
+                  },
                 ),
               ],
             ),
@@ -383,10 +442,99 @@ class AppRouter {
             _ensureGamesRepositoryRegistered();
 
             // Provide GameSearchBloc to the screen (auto-disposed by BlocProvider)
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) =>
+                      GameSearchBloc(gamesRepository: sl<IGamesRepository>()),
+                ),
+                BlocProvider(
+                  create: (_) => FilterOptionsCubit(
+                    gamesRepository: sl<IGamesRepository>(),
+                  ),
+                ),
+              ],
+              child: const GameSearchScreen(),
+            );
+          },
+        ),
+
+        // Explore Route (outside bottom navigation): catalog filters.
+        GoRoute(
+          path: explorePath,
+          name: exploreName,
+          builder: (context, state) {
+            _ensureGamesRepositoryRegistered();
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) =>
+                      ExploreBloc(gamesRepository: sl<IGamesRepository>())
+                        ..add(const ExploreLoadRequested()),
+                ),
+                BlocProvider(
+                  create: (_) => FilterOptionsCubit(
+                    gamesRepository: sl<IGamesRepository>(),
+                  )..load(),
+                ),
+              ],
+              child: const ExploreScreen(),
+            );
+          },
+        ),
+
+        // Collection Detail Route (outside bottom navigation)
+        GoRoute(
+          path: collectionDetailPath,
+          name: collectionDetailName,
+          builder: (context, state) {
+            final collectionId = state.pathParameters['id']!;
+            _ensureLibraryRepositoryAndBlocRegistered();
+            final authState = sl<AuthBloc>().state;
+            final userId = authState is AuthAuthenticated
+                ? authState.user.id
+                : '';
+            final collections = sl<UserCollectionsBloc>();
+            if (collections.state.status == UserCollectionsStatus.initial) {
+              collections.add(const UserCollectionsLoadRequested());
+            }
+            final library = sl<LibraryBloc>();
+            if (library.state.entries.isEmpty) {
+              library.add(LibraryLoadRequested(userId: userId));
+            }
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: collections),
+                BlocProvider.value(value: library),
+                BlocProvider(
+                  create: (_) => CollectionDetailCubit(
+                    repository: sl<UserCollectionsRepository>(),
+                    collectionId: collectionId,
+                  )..load(),
+                ),
+              ],
+              child: CollectionDetailScreen(collectionId: collectionId),
+            );
+          },
+        ),
+
+        // Year in Review Route (outside bottom navigation)
+        GoRoute(
+          path: yearInReviewPath,
+          name: yearInReviewName,
+          builder: (context, state) {
+            final now = DateTime.now().year;
+            final parsed = int.tryParse(state.pathParameters['year'] ?? '');
+            // Clamp malformed or out-of-range years to the API's range.
+            final year = parsed == null || parsed < 2000 || parsed > now + 1
+                ? now
+                : parsed;
+            _ensureStatsRepositoryRegistered();
             return BlocProvider(
               create: (_) =>
-                  GameSearchBloc(gamesRepository: sl<IGamesRepository>()),
-              child: const GameSearchScreen(),
+                  StatsCubit(statsRepository: sl<StatsRepository>(), year: year)
+                    ..load(year: year),
+              child: YearInReviewScreen(year: year),
             );
           },
         ),
@@ -581,6 +729,35 @@ class AppRouter {
     if (!sl.isRegistered<LibraryBloc>()) {
       sl.registerLazySingleton<LibraryBloc>(
         () => LibraryBloc(libraryRepository: sl<LibraryRepository>()),
+      );
+    }
+
+    // Collections travel with the library: the add-to-library sheet and the
+    // library rows edit them, so register them here too.
+    _ensureCollectionsRegistered();
+  }
+
+  /// Ensures the user collections repository and the shared
+  /// UserCollectionsBloc are registered. The session teardown resets the bloc.
+  static void _ensureCollectionsRegistered() {
+    if (!sl.isRegistered<UserCollectionsRepository>()) {
+      sl.registerLazySingleton<UserCollectionsRepository>(
+        () => UserCollectionsRepository(httpClient: sl<IHttpClient>()),
+      );
+    }
+    if (!sl.isRegistered<UserCollectionsBloc>()) {
+      sl.registerLazySingleton<UserCollectionsBloc>(
+        () => UserCollectionsBloc(repository: sl<UserCollectionsRepository>()),
+      );
+    }
+  }
+
+  /// Ensures StatsRepository is registered (library header, profile and year
+  /// in review).
+  static void _ensureStatsRepositoryRegistered() {
+    if (!sl.isRegistered<StatsRepository>()) {
+      sl.registerLazySingleton<StatsRepository>(
+        () => StatsRepository(httpClient: sl<IHttpClient>()),
       );
     }
   }

@@ -6,6 +6,7 @@ import 'package:picklog/core/data/services/storage/token_storage.dart';
 import 'package:picklog/core/services/consent/consent_service.dart';
 import 'package:picklog/core/services/notification_service.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
 
 /// Tears down per-user session state on logout so that a subsequent user in the
 /// same running app session (common on web/shared devices) cannot see the
@@ -73,6 +74,13 @@ class SessionResetService {
       final library = _locator<LibraryBloc>();
       _locator.resetLazySingleton<LibraryBloc>();
       unawaited(library.close());
+    }
+
+    // The user's collections follow the same rule as the library.
+    if (_locator.isRegistered<UserCollectionsBloc>()) {
+      final collections = _locator<UserCollectionsBloc>();
+      _locator.resetLazySingleton<UserCollectionsBloc>();
+      unawaited(collections.close());
     }
   }
 }

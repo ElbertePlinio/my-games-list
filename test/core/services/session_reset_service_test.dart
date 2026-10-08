@@ -10,6 +10,8 @@ import 'package:picklog/core/services/consent/telemetry_gateway.dart';
 import 'package:picklog/core/services/notification_service.dart';
 import 'package:picklog/core/services/session_reset_service.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
+import 'package:picklog/features/library/collections/user_collections_repository.dart';
 import 'package:picklog/features/library/library_repository.dart';
 
 class _MockTokenStorage extends Mock implements TokenStorage {}
@@ -19,6 +21,9 @@ class _MockHttpClient extends Mock implements IHttpClient {}
 class _MockNotificationService extends Mock implements NotificationService {}
 
 class _MockLibraryRepository extends Mock implements LibraryRepository {}
+
+class _MockCollectionsRepository extends Mock
+    implements UserCollectionsRepository {}
 
 class _MockStorage extends Mock implements LocalStorageService {}
 
@@ -121,5 +126,18 @@ void main() {
         expect(before.isClosed, isTrue);
       },
     );
+
+    test('resets the collections singleton with the library', () async {
+      locator.registerLazySingleton<UserCollectionsBloc>(
+        () => UserCollectionsBloc(repository: _MockCollectionsRepository()),
+      );
+      final before = locator<UserCollectionsBloc>();
+
+      await buildService().teardownSession();
+
+      expect(identical(before, locator<UserCollectionsBloc>()), isFalse);
+      await before.close();
+      expect(before.isClosed, isTrue);
+    });
   });
 }

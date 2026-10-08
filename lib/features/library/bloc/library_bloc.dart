@@ -12,7 +12,12 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<LibraryLoadRequested>(_onLoadRequested);
     on<LibraryRefreshRequested>(_onRefreshRequested);
     on<LibraryAddGameRequested>(_onAddGameRequested);
-    on<LibraryUpdateEntryRequested>(_onUpdateEntryRequested);
+    // One update at a time, so a quick second save never races the first.
+    // Same as bloc_concurrency's sequential().
+    on<LibraryUpdateEntryRequested>(
+      _onUpdateEntryRequested,
+      transformer: (events, mapper) => events.asyncExpand(mapper),
+    );
     on<LibraryDeleteEntryRequested>(_onDeleteEntryRequested);
     on<LibraryToggleFavoriteRequested>(_onToggleFavoriteRequested);
     on<LibraryFilterToggled>(_onFilterToggled);

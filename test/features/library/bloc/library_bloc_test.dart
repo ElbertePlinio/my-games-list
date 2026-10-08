@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picklog/core/data/services/http/i_http_client.dart';
@@ -363,6 +365,56 @@ void main() {
           expect(bloc.state.entries.first.score, 95);
         },
       );
+
+      test('a second update for the same entry waits for the first', () async {
+        registerFallbackValue(mockEntries[0]);
+        final first = Completer<LibraryEntry>();
+        final calls = <GameStatus?>[];
+        when(
+          () => mockRepository.updateLibraryEntry(
+            any(),
+            igdbPlatformId: any(named: 'igdbPlatformId'),
+            status: any(named: 'status'),
+            playtimeMinutes: any(named: 'playtimeMinutes'),
+            isFavorite: any(named: 'isFavorite'),
+            details: any(named: 'details'),
+          ),
+        ).thenAnswer((invocation) {
+          final status = invocation.namedArguments[#status] as GameStatus?;
+          calls.add(status);
+          return calls.length == 1
+              ? first.future
+              : Future.value(mockEntries[0].copyWith(notes: 'Saved notes'));
+        });
+        final bloc = LibraryBloc(libraryRepository: mockRepository)
+          ..emit(
+            LibraryState(status: LibraryStatus.success, entries: mockEntries),
+          );
+        addTearDown(bloc.close);
+
+        // A row-menu status change, then a quick save from the edit sheet.
+        bloc
+          ..add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.playing,
+            ),
+          )
+          ..add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.finished,
+            ),
+          );
+        await Future<void>.delayed(Duration.zero);
+        expect(calls, [GameStatus.playing]);
+
+        first.complete(mockEntries[0].copyWith(status: GameStatus.playing));
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+        expect(calls, [GameStatus.playing, GameStatus.finished]);
+        expect(bloc.state.entries.first.notes, 'Saved notes');
+      });
     });
 
     group('LibraryAddGameRequested', () {

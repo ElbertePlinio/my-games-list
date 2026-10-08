@@ -88,6 +88,19 @@ class AppRouter {
   static const String privacyPolicyPath = '/privacy-policy';
   static const String termsPath = '/terms';
 
+  // Overhaul feature routes. Library, explore, and profile features own
+  // explore, collectionDetail, and yearInReview. AI and integrations own the
+  // rest. Both sides may link to any of these.
+  static const String explorePath = '/explore';
+  static const String collectionDetailPath = '/collections/:id';
+  static const String yearInReviewPath = '/profile/year/:year';
+  static const String aiPlayNextPath = '/ai/play-next';
+  static const String aiDiscoverPath = '/ai/discover';
+  static const String connectedAccountsPath = '/settings/accounts';
+  static const String achievementsPath = '/achievements';
+  static const String achievementGamePath =
+      '/achievements/:provider/:externalGameId';
+
   /// Route names for named navigation
   static const String splashName = 'splash';
   static const String onboardingName = 'onboarding';
@@ -103,6 +116,14 @@ class AppRouter {
   static const String videoPlayerName = 'videoPlayer';
   static const String discoveryName = 'discovery';
   static const String genreGamesName = 'genreGames';
+  static const String exploreName = 'explore';
+  static const String collectionDetailName = 'collectionDetail';
+  static const String yearInReviewName = 'yearInReview';
+  static const String aiPlayNextName = 'aiPlayNext';
+  static const String aiDiscoverName = 'aiDiscover';
+  static const String connectedAccountsName = 'connectedAccounts';
+  static const String achievementsName = 'achievements';
+  static const String achievementGameName = 'achievementGame';
   static const String privacyPolicyName = 'privacyPolicy';
   static const String termsName = 'terms';
 

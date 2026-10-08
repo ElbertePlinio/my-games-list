@@ -310,5 +310,18 @@ void main() {
         'Knight',
       );
     });
+    test('a failed refresh keeps the list and reports a notice', () async {
+      when(
+        () => repository.getLinkedAccounts(),
+      ).thenThrow(const IntegrationException(IntegrationErrorKind.network));
+      final cubit = seeded(providers(steam: account()));
+
+      await cubit.load();
+
+      expect(cubit.state.status, ConnectedAccountsStatus.ready);
+      expect(cubit.state.providerFor(GameProvider.steam)!.isLinked, isTrue);
+      expect(cubit.state.notice!.type, AccountNoticeType.refreshFailed);
+      expect(cubit.state.notice!.errorKind, IntegrationErrorKind.network);
+    });
   });
 }

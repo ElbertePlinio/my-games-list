@@ -279,6 +279,46 @@ void main() {
     expect(find.text('Try again'), findsOneWidget);
   });
 
+  testWidgets('a failed refresh keeps the list and shows a notice', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    var calls = 0;
+    when(() => repository.getLinkedAccounts()).thenAnswer((_) async {
+      if (++calls > 1) {
+        throw const IntegrationException(IntegrationErrorKind.network);
+      }
+      return providers(steam: account());
+    });
+    final cubit = ConnectedAccountsCubit(repository: repository)..load();
+    addTearDown(cubit.close);
+    await tester.pumpWidget(
+      stubRouterApp(
+        BlocProvider.value(
+          value: cubit,
+          child: const ConnectedAccountsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.fling(find.text('Hornet'), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+
+    expect(calls, 2);
+    expect(find.text('Hornet'), findsOneWidget);
+    expect(find.text('Try again'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(SnackBar),
+        matching: find.textContaining('connection'),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('the settings section opens connected accounts', (tester) async {
     await tester.pumpWidget(
       stubRouterApp(const Scaffold(body: ConnectedAccountsSettingsSection())),

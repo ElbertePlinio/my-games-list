@@ -17,20 +17,23 @@ enum AccountNoticeType {
   syncFailed,
   unlinkFailed,
   syncFinished,
+
+  /// A refresh failed while the list stayed on screen. Has no provider.
+  refreshFailed,
 }
 
 class AccountNotice extends Equatable {
   const AccountNotice({
     required this.id,
     required this.type,
-    required this.provider,
+    this.provider,
     this.errorKind,
   });
 
   /// Increments for each notice so equal notices still fire listeners.
   final int id;
   final AccountNoticeType type;
-  final GameProvider provider;
+  final GameProvider? provider;
   final IntegrationErrorKind? errorKind;
 
   @override
@@ -148,14 +151,28 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
       );
       _updatePolling();
     } catch (e) {
-      if (isClosed) return;
+      if (!isClosed) _onLoadFailed(IntegrationErrorKind.from(e));
+    }
+  }
+
+  /// A failed first load shows the error view. A failed refresh keeps the
+  /// list and reports a notice instead.
+  void _onLoadFailed(IntegrationErrorKind kind) {
+    if (state.providers.isEmpty) {
       emit(
         state.copyWith(
           status: ConnectedAccountsStatus.failure,
-          errorKind: () => IntegrationErrorKind.from(e),
+          errorKind: () => kind,
         ),
       );
+      return;
     }
+    emit(
+      state.copyWith(
+        status: ConnectedAccountsStatus.ready,
+        notice: _notice(AccountNoticeType.refreshFailed, null, kind),
+      ),
+    );
   }
 
   /// Clears the previous link result before the sheet opens.
@@ -319,7 +336,7 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
 
   AccountNotice _notice(
     AccountNoticeType type,
-    GameProvider provider, [
+    GameProvider? provider, [
     IntegrationErrorKind? kind,
   ]) => AccountNotice(
     id: ++_noticeId,

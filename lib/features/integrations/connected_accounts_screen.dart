@@ -31,7 +31,7 @@ class ConnectedAccountsScreen extends StatelessWidget {
     final notice = state.notice;
     if (notice == null) return;
     final l10n = context.l10n;
-    final name = notice.provider.displayName;
+    final name = notice.provider?.displayName ?? '';
     switch (notice.type) {
       case AccountNoticeType.linked:
         context.showSuccessMessage(l10n.accountsLinkedMessage(name));
@@ -43,6 +43,7 @@ class ConnectedAccountsScreen extends StatelessWidget {
         context.showSuccessMessage(l10n.accountsSyncFinished(name));
       case AccountNoticeType.syncFailed:
       case AccountNoticeType.unlinkFailed:
+      case AccountNoticeType.refreshFailed:
         context.showErrorMessage(
           (notice.errorKind ?? IntegrationErrorKind.unknown).message(context),
         );

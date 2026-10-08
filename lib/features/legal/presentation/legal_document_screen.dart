@@ -5,6 +5,7 @@ import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/legal/legal_document.dart';
+import 'package:picklog/features/consent/widgets/consent_banner.dart';
 
 /// Renders a [LegalDocument] (Privacy Policy or Terms of Service) from a
 /// locale-specific placeholder asset.
@@ -30,26 +31,29 @@ class LegalDocumentScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(_title(context))),
-      body: SafeArea(
-        child: FutureBuilder<String>(
-          future: rootBundle.loadString(document.assetFor(languageCode)),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(
-                child: SizedBox.square(
-                  dimension: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2.5),
-                ),
-              );
-            }
-            if (snapshot.hasError || !snapshot.hasData) {
-              return EmptyState(
-                icon: Icons.description_outlined,
-                title: context.l10n.legalLoadError,
-              );
-            }
-            return _LegalDocumentBody(content: snapshot.data!);
-          },
+      // Sign-up links here before the consent banner is answered.
+      body: ConsentBannerPadding(
+        child: SafeArea(
+          child: FutureBuilder<String>(
+            future: rootBundle.loadString(document.assetFor(languageCode)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                );
+              }
+              if (snapshot.hasError || !snapshot.hasData) {
+                return EmptyState(
+                  icon: Icons.description_outlined,
+                  title: context.l10n.legalLoadError,
+                );
+              }
+              return _LegalDocumentBody(content: snapshot.data!);
+            },
+          ),
         ),
       ),
     );

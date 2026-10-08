@@ -3,6 +3,7 @@ import 'package:picklog/core/theme/pf_tokens.dart';
 import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/widgets/brand_mark.dart';
 import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/features/consent/widgets/consent_banner.dart';
 
 /// Shared frame for the sign-in and sign-up screens.
 ///
@@ -61,29 +62,32 @@ class AuthLayout extends StatelessWidget {
     );
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: PfSpace.xl,
-              vertical: isWide ? PfSpace.xxxl : PfSpace.xl,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: PfBreakpoints.auth + (isWide ? PfSpace.xxl * 2 : 0),
+      // Keeps the form actions above the first-run consent banner.
+      body: ConsentBannerPadding(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: PfSpace.xl,
+                vertical: isWide ? PfSpace.xxxl : PfSpace.xl,
               ),
-              child: isWide
-                  ? Container(
-                      padding: const EdgeInsets.all(PfSpace.xxl),
-                      decoration: BoxDecoration(
-                        color: colors.surface1,
-                        borderRadius: PfRadius.xlAll,
-                        border: Border.all(color: colors.hairline),
-                        boxShadow: colors.shadowRaised,
-                      ),
-                      child: content,
-                    )
-                  : content,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: PfBreakpoints.auth + (isWide ? PfSpace.xxl * 2 : 0),
+                ),
+                child: isWide
+                    ? Container(
+                        padding: const EdgeInsets.all(PfSpace.xxl),
+                        decoration: BoxDecoration(
+                          color: colors.surface1,
+                          borderRadius: PfRadius.xlAll,
+                          border: Border.all(color: colors.hairline),
+                          boxShadow: colors.shadowRaised,
+                        ),
+                        child: content,
+                      )
+                    : content,
+              ),
             ),
           ),
         ),

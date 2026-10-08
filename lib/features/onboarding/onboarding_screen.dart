@@ -8,6 +8,7 @@ import 'package:picklog/core/widgets/pf_page_indicator.dart';
 import 'package:picklog/core/widgets/section_header.dart';
 import 'package:picklog/features/onboarding/onboarding_page_data.dart';
 import 'package:picklog/features/onboarding/onboarding_service.dart';
+import 'package:picklog/features/consent/widgets/consent_banner.dart';
 
 /// First-run welcome flow: a few swipeable intro pages shown once per install.
 ///
@@ -109,65 +110,68 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    PfSpace.xl,
-                    PfSpace.sm,
-                    PfSpace.sm,
-                    0,
+      // Keeps Next and the page dots above the first-run consent banner.
+      body: ConsentBannerPadding(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PfSpace.xl,
+                      PfSpace.sm,
+                      PfSpace.sm,
+                      0,
+                    ),
+                    child: Row(
+                      children: [
+                        const Wordmark(markSize: 28),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: _finish,
+                          child: Text(context.l10n.onboardingSkip),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Wordmark(markSize: 28),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: _finish,
-                        child: Text(context.l10n.onboardingSkip),
-                      ),
-                    ],
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _pages.length,
+                      onPageChanged: (index) =>
+                          setState(() => _currentPage = index),
+                      itemBuilder: (context, index) =>
+                          _OnboardingPageView(data: _pages[index]),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _pages.length,
-                    onPageChanged: (index) =>
-                        setState(() => _currentPage = index),
-                    itemBuilder: (context, index) =>
-                        _OnboardingPageView(data: _pages[index]),
+                  PfPageIndicator(
+                    count: _pages.length,
+                    index: _currentPage,
+                    semanticLabel: context.l10n.pageIndicatorLabel(
+                      _currentPage + 1,
+                      _pages.length,
+                    ),
                   ),
-                ),
-                PfPageIndicator(
-                  count: _pages.length,
-                  index: _currentPage,
-                  semanticLabel: context.l10n.pageIndicatorLabel(
-                    _currentPage + 1,
-                    _pages.length,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PfSpace.xl,
+                      PfSpace.xl,
+                      PfSpace.xl,
+                      PfSpace.xxl,
+                    ),
+                    child: PfButton(
+                      label: _isLastPage
+                          ? context.l10n.onboardingGetStarted
+                          : context.l10n.onboardingNext,
+                      onPressed: _onNextPressed,
+                      size: PfButtonSize.lg,
+                      expand: true,
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    PfSpace.xl,
-                    PfSpace.xl,
-                    PfSpace.xl,
-                    PfSpace.xxl,
-                  ),
-                  child: PfButton(
-                    label: _isLastPage
-                        ? context.l10n.onboardingGetStarted
-                        : context.l10n.onboardingNext,
-                    onPressed: _onNextPressed,
-                    size: PfButtonSize.lg,
-                    expand: true,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

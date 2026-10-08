@@ -21,6 +21,12 @@ class GameSearchLoadMore extends GameSearchEvent {
   const GameSearchLoadMore();
 }
 
+/// Retries the failed request: the first page, or the next page after a
+/// failed "load more".
+class GameSearchRetryRequested extends GameSearchEvent {
+  const GameSearchRetryRequested();
+}
+
 class GameSearchClear extends GameSearchEvent {
   const GameSearchClear();
 }

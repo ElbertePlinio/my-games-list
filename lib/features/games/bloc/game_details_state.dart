@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
 
 /// Status of the game details loading operation.
@@ -21,26 +22,28 @@ class GameDetailsState extends Equatable {
   const GameDetailsState({
     this.status = GameDetailsStatus.initial,
     this.game,
-    this.errorMessage,
+    this.errorKind,
   });
 
   final GameDetailsStatus status;
   final GameDetail? game;
-  final String? errorMessage;
+
+  /// Why loading failed. The screen maps it to a localized message.
+  final AppErrorKind? errorKind;
 
   /// Creates a copy of this state with the given fields replaced.
   GameDetailsState copyWith({
     GameDetailsStatus? status,
     GameDetail? game,
-    String? errorMessage,
+    AppErrorKind? errorKind,
   }) {
     return GameDetailsState(
       status: status ?? this.status,
       game: game ?? this.game,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorKind: errorKind ?? this.errorKind,
     );
   }
 
   @override
-  List<Object?> get props => [status, game, errorMessage];
+  List<Object?> get props => [status, game, errorKind];
 }

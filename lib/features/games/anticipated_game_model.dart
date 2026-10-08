@@ -63,24 +63,6 @@ class AnticipatedGame extends Equatable {
   /// Returns true if the game has been released
   bool get isReleased => timeUntilRelease.isNegative;
 
-  /// Returns a formatted countdown string (e.g., "45d 12h 30m")
-  String get countdownText {
-    if (isReleased) return 'Released';
-
-    final duration = timeUntilRelease;
-    final days = duration.inDays;
-    final hours = duration.inHours % 24;
-    final minutes = duration.inMinutes % 60;
-
-    if (days > 0) {
-      return '${days}d ${hours}h ${minutes}m';
-    } else if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    } else {
-      return '${minutes}m';
-    }
-  }
-
   /// Returns the platform names as a comma-separated string
   String get platformNames {
     return platforms.map((p) => p.name).join(', ');

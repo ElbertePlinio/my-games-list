@@ -121,7 +121,7 @@ void main() {
           predicate<GameSearchState>(
             (state) =>
                 state.status == GameSearchStatus.failure &&
-                state.errorMessage != null,
+                state.errorKind != null,
           ),
         ],
       );

@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
@@ -117,7 +118,11 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.status == LibraryStatus.failure &&
-                state.errorMessage != null,
+                state.failure ==
+                    const LibraryFailure(
+                      LibraryAction.load,
+                      AppErrorKind.unknown,
+                    ),
           ),
         ],
       );
@@ -177,7 +182,7 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.entries[0].isFavorite == true && // Rolled back
-                state.errorMessage != null,
+                state.failure?.action == LibraryAction.toggleFavorite,
           ),
         ],
       );
@@ -237,7 +242,7 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.entries.length == 2 && // Rolled back
-                state.errorMessage != null,
+                state.failure?.action == LibraryAction.delete,
           ),
         ],
       );

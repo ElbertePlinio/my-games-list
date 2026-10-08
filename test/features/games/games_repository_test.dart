@@ -268,7 +268,7 @@ void main() {
       expect(game.platforms, isEmpty);
     });
 
-    test('countdownText returns correct format for days', () {
+    test('timeUntilRelease is positive for future dates', () {
       final futureDate = DateTime.now().add(
         const Duration(days: 45, hours: 12, minutes: 30),
       );
@@ -281,12 +281,11 @@ void main() {
         platforms: const [],
       );
 
-      expect(game.countdownText, contains('d'));
-      expect(game.countdownText, contains('h'));
-      expect(game.countdownText, contains('m'));
+      expect(game.timeUntilRelease.inDays, 45);
+      expect(game.isReleased, isFalse);
     });
 
-    test('countdownText returns Released for past dates', () {
+    test('isReleased is true for past dates', () {
       final pastDate = DateTime.now().subtract(const Duration(days: 1));
       final game = AnticipatedGame(
         id: 1,
@@ -297,7 +296,6 @@ void main() {
         platforms: const [],
       );
 
-      expect(game.countdownText, 'Released');
       expect(game.isReleased, true);
     });
 

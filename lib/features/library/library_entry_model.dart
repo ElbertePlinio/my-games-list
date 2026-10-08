@@ -44,22 +44,6 @@ enum GameStatus {
     }
   }
 
-  /// Returns a user-friendly display name
-  String get displayName {
-    switch (this) {
-      case GameStatus.planned:
-        return 'Planned';
-      case GameStatus.playing:
-        return 'Playing';
-      case GameStatus.finished:
-        return 'Finished';
-      case GameStatus.dropped:
-        return 'Dropped';
-      case GameStatus.onHold:
-        return 'On Hold';
-    }
-  }
-
   /// Returns the localized display name for the current locale.
   String localizedName(BuildContext context) {
     switch (this) {
@@ -231,18 +215,6 @@ class LibraryEntry extends Equatable {
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  /// Returns the playtime formatted as hours (e.g., "10.5 hrs")
-  String get playtimeFormatted {
-    if (playtimeMinutes == null || playtimeMinutes == 0) {
-      return '0 hrs';
-    }
-    final hours = playtimeMinutes! / 60;
-    if (hours < 1) {
-      return '$playtimeMinutes min';
-    }
-    return '${hours.toStringAsFixed(1)} hrs';
-  }
 
   /// Returns a copy of this entry with updated fields
   LibraryEntry copyWith({

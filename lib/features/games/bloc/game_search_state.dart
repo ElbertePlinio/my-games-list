@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/search_game_model.dart';
 
@@ -9,7 +10,7 @@ class GameSearchState extends Equatable {
     this.status = GameSearchStatus.initial,
     this.games = const [],
     this.query = '',
-    this.errorMessage,
+    this.errorKind,
     this.hasMore = true,
     this.currentOffset = 0,
     this.offsetLimitReached = false,
@@ -21,7 +22,10 @@ class GameSearchState extends Equatable {
   /// Raw, unfiltered results accumulated across pages from the API.
   final List<SearchGame> games;
   final String query;
-  final String? errorMessage;
+
+  /// Why the last request failed. With [GameSearchStatus.failure] the first
+  /// page failed; with results on screen a "load more" failed.
+  final AppErrorKind? errorKind;
   final bool hasMore;
   final int currentOffset;
   final bool offsetLimitReached;
@@ -48,6 +52,10 @@ class GameSearchState extends Equatable {
       status == GameSearchStatus.success;
 
   bool get canLoadMore => hasMore && !offsetLimitReached && !isLoadingMore;
+
+  /// True when results are shown but fetching the next page failed.
+  bool get loadMoreFailed =>
+      errorKind != null && status == GameSearchStatus.success;
   bool get hasActiveFilters => !filters.isEmpty;
 
   /// Genres present in the loaded results, de-duplicated and name-sorted, so
@@ -95,7 +103,7 @@ class GameSearchState extends Equatable {
     GameSearchStatus? status,
     List<SearchGame>? games,
     String? query,
-    String? errorMessage,
+    AppErrorKind? errorKind,
     bool? hasMore,
     int? currentOffset,
     bool? offsetLimitReached,
@@ -105,7 +113,7 @@ class GameSearchState extends Equatable {
       status: status ?? this.status,
       games: games ?? this.games,
       query: query ?? this.query,
-      errorMessage: errorMessage,
+      errorKind: errorKind,
       hasMore: hasMore ?? this.hasMore,
       currentOffset: currentOffset ?? this.currentOffset,
       offsetLimitReached: offsetLimitReached ?? this.offsetLimitReached,
@@ -118,7 +126,7 @@ class GameSearchState extends Equatable {
     status,
     games,
     query,
-    errorMessage,
+    errorKind,
     hasMore,
     currentOffset,
     offsetLimitReached,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/games/i_games_repository.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
@@ -20,6 +21,7 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       transformer: debounce(_debounceDuration),
     );
     on<GameSearchLoadMore>(_onLoadMore);
+    on<GameSearchRetryRequested>(_onRetryRequested);
     on<GameSearchClear>(_onClear);
     on<GameSearchFiltersChanged>(_onFiltersChanged);
     on<GameSearchFiltersCleared>(_onFiltersCleared);
@@ -47,6 +49,10 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       return;
     }
 
+    await _search(query, emit);
+  }
+
+  Future<void> _search(String query, Emitter<GameSearchState> emit) async {
     // Start fresh search. Filters are reset because the available facets are
     // derived from results, which a new query replaces.
     emit(
@@ -79,7 +85,7 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       emit(
         state.copyWith(
           status: GameSearchStatus.failure,
-          errorMessage: e.toString(),
+          errorKind: AppErrorKind.from(e),
         ),
       );
     }
@@ -123,9 +129,21 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       emit(
         state.copyWith(
           status: GameSearchStatus.success,
-          errorMessage: 'Failed to load more results',
+          errorKind: AppErrorKind.from(e),
         ),
       );
+    }
+  }
+
+  Future<void> _onRetryRequested(
+    GameSearchRetryRequested event,
+    Emitter<GameSearchState> emit,
+  ) async {
+    if (state.query.isEmpty) return;
+    if (state.status == GameSearchStatus.failure) {
+      await _search(state.query, emit);
+    } else if (state.loadMoreFailed) {
+      await _onLoadMore(const GameSearchLoadMore(), emit);
     }
   }
 

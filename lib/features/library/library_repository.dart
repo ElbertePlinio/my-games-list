@@ -1,4 +1,5 @@
 import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Repository for managing user's game library
@@ -36,7 +37,10 @@ class LibraryRepository {
     final response = await _httpClient.get<Map<String, dynamic>>(path);
 
     if (response.isError) {
-      throw Exception(response.error?.userMessage ?? 'Failed to fetch library');
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch library',
+      );
     }
 
     final libraryResponse = LibraryEntriesResponse.fromJson(
@@ -89,8 +93,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to add game to library',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to add game to library',
       );
     }
 
@@ -104,8 +109,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to fetch library entry',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch library entry',
       );
     }
 
@@ -146,8 +152,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to update library entry',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to update library entry',
       );
     }
 
@@ -161,8 +168,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to toggle favorite',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to toggle favorite',
       );
     }
 
@@ -176,8 +184,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to delete library entry',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to delete library entry',
       );
     }
   }

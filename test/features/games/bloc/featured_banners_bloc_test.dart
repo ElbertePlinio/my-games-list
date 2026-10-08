@@ -25,7 +25,7 @@ void main() {
     );
     const banner2 = FeaturedBanner(
       id: 'b2',
-      title: 'New Releases',
+      title: 'New releases',
       imageUrl: 'https://example.com/b2.jpg',
       position: 1,
     );

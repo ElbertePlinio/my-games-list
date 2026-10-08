@@ -329,21 +329,6 @@ void main() {
       expect(entry.notes, 'Amazing game!');
     });
 
-    test('playtimeFormatted returns correct format', () {
-      final entry = LibraryEntry.fromJson(mockLibraryEntry);
-      expect(entry.playtimeFormatted, '20.0 hrs');
-
-      // Test with 0 playtime
-      final noPlaytimeEntry = {...mockLibraryEntry, 'playtime_minutes': 0};
-      final entry2 = LibraryEntry.fromJson(noPlaytimeEntry);
-      expect(entry2.playtimeFormatted, '0 hrs');
-
-      // Test with minutes only (less than 1 hour)
-      final shortPlaytimeEntry = {...mockLibraryEntry, 'playtime_minutes': 45};
-      final entry3 = LibraryEntry.fromJson(shortPlaytimeEntry);
-      expect(entry3.playtimeFormatted, '45 min');
-    });
-
     test('copyWith creates correct copy', () {
       final entry = LibraryEntry.fromJson(mockLibraryEntry);
       final copy = entry.copyWith(isFavorite: false, score: 100);
@@ -371,14 +356,6 @@ void main() {
       expect(GameStatus.finished.toApiString(), 'finished');
       expect(GameStatus.dropped.toApiString(), 'dropped');
       expect(GameStatus.onHold.toApiString(), 'on_hold');
-    });
-
-    test('displayName returns user-friendly names', () {
-      expect(GameStatus.planned.displayName, 'Planned');
-      expect(GameStatus.playing.displayName, 'Playing');
-      expect(GameStatus.finished.displayName, 'Finished');
-      expect(GameStatus.dropped.displayName, 'Dropped');
-      expect(GameStatus.onHold.displayName, 'On Hold');
     });
   });
 }

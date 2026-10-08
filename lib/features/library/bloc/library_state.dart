@@ -1,15 +1,30 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Enum representing the status of library loading
 enum LibraryStatus { initial, loading, success, failure }
+
+/// Which library action failed. The UI picks a localized message from it.
+enum LibraryAction { load, refresh, add, update, delete, toggleFavorite }
+
+/// One-shot failure report: the action that failed and why.
+class LibraryFailure extends Equatable {
+  const LibraryFailure(this.action, this.kind);
+
+  final LibraryAction action;
+  final AppErrorKind kind;
+
+  @override
+  List<Object?> get props => [action, kind];
+}
 
 /// State class for library
 class LibraryState extends Equatable {
   const LibraryState({
     this.status = LibraryStatus.initial,
     this.entries = const [],
-    this.errorMessage,
+    this.failure,
     this.userId,
     this.showFavoritesOnly = false,
     this.statusFilter,
@@ -21,7 +36,9 @@ class LibraryState extends Equatable {
 
   final LibraryStatus status;
   final List<LibraryEntry> entries;
-  final String? errorMessage;
+
+  /// Set on the emission right after a failure, cleared on the next change.
+  final LibraryFailure? failure;
   final String? userId;
   final bool showFavoritesOnly;
   final GameStatus? statusFilter;
@@ -66,7 +83,7 @@ class LibraryState extends Equatable {
   LibraryState copyWith({
     LibraryStatus? status,
     List<LibraryEntry>? entries,
-    String? errorMessage,
+    LibraryFailure? failure,
     String? userId,
     bool? showFavoritesOnly,
     GameStatus? statusFilter,
@@ -79,7 +96,7 @@ class LibraryState extends Equatable {
     return LibraryState(
       status: status ?? this.status,
       entries: entries ?? this.entries,
-      errorMessage: errorMessage,
+      failure: failure,
       userId: userId ?? this.userId,
       showFavoritesOnly: showFavoritesOnly ?? this.showFavoritesOnly,
       statusFilter: clearStatusFilter
@@ -96,7 +113,7 @@ class LibraryState extends Equatable {
   List<Object?> get props => [
     status,
     entries,
-    errorMessage,
+    failure,
     userId,
     showFavoritesOnly,
     statusFilter,

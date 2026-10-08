@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
 import 'package:picklog/features/library/library_repository.dart';
@@ -41,7 +42,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       emit(
         state.copyWith(
           status: LibraryStatus.failure,
-          errorMessage: e.toString(),
+          failure: LibraryFailure(LibraryAction.load, AppErrorKind.from(e)),
         ),
       );
     }
@@ -62,7 +63,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       );
     } catch (e) {
       // On refresh failure, keep existing entries but show error
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          failure: LibraryFailure(LibraryAction.refresh, AppErrorKind.from(e)),
+        ),
+      );
     }
   }
 
@@ -98,7 +103,12 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
       emit(state.copyWith(gameAddedOrUpdated: false));
     } catch (e) {
-      emit(state.copyWith(isAddingGame: false, errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          isAddingGame: false,
+          failure: LibraryFailure(LibraryAction.add, AppErrorKind.from(e)),
+        ),
+      );
     }
   }
 
@@ -137,7 +147,12 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
       emit(state.copyWith(gameAddedOrUpdated: false));
     } catch (e) {
-      emit(state.copyWith(isUpdatingEntry: false, errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          isUpdatingEntry: false,
+          failure: LibraryFailure(LibraryAction.update, AppErrorKind.from(e)),
+        ),
+      );
     }
   }
 
@@ -158,7 +173,10 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     } catch (e) {
       // Rollback on failure
       emit(
-        state.copyWith(entries: originalEntries, errorMessage: e.toString()),
+        state.copyWith(
+          entries: originalEntries,
+          failure: LibraryFailure(LibraryAction.delete, AppErrorKind.from(e)),
+        ),
       );
     }
   }
@@ -183,7 +201,13 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     } catch (e) {
       // Rollback on failure
       emit(
-        state.copyWith(entries: originalEntries, errorMessage: e.toString()),
+        state.copyWith(
+          entries: originalEntries,
+          failure: LibraryFailure(
+            LibraryAction.toggleFavorite,
+            AppErrorKind.from(e),
+          ),
+        ),
       );
     }
   }

@@ -55,9 +55,8 @@ abstract final class LibraryEntryActions {
         entry.game.name,
         status.localizedName(context),
       ),
-      onUndo: () => bloc.add(
-        LibraryUpdateEntryRequested(entry: entry, status: previous),
-      ),
+      onUndo: () =>
+          bloc.add(LibraryUpdateEntryRequested(entry: entry, status: previous)),
     );
   }
 

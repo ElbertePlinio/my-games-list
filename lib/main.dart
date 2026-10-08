@@ -140,8 +140,8 @@ class _PicklogAppState extends State<PicklogApp> {
     super.dispose();
   }
 
-  // Built once (ColorScheme.fromSeed is not free) and reused, so a settings
-  // change doesn't rebuild the theme palette on every render.
+  // Built once and reused, so a settings change doesn't rebuild every
+  // component theme on each render.
   static final ThemeData _lightTheme = AppTheme.light();
   static final ThemeData _darkTheme = AppTheme.dark();
 
@@ -180,7 +180,7 @@ class _PicklogAppState extends State<PicklogApp> {
             routerConfig: router,
             theme: _lightTheme,
             darkTheme: _darkTheme,
-            themeMode: state.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode: state.themeMode,
             builder: (context, child) => ConsentBanner(
               child: OfflineBanner(child: child ?? const SizedBox.shrink()),
             ),

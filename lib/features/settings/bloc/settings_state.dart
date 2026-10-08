@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 
 class SettingsState extends Equatable {
-  const SettingsState({this.isDarkMode = false, this.localeCode});
+  const SettingsState({this.themeMode = ThemeMode.system, this.localeCode});
 
-  final bool isDarkMode;
+  /// System, light or dark. Defaults to following the device.
+  final ThemeMode themeMode;
 
   /// The chosen language code ('en', 'pt'), or null to follow the device.
   final String? localeCode;
@@ -12,9 +14,12 @@ class SettingsState extends Equatable {
   // (null is a valid localeCode meaning "follow the device locale").
   static const Object _unchanged = Object();
 
-  SettingsState copyWith({bool? isDarkMode, Object? localeCode = _unchanged}) {
+  SettingsState copyWith({
+    ThemeMode? themeMode,
+    Object? localeCode = _unchanged,
+  }) {
     return SettingsState(
-      isDarkMode: isDarkMode ?? this.isDarkMode,
+      themeMode: themeMode ?? this.themeMode,
       localeCode: identical(localeCode, _unchanged)
           ? this.localeCode
           : localeCode as String?,
@@ -22,5 +27,5 @@ class SettingsState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [isDarkMode, localeCode];
+  List<Object?> get props => [themeMode, localeCode];
 }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 
 abstract class SettingsEvent extends Equatable {
   const SettingsEvent();
@@ -11,16 +12,13 @@ class SettingsInitialized extends SettingsEvent {
   const SettingsInitialized();
 }
 
-class SettingsThemeToggled extends SettingsEvent {
-  const SettingsThemeToggled();
-}
-
-class SettingsDarkModeSet extends SettingsEvent {
-  const SettingsDarkModeSet(this.value);
-  final bool value;
+/// Sets the theme to follow the system, or forces light or dark.
+class SettingsThemeModeSet extends SettingsEvent {
+  const SettingsThemeModeSet(this.themeMode);
+  final ThemeMode themeMode;
 
   @override
-  List<Object?> get props => [value];
+  List<Object?> get props => [themeMode];
 }
 
 class SettingsLocaleSet extends SettingsEvent {

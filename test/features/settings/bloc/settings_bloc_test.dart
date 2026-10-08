@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picklog/features/settings/bloc/settings_bloc.dart';
 import 'package:picklog/features/settings/bloc/settings_event.dart';
@@ -8,161 +9,147 @@ import '../../../mocks/mock_services.dart';
 
 void main() {
   group('SettingsBloc', () {
-    late MockLocalStorageService mockStorageService;
+    late MockLocalStorageService storage;
 
     setUp(() {
-      mockStorageService = MockLocalStorageService();
+      storage = MockLocalStorageService();
     });
 
-    test('initial state has dark mode off', () {
-      final settingsBloc = SettingsBloc(mockStorageService);
-      expect(settingsBloc.state.isDarkMode, isFalse);
-      settingsBloc.close();
+    test('initial state follows the system theme', () {
+      final bloc = SettingsBloc(storage);
+      expect(bloc.state.themeMode, ThemeMode.system);
+      bloc.close();
     });
 
     blocTest<SettingsBloc, SettingsState>(
-      'emits state with dark mode off when initialized with no stored setting',
-      build: () {
-        mockStorageService.setBoolReturn(null);
-        return SettingsBloc(mockStorageService);
-      },
+      'defaults to System when nothing is stored',
+      build: () => SettingsBloc(storage),
       act: (bloc) => bloc.add(const SettingsInitialized()),
-      expect: () => [const SettingsState(isDarkMode: false)],
-    );
-
-    blocTest<SettingsBloc, SettingsState>(
-      'emits state with dark mode on when initialized with stored setting',
-      build: () {
-        mockStorageService.setBoolReturn(true);
-        return SettingsBloc(mockStorageService);
-      },
-      act: (bloc) => bloc.add(const SettingsInitialized()),
-      expect: () => [const SettingsState(isDarkMode: true)],
-    );
-
-    blocTest<SettingsBloc, SettingsState>(
-      'toggles theme correctly from off to on',
-      build: () => SettingsBloc(mockStorageService),
-      seed: () => const SettingsState(isDarkMode: false),
-      act: (bloc) => bloc.add(const SettingsThemeToggled()),
-      expect: () => [const SettingsState(isDarkMode: true)],
+      expect: () => [const SettingsState()],
       verify: (_) {
-        expect(mockStorageService.setBoolCallHistory.length, greaterThan(0));
+        // No migration writes happen for a fresh install.
+        expect(storage.setStringCallHistory, isEmpty);
       },
     );
 
-    blocTest<SettingsBloc, SettingsState>(
-      'toggles theme correctly from on to off',
-      build: () => SettingsBloc(mockStorageService),
-      seed: () => const SettingsState(isDarkMode: true),
-      act: (bloc) => bloc.add(const SettingsThemeToggled()),
-      expect: () => [const SettingsState(isDarkMode: false)],
-    );
+    for (final mode in ThemeMode.values) {
+      blocTest<SettingsBloc, SettingsState>(
+        'loads a stored ${mode.name} theme mode',
+        build: () {
+          storage.setString(SettingsBloc.themeModeKey, mode.name);
+          storage.setStringCallHistory.clear();
+          return SettingsBloc(storage);
+        },
+        act: (bloc) => bloc.add(const SettingsInitialized()),
+        expect: () => [SettingsState(themeMode: mode)],
+      );
+    }
+
+    group('migration from the legacy dark-mode bool', () {
+      blocTest<SettingsBloc, SettingsState>(
+        'maps a stored true to Dark, saves the new key and drops the old one',
+        build: () {
+          storage.setBool(SettingsBloc.legacyDarkModeKey, true);
+          return SettingsBloc(storage);
+        },
+        act: (bloc) => bloc.add(const SettingsInitialized()),
+        expect: () => [const SettingsState(themeMode: ThemeMode.dark)],
+        verify: (_) {
+          expect(storage.setStringCallHistory.last, {
+            'key': SettingsBloc.themeModeKey,
+            'value': 'dark',
+          });
+          expect(
+            storage.removeCallHistory,
+            contains(SettingsBloc.legacyDarkModeKey),
+          );
+        },
+      );
+
+      blocTest<SettingsBloc, SettingsState>(
+        'maps a stored false to Light (an explicit earlier choice)',
+        build: () {
+          storage.setBool(SettingsBloc.legacyDarkModeKey, false);
+          return SettingsBloc(storage);
+        },
+        act: (bloc) => bloc.add(const SettingsInitialized()),
+        expect: () => [const SettingsState(themeMode: ThemeMode.light)],
+        verify: (_) {
+          expect(storage.setStringCallHistory.last['value'], 'light');
+        },
+      );
+
+      blocTest<SettingsBloc, SettingsState>(
+        'prefers the new key when both exist',
+        build: () {
+          storage
+            ..setBool(SettingsBloc.legacyDarkModeKey, true)
+            ..setString(SettingsBloc.themeModeKey, 'light');
+          storage.setStringCallHistory.clear();
+          return SettingsBloc(storage);
+        },
+        act: (bloc) => bloc.add(const SettingsInitialized()),
+        expect: () => [const SettingsState(themeMode: ThemeMode.light)],
+        verify: (_) {
+          expect(storage.setStringCallHistory, isEmpty);
+          expect(storage.removeCallHistory, isEmpty);
+        },
+      );
+
+      blocTest<SettingsBloc, SettingsState>(
+        'ignores an unknown stored value and falls back to the legacy bool',
+        build: () {
+          storage
+            ..setString(SettingsBloc.themeModeKey, 'sepia')
+            ..setBool(SettingsBloc.legacyDarkModeKey, true);
+          return SettingsBloc(storage);
+        },
+        act: (bloc) => bloc.add(const SettingsInitialized()),
+        expect: () => [const SettingsState(themeMode: ThemeMode.dark)],
+      );
+    });
 
     blocTest<SettingsBloc, SettingsState>(
-      'sets dark mode to true',
-      build: () => SettingsBloc(mockStorageService),
-      act: (bloc) => bloc.add(const SettingsDarkModeSet(true)),
-      expect: () => [const SettingsState(isDarkMode: true)],
+      'setting a theme mode persists it as a string',
+      build: () => SettingsBloc(storage),
+      act: (bloc) => bloc.add(const SettingsThemeModeSet(ThemeMode.dark)),
+      expect: () => [const SettingsState(themeMode: ThemeMode.dark)],
       verify: (_) {
-        final savedCall = mockStorageService.setBoolCallHistory.last;
-        expect(savedCall['key'], equals('is_dark_mode'));
-        expect(savedCall['value'], isTrue);
+        expect(storage.setStringCallHistory.last, {
+          'key': SettingsBloc.themeModeKey,
+          'value': 'dark',
+        });
       },
     );
 
     blocTest<SettingsBloc, SettingsState>(
-      'sets dark mode to false',
-      build: () => SettingsBloc(mockStorageService),
-      seed: () => const SettingsState(isDarkMode: true),
-      act: (bloc) => bloc.add(const SettingsDarkModeSet(false)),
-      expect: () => [const SettingsState(isDarkMode: false)],
+      'switching back to System persists system',
+      build: () => SettingsBloc(storage),
+      seed: () => const SettingsState(themeMode: ThemeMode.dark),
+      act: (bloc) => bloc.add(const SettingsThemeModeSet(ThemeMode.system)),
+      expect: () => [const SettingsState()],
       verify: (_) {
-        final savedCall = mockStorageService.setBoolCallHistory.last;
-        expect(savedCall['key'], equals('is_dark_mode'));
-        expect(savedCall['value'], isFalse);
-      },
-    );
-
-    blocTest<SettingsBloc, SettingsState>(
-      'saves settings to storage when changed',
-      build: () => SettingsBloc(mockStorageService),
-      act: (bloc) => bloc.add(const SettingsThemeToggled()),
-      expect: () => [const SettingsState(isDarkMode: true)],
-      verify: (_) {
-        expect(mockStorageService.setBoolCallHistory.length, greaterThan(0));
-        expect(
-          mockStorageService.setBoolCallHistory.last['key'],
-          equals('is_dark_mode'),
-        );
-      },
-    );
-
-    blocTest<SettingsBloc, SettingsState>(
-      'handles storage errors gracefully',
-      build: () {
-        mockStorageService.setBoolReturn(null);
-        return SettingsBloc(mockStorageService);
-      },
-      act: (bloc) async {
-        bloc.add(const SettingsInitialized());
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        bloc.add(const SettingsThemeToggled());
-      },
-      skip: 1, // Skip the initialization state
-      expect: () => [const SettingsState(isDarkMode: true)],
-    );
-
-    blocTest<SettingsBloc, SettingsState>(
-      'persists theme changes correctly',
-      build: () => SettingsBloc(mockStorageService),
-      act: (bloc) async {
-        bloc.add(const SettingsDarkModeSet(true));
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        bloc.add(const SettingsDarkModeSet(false));
-      },
-      skip: 1, // Skip to the final state
-      expect: () => [const SettingsState(isDarkMode: false)],
-      verify: (_) {
-        expect(mockStorageService.setBoolCallHistory.length, equals(2));
-        expect(mockStorageService.setBoolCallHistory.last['value'], isFalse);
-      },
-    );
-
-    blocTest<SettingsBloc, SettingsState>(
-      'tracks multiple theme toggles',
-      build: () => SettingsBloc(mockStorageService),
-      act: (bloc) async {
-        bloc.add(const SettingsThemeToggled()); // true
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        bloc.add(const SettingsThemeToggled()); // false
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        bloc.add(const SettingsThemeToggled()); // true
-      },
-      skip: 2, // Skip to the final state
-      expect: () => [const SettingsState(isDarkMode: true)],
-      verify: (_) {
-        expect(mockStorageService.setBoolCallHistory.length, equals(3));
+        expect(storage.setStringCallHistory.last['value'], 'system');
       },
     );
 
     blocTest<SettingsBloc, SettingsState>(
       'loads the stored locale on init',
       build: () {
-        mockStorageService.setStringReturn('pt');
-        return SettingsBloc(mockStorageService);
+        storage.setString('locale_code', 'pt');
+        return SettingsBloc(storage);
       },
       act: (bloc) => bloc.add(const SettingsInitialized()),
-      expect: () => [const SettingsState(isDarkMode: false, localeCode: 'pt')],
+      expect: () => [const SettingsState(localeCode: 'pt')],
     );
 
     blocTest<SettingsBloc, SettingsState>(
       'setting a locale persists it and emits the new code',
-      build: () => SettingsBloc(mockStorageService),
+      build: () => SettingsBloc(storage),
       act: (bloc) => bloc.add(const SettingsLocaleSet('pt')),
       expect: () => [const SettingsState(localeCode: 'pt')],
       verify: (_) {
-        expect(mockStorageService.setStringCallHistory.last, {
+        expect(storage.setStringCallHistory.last, {
           'key': 'locale_code',
           'value': 'pt',
         });
@@ -171,12 +158,12 @@ void main() {
 
     blocTest<SettingsBloc, SettingsState>(
       'clearing the locale removes the key and follows the system',
-      build: () => SettingsBloc(mockStorageService),
+      build: () => SettingsBloc(storage),
       seed: () => const SettingsState(localeCode: 'pt'),
       act: (bloc) => bloc.add(const SettingsLocaleSet(null)),
       expect: () => [const SettingsState()],
       verify: (_) {
-        expect(mockStorageService.removeCallHistory, contains('locale_code'));
+        expect(storage.removeCallHistory, contains('locale_code'));
       },
     );
   });

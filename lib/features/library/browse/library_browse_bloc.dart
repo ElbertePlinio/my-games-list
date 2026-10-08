@@ -26,8 +26,12 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
     on<LibraryBrowseFiltersChanged>(_onFiltersChanged);
     on<LibraryBrowseQueryChanged>(
       _onQueryChanged,
-      transformer: (events, mapper) =>
-          events.debounce(queryDebounce).switchMap(mapper),
+      // Drop a query that only differs in whitespace before switchMap, so it
+      // never cancels the request that is still loading.
+      transformer: (events, mapper) => events
+          .debounce(queryDebounce)
+          .where((e) => e.query.trim() != state.filters.query)
+          .switchMap(mapper),
     );
     on<LibraryBrowseSortChanged>(_onSortChanged);
     on<LibraryBrowseLoadMore>(_onLoadMore);

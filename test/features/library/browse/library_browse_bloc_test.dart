@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -118,6 +120,38 @@ void main() {
             ),
             limit: LibraryBrowseBloc.pageSize,
           ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'trailing whitespace while a search is pending keeps it running',
+      () async {
+        final pending = Completer<LibraryEntriesResponse>();
+        when(
+          () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+        ).thenAnswer((_) => pending.future);
+        final bloc = build()
+          ..emit(
+            const LibraryBrowseState(
+              status: LibraryBrowseStatus.success,
+              userId: 'u1',
+            ),
+          );
+        addTearDown(bloc.close);
+
+        bloc.add(const LibraryBrowseQueryChanged('zelda'));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(bloc.state.isLoading, isTrue);
+        bloc.add(const LibraryBrowseQueryChanged('zelda '));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        pending.complete(_page(_entries(0, 1), 1));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(bloc.state.status, LibraryBrowseStatus.success);
+        expect(bloc.state.entries.length, 1);
+        verify(
+          () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
         ).called(1);
       },
     );

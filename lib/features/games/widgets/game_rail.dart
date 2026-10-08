@@ -15,16 +15,20 @@ class GameRail extends StatelessWidget {
   const GameRail({
     required this.itemCount,
     required this.itemBuilder,
+    this.extraHeight = 0,
     super.key,
   });
 
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
 
+  /// Space added under each card, for example a reason line.
+  final double extraHeight;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: railHeight(context),
+      height: railHeight(context) + extraHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),

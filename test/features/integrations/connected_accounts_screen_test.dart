@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/widgets/status_pill.dart';
 import 'package:picklog/features/integrations/bloc/connected_accounts_cubit.dart';
 import 'package:picklog/features/integrations/connected_accounts_screen.dart';
 import 'package:picklog/features/integrations/integrations_models.dart';
@@ -22,8 +26,9 @@ void main() {
     WidgetTester tester,
     List<LinkedProvider> list, {
     bool settle = true,
+    Size size = const Size(390, 2400),
   }) async {
-    tester.view.physicalSize = const Size(390, 2400);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     when(() => repository.getLinkedAccounts()).thenAnswer((_) async => list);
@@ -57,6 +62,47 @@ void main() {
     expect(find.text('Unavailable'), findsNWidgets(2));
     expect(find.widgetWithText(OutlinedButton, 'Link'), findsNWidgets(2));
   });
+
+  for (final width in [390.0, 1280.0]) {
+    testWidgets('status pills sit at the card edge or under the title '
+        '(${width.toInt()} wide)', (tester) async {
+      await pump(tester, providers(), size: Size(width, 2400));
+
+      expect(find.byType(StatusPill), findsNWidgets(3));
+      final cards = find.ancestor(
+        of: find.byType(StatusPill),
+        matching: find.byType(Card),
+      );
+      for (final card in cards.evaluate()) {
+        final cardRect = tester.getRect(find.byWidget(card.widget));
+        final pillRects = [
+          for (final pill
+              in find
+                  .descendant(
+                    of: find.byWidget(card.widget),
+                    matching: find.byType(StatusPill),
+                  )
+                  .evaluate())
+            tester.getRect(find.byWidget(pill.widget)),
+        ];
+        final groupLeft = pillRects.map((r) => r.left).reduce(min);
+        final groupRight = pillRects.map((r) => r.right).reduce(max);
+        final contentRight = cardRect.right - PfSpace.lg;
+        final titleLeft = cardRect.left + PfSpace.lg + 40 + PfSpace.md;
+        final atEdge = (groupRight - contentRight).abs() < 0.5;
+        final underTitle = (groupLeft - titleLeft).abs() < 0.5;
+        expect(
+          atEdge || underTitle,
+          isTrue,
+          reason:
+              'pills at $groupLeft-$groupRight, card content '
+              'from $titleLeft to $contentRight',
+        );
+        // Wide cards have room, so the pills sit at the right edge.
+        if (width > 600) expect(atEdge, isTrue);
+      }
+    });
+  }
 
   testWidgets('the link sheet shows Steam help and links the account', (
     tester,

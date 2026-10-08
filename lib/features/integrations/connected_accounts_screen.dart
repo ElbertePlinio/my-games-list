@@ -328,23 +328,30 @@ class _ProviderAccountCardState extends State<ProviderAccountCard> {
                       ),
                     ),
                     const SizedBox(width: PfSpace.md),
+                    // The pills sit at the right edge when they fit beside
+                    // the title, and wrap under it on narrow cards.
                     Expanded(
-                      child: Text(
-                        provider.displayName,
-                        style: theme.textTheme.titleLarge,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: PfSpace.sm,
+                        runSpacing: PfSpace.xs,
+                        children: [
+                          Text(
+                            provider.displayName,
+                            style: theme.textTheme.titleLarge,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (pills.isNotEmpty)
+                            Wrap(
+                              spacing: PfSpace.xs,
+                              runSpacing: PfSpace.xs,
+                              children: pills,
+                            ),
+                        ],
                       ),
                     ),
-                    if (pills.isNotEmpty)
-                      Flexible(
-                        child: Wrap(
-                          alignment: WrapAlignment.end,
-                          spacing: PfSpace.xs,
-                          runSpacing: PfSpace.xs,
-                          children: pills,
-                        ),
-                      ),
                   ],
                 ),
                 const SizedBox(height: PfSpace.md),

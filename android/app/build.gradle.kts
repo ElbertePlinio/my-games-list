@@ -31,7 +31,7 @@ if (hasReleaseKeystore) {
 }
 
 android {
-    namespace = "com.elberte.mygameslist"
+    namespace = "app.picklog"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -46,7 +46,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.elberte.mygameslist"
+        applicationId = "app.picklog"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -55,7 +55,7 @@ android {
         versionName = flutter.versionName
         // Fallback name for flavorless builds (e.g. `flutter run` without
         // `--flavor`); each flavor overrides this below.
-        resValue("string", "app_name", "My Games List")
+        resValue("string", "app_name", "Picklog")
     }
 
     flavorDimensions += "env"
@@ -68,13 +68,13 @@ android {
         create("staging") {
             dimension = "env"
             applicationIdSuffix = ".staging"
-            resValue("string", "app_name", "My Games List (Staging)")
+            resValue("string", "app_name", "Picklog (Staging)")
         }
         create("prod") {
             dimension = "env"
             // No suffix: production keeps the base application id that the
             // production Firebase project / google-services.json is keyed to.
-            resValue("string", "app_name", "My Games List")
+            resValue("string", "app_name", "Picklog")
         }
     }
 

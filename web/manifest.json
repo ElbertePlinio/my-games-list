@@ -1,6 +1,6 @@
 {
-    "name": "My Games List",
-    "short_name": "My Games List",
+    "name": "Picklog",
+    "short_name": "Picklog",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#12141C",

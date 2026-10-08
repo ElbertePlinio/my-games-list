@@ -6,11 +6,11 @@ Version: 2026-06-22
 
 Effective date: June 22, 2026
 
-This Privacy Policy describes how MyGamesList ("the app", "the service", "we", "us") collects, uses, shares, and protects your personal data, in accordance with Brazilian Law No. 13.709/2018 (the General Data Protection Law, "LGPD"). By creating an account and using the service, you acknowledge the practices described here.
+This Privacy Policy describes how Picklog ("the app", "the service", "we", "us") collects, uses, shares, and protects your personal data, in accordance with Brazilian Law No. 13.709/2018 (the General Data Protection Law, "LGPD"). By creating an account and using the service, you acknowledge the practices described here.
 
 ## 1. Who is the data controller
 
-The controller of the personal data processed in MyGamesList is **Elberte Plínio**, an individual. MyGamesList is maintained by a natural person, not by a company; the LGPD (Art. 5, VI) expressly allows the controller to be an individual.
+The controller of the personal data processed in Picklog is **Elberte Plínio**, an individual. Picklog is maintained by a natural person, not by a company; the LGPD (Art. 5, VI) expressly allows the controller to be an individual.
 
 The controller is the party responsible for the decisions regarding the processing of your personal data.
 

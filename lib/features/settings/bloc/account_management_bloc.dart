@@ -22,7 +22,7 @@ class AccountManagementBloc
   final AuthRepository _authRepository;
   final AccountExportSaver _exportSaver;
 
-  static const _exportFileName = 'mygameslist-export.json';
+  static const _exportFileName = 'picklog-export.json';
 
   Future<void> _onExportRequested(
     AccountManagementExportRequested event,

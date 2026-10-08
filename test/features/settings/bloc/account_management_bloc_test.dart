@@ -55,7 +55,7 @@ void main() {
       verify: (_) {
         verify(() => repository.exportData()).called(1);
         expect(saver.savedJson, '{"a":1}');
-        expect(saver.savedFileName, 'mygameslist-export.json');
+        expect(saver.savedFileName, 'picklog-export.json');
       },
     );
 

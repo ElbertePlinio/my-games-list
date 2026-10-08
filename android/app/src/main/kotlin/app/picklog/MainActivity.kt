@@ -1,4 +1,4 @@
-package com.elberte.mygameslist
+package app.picklog
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -4,11 +4,11 @@ Versão: 2026-06-22
 
 Data de vigência: 22 de junho de 2026
 
-Esta Política de Privacidade descreve como o MyGamesList ("aplicativo", "serviço", "nós") coleta, usa, compartilha e protege seus dados pessoais, em conformidade com a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais, "LGPD"). Ao criar uma conta e utilizar o serviço, você declara estar ciente das práticas descritas aqui.
+Esta Política de Privacidade descreve como o Picklog ("aplicativo", "serviço", "nós") coleta, usa, compartilha e protege seus dados pessoais, em conformidade com a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais, "LGPD"). Ao criar uma conta e utilizar o serviço, você declara estar ciente das práticas descritas aqui.
 
 ## 1. Quem é o controlador dos dados
 
-O controlador dos dados pessoais tratados no MyGamesList é **Elberte Plínio** (pessoa física). O MyGamesList é mantido por uma pessoa natural, e não por uma empresa; a LGPD (Art. 5º, VI) admite expressamente que o controlador seja pessoa física.
+O controlador dos dados pessoais tratados no Picklog é **Elberte Plínio** (pessoa física). O Picklog é mantido por uma pessoa natural, e não por uma empresa; a LGPD (Art. 5º, VI) admite expressamente que o controlador seja pessoa física.
 
 O controlador é a pessoa responsável pelas decisões referentes ao tratamento dos seus dados pessoais.
 

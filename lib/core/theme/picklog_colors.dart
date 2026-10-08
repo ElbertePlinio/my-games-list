@@ -134,6 +134,9 @@ class PicklogColors extends ThemeExtension<PicklogColors> {
   /// only 3.9:1, while #0A0A0B on it is 4.8:1 (AA).
   Color get onEmber => const Color(0xFF0A0A0B);
 
+  /// Modal barrier behind dialogs: the surface at 62% opacity.
+  Color get scrim => surface.withValues(alpha: 0.62);
+
   /// Soft ember glow (`0 0 30 -8` at 25%).
   List<BoxShadow> get glowSoft => [
     BoxShadow(

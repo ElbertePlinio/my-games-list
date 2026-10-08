@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 
 /// Shows [builder] as a dialog that fades in and rises 8px in 160ms.
 ///
@@ -14,7 +15,7 @@ Future<T?> showPfDialog<T>({
     context: context,
     barrierDismissible: barrierDismissible,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    barrierColor: const Color(0x99000000),
+    barrierColor: context.pfColors.scrim,
     transitionDuration: reduced ? Duration.zero : PfMotion.dialog,
     pageBuilder: (dialogContext, _, _) => builder(dialogContext),
     transitionBuilder: (context, animation, _, child) {

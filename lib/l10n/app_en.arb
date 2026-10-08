@@ -863,5 +863,703 @@
     },
     "@statusOnHold": {
       "description": "Library status: on hold"
+    },
+    "aiEyebrowPlayNext": "AI · Play next",
+    "@aiEyebrowPlayNext": {
+      "description": "Eyebrow above the Play next screen and home card"
+    },
+    "aiEyebrowDiscover": "AI · Discover",
+    "@aiEyebrowDiscover": {
+      "description": "Eyebrow above the AI discover screen"
+    },
+    "aiPlayNextTitle": "Play next",
+    "@aiPlayNextTitle": {
+      "description": "App bar title of the AI play next screen"
+    },
+    "aiPlayNextHeadline": "What should I play tonight?",
+    "@aiPlayNextHeadline": {
+      "description": "Headline of the play next screen and home card"
+    },
+    "aiPlayNextSubtitle": "Tell Picklog your mood and your time. It picks from your backlog.",
+    "@aiPlayNextSubtitle": {
+      "description": "Subtitle under the play next headline"
+    },
+    "aiMoodLabel": "Mood",
+    "@aiMoodLabel": {
+      "description": "Label above the mood chips"
+    },
+    "aiMoodChill": "Chill",
+    "@aiMoodChill": {
+      "description": "Mood chip"
+    },
+    "aiMoodIntense": "Intense",
+    "@aiMoodIntense": {
+      "description": "Mood chip"
+    },
+    "aiMoodStory": "Story",
+    "@aiMoodStory": {
+      "description": "Mood chip"
+    },
+    "aiMoodSocial": "Social",
+    "@aiMoodSocial": {
+      "description": "Mood chip"
+    },
+    "aiMoodQuick": "Quick",
+    "@aiMoodQuick": {
+      "description": "Mood chip"
+    },
+    "aiMoodChallenge": "Challenge",
+    "@aiMoodChallenge": {
+      "description": "Mood chip"
+    },
+    "aiTimeLabel": "Time available",
+    "@aiTimeLabel": {
+      "description": "Label above the time slider"
+    },
+    "aiDurationMinutes": "{minutes} min",
+    "@aiDurationMinutes": {
+      "description": "A duration in minutes",
+      "placeholders": {
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "aiDurationHours": "{hours} h",
+    "@aiDurationHours": {
+      "description": "A duration in whole hours",
+      "placeholders": {
+        "hours": {
+          "type": "int"
+        }
+      }
+    },
+    "aiDurationHoursMinutes": "{hours} h {minutes} min",
+    "@aiDurationHoursMinutes": {
+      "description": "A duration in hours and minutes",
+      "placeholders": {
+        "hours": {
+          "type": "int"
+        },
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "aiDurationFourPlus": "4 h+",
+    "@aiDurationFourPlus": {
+      "description": "Last slider stop: four hours or more"
+    },
+    "aiPlatformLabel": "Platform",
+    "@aiPlatformLabel": {
+      "description": "Label above the platform chips"
+    },
+    "aiPlatformAny": "Any platform",
+    "@aiPlatformAny": {
+      "description": "Chip that clears the platform filter"
+    },
+    "aiNoteLabel": "Anything else? (optional)",
+    "@aiNoteLabel": {
+      "description": "Label of the optional note field"
+    },
+    "aiNoteHint": "For example: something I can pause often",
+    "@aiNoteHint": {
+      "description": "Hint of the optional note field"
+    },
+    "aiGenerateButton": "Suggest games",
+    "@aiGenerateButton": {
+      "description": "Button that asks the AI for picks"
+    },
+    "aiRegenerateButton": "Regenerate",
+    "@aiRegenerateButton": {
+      "description": "Button that asks the AI for new picks"
+    },
+    "aiRemainingToday": "{remaining} of {limit} left today",
+    "@aiRemainingToday": {
+      "description": "Daily AI usage counter",
+      "placeholders": {
+        "remaining": {
+          "type": "int"
+        },
+        "limit": {
+          "type": "int"
+        }
+      }
+    },
+    "aiRemainingTodayShort": "{remaining} left today",
+    "@aiRemainingTodayShort": {
+      "description": "Daily AI usage counter without the limit",
+      "placeholders": {
+        "remaining": {
+          "type": "int"
+        }
+      }
+    },
+    "aiLoadingPlayNext1": "Reading your backlog",
+    "@aiLoadingPlayNext1": {
+      "description": "Rotating status line while play next loads"
+    },
+    "aiLoadingPlayNext2": "Weighing your mood and time",
+    "@aiLoadingPlayNext2": {
+      "description": "Rotating status line while play next loads"
+    },
+    "aiLoadingPlayNext3": "Comparing genres and scores",
+    "@aiLoadingPlayNext3": {
+      "description": "Rotating status line while play next loads"
+    },
+    "aiLoadingPlayNext4": "Picking the best fits",
+    "@aiLoadingPlayNext4": {
+      "description": "Rotating status line while AI results load"
+    },
+    "aiLoadingDiscover1": "Reading your taste",
+    "@aiLoadingDiscover1": {
+      "description": "Rotating status line while discover loads"
+    },
+    "aiLoadingDiscover2": "Looking for new games",
+    "@aiLoadingDiscover2": {
+      "description": "Rotating status line while discover loads"
+    },
+    "aiLoadingDiscover3": "Checking the catalogue",
+    "@aiLoadingDiscover3": {
+      "description": "Rotating status line while discover loads"
+    },
+    "aiResultsTitle": "Your picks",
+    "@aiResultsTitle": {
+      "description": "Heading above AI results"
+    },
+    "aiTopPick": "Top pick",
+    "@aiTopPick": {
+      "description": "Eyebrow on the first play next pick"
+    },
+    "aiSessionLength": "About {duration} per session",
+    "@aiSessionLength": {
+      "description": "Estimated session length of a pick",
+      "placeholders": {
+        "duration": {
+          "type": "String"
+        }
+      }
+    },
+    "aiStartPlaying": "Start playing",
+    "@aiStartPlaying": {
+      "description": "Sets a pick's library status to playing"
+    },
+    "aiNowPlaying": "Now playing",
+    "@aiNowPlaying": {
+      "description": "Shown after a pick is set to playing"
+    },
+    "aiOpenGame": "Open",
+    "@aiOpenGame": {
+      "description": "Opens the game details"
+    },
+    "aiStartPlayingError": "Could not update this game. Try again.",
+    "@aiStartPlayingError": {
+      "description": "Error after start playing fails"
+    },
+    "aiEmptyBacklogTitle": "Your backlog is empty",
+    "@aiEmptyBacklogTitle": {
+      "description": "Empty state title when there is nothing to pick from"
+    },
+    "aiEmptyBacklogMessage": "Play next picks from games you plan to play, are playing, or put on hold. Add a few first.",
+    "@aiEmptyBacklogMessage": {
+      "description": "Empty state message when there is nothing to pick from"
+    },
+    "aiGoExplore": "Explore games",
+    "@aiGoExplore": {
+      "description": "Button to the Explore screen"
+    },
+    "aiGoSearch": "Search games",
+    "@aiGoSearch": {
+      "description": "Button to the Search screen"
+    },
+    "aiErrorUnavailable": "AI suggestions are not available right now.",
+    "@aiErrorUnavailable": {
+      "description": "Error 503 error.ai.unavailable"
+    },
+    "aiErrorConsentRequired": "Turn on AI suggestions to use this feature.",
+    "@aiErrorConsentRequired": {
+      "description": "Error 403 error.ai.consent_required"
+    },
+    "aiErrorQuotaExceeded": "You used all of today's AI suggestions. Come back tomorrow.",
+    "@aiErrorQuotaExceeded": {
+      "description": "Error 429 error.ai.quota_exceeded"
+    },
+    "aiErrorUpstream": "The AI service did not answer. Try again in a moment.",
+    "@aiErrorUpstream": {
+      "description": "Error 502 error.ai.upstream"
+    },
+    "aiUnavailableTitle": "AI suggestions are off",
+    "@aiUnavailableTitle": {
+      "description": "Title when AI is disabled on the server"
+    },
+    "aiQuotaTitle": "Daily limit reached",
+    "@aiQuotaTitle": {
+      "description": "Title when the daily AI quota is used"
+    },
+    "aiConsentNeededTitle": "AI suggestions need your OK",
+    "@aiConsentNeededTitle": {
+      "description": "Title when the user has not opted in"
+    },
+    "aiConsentNeededMessage": "Picklog sends data to the AI service only after you agree.",
+    "@aiConsentNeededMessage": {
+      "description": "Message when the user has not opted in"
+    },
+    "aiReviewConsent": "Review and turn on",
+    "@aiReviewConsent": {
+      "description": "Button that reopens the AI consent dialog"
+    },
+    "aiConsentTitle": "Turn on AI suggestions?",
+    "@aiConsentTitle": {
+      "description": "AI consent dialog title"
+    },
+    "aiConsentBody": "To make suggestions, Picklog sends OpenAI the names, statuses, scores, genres, and playtime of games in your library, plus the note you type.",
+    "@aiConsentBody": {
+      "description": "AI consent dialog: what is sent"
+    },
+    "aiConsentNever": "Picklog never sends your email or your name.",
+    "@aiConsentNever": {
+      "description": "AI consent dialog: what is never sent"
+    },
+    "aiConsentRevoke": "You can turn this off at any time in Settings.",
+    "@aiConsentRevoke": {
+      "description": "AI consent dialog: how to revoke"
+    },
+    "aiConsentAccept": "Turn on",
+    "@aiConsentAccept": {
+      "description": "AI consent dialog accept button"
+    },
+    "aiConsentDecline": "Not now",
+    "@aiConsentDecline": {
+      "description": "AI consent dialog decline button"
+    },
+    "aiConsentSaveError": "Could not save your choice. Try again.",
+    "@aiConsentSaveError": {
+      "description": "Error when saving AI consent fails"
+    },
+    "aiSettingsTitle": "AI suggestions",
+    "@aiSettingsTitle": {
+      "description": "Settings group label for AI"
+    },
+    "aiSettingsSwitch": "Allow AI suggestions",
+    "@aiSettingsSwitch": {
+      "description": "Settings switch for AI consent"
+    },
+    "aiSettingsSwitchOn": "Picklog can send game data from your library to OpenAI.",
+    "@aiSettingsSwitchOn": {
+      "description": "Settings AI switch subtitle when on"
+    },
+    "aiSettingsSwitchOff": "Nothing is sent to OpenAI.",
+    "@aiSettingsSwitchOff": {
+      "description": "Settings AI switch subtitle when off"
+    },
+    "aiSettingsUsage": "{used} of {limit} used today",
+    "@aiSettingsUsage": {
+      "description": "Daily AI usage in settings",
+      "placeholders": {
+        "used": {
+          "type": "int"
+        },
+        "limit": {
+          "type": "int"
+        }
+      }
+    },
+    "aiSettingsUnavailable": "AI suggestions are not available on this server.",
+    "@aiSettingsUnavailable": {
+      "description": "Settings note when AI is disabled"
+    },
+    "aiSettingsLoadError": "Could not load your AI settings.",
+    "@aiSettingsLoadError": {
+      "description": "Settings note when AI status fails to load"
+    },
+    "aiHomeCardSubtitle": "Get picks from your backlog for your mood and your time.",
+    "@aiHomeCardSubtitle": {
+      "description": "Home AI card subtitle"
+    },
+    "aiHomeCardAction": "Pick for me",
+    "@aiHomeCardAction": {
+      "description": "Home AI card button"
+    },
+    "aiDiscoverTitle": "Discover with AI",
+    "@aiDiscoverTitle": {
+      "description": "Title of the AI discover screen and its home entry"
+    },
+    "aiHomeDiscoverSubtitle": "Describe what you want and find new games.",
+    "@aiHomeDiscoverSubtitle": {
+      "description": "Home discover entry subtitle"
+    },
+    "aiDiscoverSubtitle": "Describe what you feel like playing. Picklog suggests games you do not have yet.",
+    "@aiDiscoverSubtitle": {
+      "description": "Subtitle of the AI discover screen"
+    },
+    "aiDiscoverPromptLabel": "What are you in the mood for?",
+    "@aiDiscoverPromptLabel": {
+      "description": "Label of the discover prompt field"
+    },
+    "aiDiscoverPromptHint": "For example: a relaxing farming game",
+    "@aiDiscoverPromptHint": {
+      "description": "Hint of the discover prompt field"
+    },
+    "aiDiscoverSubmit": "Find games",
+    "@aiDiscoverSubmit": {
+      "description": "Button that runs AI discover"
+    },
+    "aiDiscoverSuggestion1": "Cozy games for the weekend",
+    "@aiDiscoverSuggestion1": {
+      "description": "Discover prompt suggestion chip"
+    },
+    "aiDiscoverSuggestion2": "Like Hades but slower",
+    "@aiDiscoverSuggestion2": {
+      "description": "Discover prompt suggestion chip"
+    },
+    "aiDiscoverSuggestion3": "Short story games under 10 hours",
+    "@aiDiscoverSuggestion3": {
+      "description": "Discover prompt suggestion chip"
+    },
+    "aiDiscoverSuggestionsLabel": "Try one",
+    "@aiDiscoverSuggestionsLabel": {
+      "description": "Label above the discover suggestion chips"
+    },
+    "aiDiscoverEmptyTitle": "No new games found",
+    "@aiDiscoverEmptyTitle": {
+      "description": "Discover empty state title"
+    },
+    "aiDiscoverEmptyMessage": "Try a different prompt.",
+    "@aiDiscoverEmptyMessage": {
+      "description": "Discover empty state message"
+    },
+    "aiRatingLabel": "Rating {score}",
+    "@aiRatingLabel": {
+      "description": "Spoken label for a rating badge",
+      "placeholders": {
+        "score": {
+          "type": "int"
+        }
+      }
+    },
+    "accountsTitle": "Connected accounts",
+    "@accountsTitle": {
+      "description": "Connected accounts screen title and settings label"
+    },
+    "accountsEyebrow": "Picklog · Accounts",
+    "@accountsEyebrow": {
+      "description": "Eyebrow on the connected accounts screen"
+    },
+    "accountsIntro": "Link public gaming profiles to bring in achievements and playtime. Picklog uses public identifiers only and never asks for your passwords.",
+    "@accountsIntro": {
+      "description": "Intro text on the connected accounts screen"
+    },
+    "accountsSettingsSubtitle": "Steam, Xbox, RetroAchievements, PlayStation",
+    "@accountsSettingsSubtitle": {
+      "description": "Settings subtitle listing the services"
+    },
+    "accountsUnavailable": "Unavailable",
+    "@accountsUnavailable": {
+      "description": "Pill when a provider is not configured"
+    },
+    "accountsUnavailableMessage": "This service is not set up yet.",
+    "@accountsUnavailableMessage": {
+      "description": "Message when a provider is not configured"
+    },
+    "accountsExperimental": "Experimental",
+    "@accountsExperimental": {
+      "description": "Pill for the experimental PlayStation provider"
+    },
+    "accountsNotLinked": "Not linked",
+    "@accountsNotLinked": {
+      "description": "Status of a provider without a linked account"
+    },
+    "accountsLink": "Link",
+    "@accountsLink": {
+      "description": "Button that opens the link sheet"
+    },
+    "accountsLinkTitle": "Link {provider}",
+    "@accountsLinkTitle": {
+      "description": "Link sheet title",
+      "placeholders": {
+        "provider": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsSteamFieldLabel": "Steam profile URL or ID",
+    "@accountsSteamFieldLabel": {
+      "description": "Steam identifier field label"
+    },
+    "accountsSteamHelp": "Paste your profile link, your custom URL name, or your 17-digit SteamID.",
+    "@accountsSteamHelp": {
+      "description": "Steam identifier help text"
+    },
+    "accountsSteamPublicNote": "Game details must be public. In Steam, open your profile, choose Edit Profile, then Privacy Settings, and set Game details to Public.",
+    "@accountsSteamPublicNote": {
+      "description": "Steam privacy note"
+    },
+    "accountsXboxFieldLabel": "Xbox gamertag",
+    "@accountsXboxFieldLabel": {
+      "description": "Xbox identifier field label"
+    },
+    "accountsXboxHelp": "Your gamertag as it shows on your Xbox profile.",
+    "@accountsXboxHelp": {
+      "description": "Xbox identifier help text"
+    },
+    "accountsRaFieldLabel": "RetroAchievements username",
+    "@accountsRaFieldLabel": {
+      "description": "RetroAchievements identifier field label"
+    },
+    "accountsRaHelp": "Your username on retroachievements.org.",
+    "@accountsRaHelp": {
+      "description": "RetroAchievements identifier help text"
+    },
+    "accountsPsnFieldLabel": "PSN online ID",
+    "@accountsPsnFieldLabel": {
+      "description": "PlayStation identifier field label"
+    },
+    "accountsPsnHelp": "Your online ID. Your trophy list must be visible to anyone.",
+    "@accountsPsnHelp": {
+      "description": "PlayStation identifier help text"
+    },
+    "accountsPsnExperimentalNote": "PlayStation support is experimental. It reads public trophy lists only.",
+    "@accountsPsnExperimentalNote": {
+      "description": "PlayStation experimental note"
+    },
+    "accountsLinkSubmit": "Link account",
+    "@accountsLinkSubmit": {
+      "description": "Link sheet submit button"
+    },
+    "accountsLinkedMessage": "{provider} linked. Tap Sync now to import your data.",
+    "@accountsLinkedMessage": {
+      "description": "Snackbar after linking",
+      "placeholders": {
+        "provider": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsLastSynced": "Last synced {time}",
+    "@accountsLastSynced": {
+      "description": "Last sync time of a linked account",
+      "placeholders": {
+        "time": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsNeverSynced": "Not synced yet",
+    "@accountsNeverSynced": {
+      "description": "Linked account that never synced"
+    },
+    "accountsSyncing": "Syncing",
+    "@accountsSyncing": {
+      "description": "Sync status pill"
+    },
+    "accountsSyncOk": "Up to date",
+    "@accountsSyncOk": {
+      "description": "Sync status pill"
+    },
+    "accountsSyncError": "Last sync failed",
+    "@accountsSyncError": {
+      "description": "Sync status pill"
+    },
+    "accountsSyncNow": "Sync now",
+    "@accountsSyncNow": {
+      "description": "Button that starts a sync"
+    },
+    "accountsImportToggle": "Also import games to my library",
+    "@accountsImportToggle": {
+      "description": "Switch to import games during sync"
+    },
+    "accountsImportHelp": "Adds games you own or played that are not in your library yet.",
+    "@accountsImportHelp": {
+      "description": "Help under the import switch"
+    },
+    "accountsSyncStarted": "Syncing {provider}. This can take a few minutes.",
+    "@accountsSyncStarted": {
+      "description": "Snackbar after a sync starts",
+      "placeholders": {
+        "provider": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsSyncFinished": "{provider} sync finished",
+    "@accountsSyncFinished": {
+      "description": "Snackbar when a sync ends",
+      "placeholders": {
+        "provider": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsUnlink": "Unlink",
+    "@accountsUnlink": {
+      "description": "Button that unlinks an account"
+    },
+    "accountsUnlinkTitle": "Unlink {provider}?",
+    "@accountsUnlinkTitle": {
+      "description": "Unlink confirm dialog title",
+      "placeholders": {
+        "provider": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsUnlinkMessage": "Picklog deletes the achievements and progress it imported from this account. Games already in your library stay.",
+    "@accountsUnlinkMessage": {
+      "description": "Unlink confirm dialog message"
+    },
+    "accountsUnlinkedMessage": "{provider} unlinked",
+    "@accountsUnlinkedMessage": {
+      "description": "Snackbar after unlinking",
+      "placeholders": {
+        "provider": {
+          "type": "String"
+        }
+      }
+    },
+    "accountsErrorNotFound": "We could not find that account. Check the spelling and try again.",
+    "@accountsErrorNotFound": {
+      "description": "Error 404 error.integration.account_not_found"
+    },
+    "accountsErrorPrivate": "This profile is private. Make your game details public and try again.",
+    "@accountsErrorPrivate": {
+      "description": "Error 422 error.integration.private_profile"
+    },
+    "accountsErrorSyncTooSoon": "This account synced recently. Try again in a few minutes.",
+    "@accountsErrorSyncTooSoon": {
+      "description": "Error 429 error.integration.sync_too_soon"
+    },
+    "accountsErrorUnavailable": "This service is not available right now.",
+    "@accountsErrorUnavailable": {
+      "description": "Error 503 error.integration.unavailable"
+    },
+    "accountsErrorInvalid": "Enter a valid identifier.",
+    "@accountsErrorInvalid": {
+      "description": "Error for an empty or invalid identifier"
+    },
+    "accountsErrorUpstream": "The service did not answer. Try again later.",
+    "@accountsErrorUpstream": {
+      "description": "Error 502 error.integration.upstream"
+    },
+    "accountsErrorGameNotFound": "We could not find achievements for this game.",
+    "@accountsErrorGameNotFound": {
+      "description": "Error 404 error.integration.game_not_found"
+    },
+    "timeJustNow": "just now",
+    "@timeJustNow": {
+      "description": "Relative time under one minute"
+    },
+    "timeMinutesAgo": "{minutes} min ago",
+    "@timeMinutesAgo": {
+      "description": "Relative time in minutes",
+      "placeholders": {
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "timeHoursAgo": "{hours} h ago",
+    "@timeHoursAgo": {
+      "description": "Relative time in hours",
+      "placeholders": {
+        "hours": {
+          "type": "int"
+        }
+      }
+    },
+    "achievementsTitle": "Achievements",
+    "@achievementsTitle": {
+      "description": "Achievements hub title and game details section title"
+    },
+    "achievementsEyebrow": "Picklog · Achievements",
+    "@achievementsEyebrow": {
+      "description": "Eyebrow on the achievements hub"
+    },
+    "achievementsCompletion": "Overall completion",
+    "@achievementsCompletion": {
+      "description": "Label beside the completion ring"
+    },
+    "achievementsUnlockedOf": "{unlocked} of {total} unlocked",
+    "@achievementsUnlockedOf": {
+      "description": "Unlocked count out of total",
+      "placeholders": {
+        "unlocked": {
+          "type": "int"
+        },
+        "total": {
+          "type": "int"
+        }
+      }
+    },
+    "achievementsGamesCount": "{count, plural, =1{1 game} other{{count} games}}",
+    "@achievementsGamesCount": {
+      "description": "Number of games for a provider",
+      "placeholders": {
+        "count": {
+          "type": "int"
+        }
+      }
+    },
+    "achievementsRecentTitle": "Recent unlocks",
+    "@achievementsRecentTitle": {
+      "description": "Section title for recent unlocks"
+    },
+    "achievementsGamesTitle": "Games",
+    "@achievementsGamesTitle": {
+      "description": "Section title for the games list"
+    },
+    "achievementsFilterAll": "All",
+    "@achievementsFilterAll": {
+      "description": "Provider filter chip for all providers"
+    },
+    "achievementsEmptyTitle": "No achievements yet",
+    "@achievementsEmptyTitle": {
+      "description": "Achievements empty state title"
+    },
+    "achievementsEmptyMessage": "Link Steam, Xbox, RetroAchievements, or PlayStation to see your achievements here.",
+    "@achievementsEmptyMessage": {
+      "description": "Achievements empty state message"
+    },
+    "achievementsConnectAction": "Connect an account",
+    "@achievementsConnectAction": {
+      "description": "Achievements empty state button"
+    },
+    "achievementsRarity": "{percent}% of players",
+    "@achievementsRarity": {
+      "description": "Share of players with an achievement",
+      "placeholders": {
+        "percent": {
+          "type": "String"
+        }
+      }
+    },
+    "achievementsRare": "Rare",
+    "@achievementsRare": {
+      "description": "Pill for an achievement under 10% rarity"
+    },
+    "achievementsUnlockedOn": "Unlocked {date}",
+    "@achievementsUnlockedOn": {
+      "description": "Unlock date of an achievement",
+      "placeholders": {
+        "date": {
+          "type": "String"
+        }
+      }
+    },
+    "achievementsLocked": "Locked",
+    "@achievementsLocked": {
+      "description": "Label for a locked achievement"
+    },
+    "achievementsLastPlayed": "Played {date}",
+    "@achievementsLastPlayed": {
+      "description": "Last played date of a game",
+      "placeholders": {
+        "date": {
+          "type": "String"
+        }
+      }
+    },
+    "achievementsGameEmpty": "This game has no achievements to show.",
+    "@achievementsGameEmpty": {
+      "description": "Per-game screen with an empty list"
     }
 }

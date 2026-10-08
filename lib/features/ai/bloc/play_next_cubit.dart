@@ -226,11 +226,18 @@ class PlayNextCubit extends Cubit<PlayNextState> {
     }
   }
 
-  /// Tells the shared library, used by the Library tab and the roulette,
-  /// that an entry changed on the server.
-  void _refreshSharedLibrary() {
-    if (_userId.isEmpty || !sl.isRegistered<LibraryBloc>()) return;
-    sl<LibraryBloc>().add(LibraryRefreshRequested(userId: _userId));
+  /// The shared library of this session, used by the Library tab and the
+  /// roulette. Read it before a request, so a later session never gets it.
+  LibraryBloc? _sessionLibrary() =>
+      _userId.isNotEmpty && sl.isRegistered<LibraryBloc>()
+      ? sl<LibraryBloc>()
+      : null;
+
+  /// Tells [library] that an entry changed on the server. Session teardown
+  /// closes the old library, so a closed one means the session changed.
+  void _refreshLibrary(LibraryBloc? library) {
+    if (library == null || library.isClosed) return;
+    library.add(LibraryRefreshRequested(userId: _userId));
   }
 
   /// Sets the pick's library entry to playing.
@@ -240,13 +247,14 @@ class PlayNextCubit extends Cubit<PlayNextState> {
       return;
     }
     emit(state.copyWith(startingIds: {...state.startingIds, id}));
+    final library = _sessionLibrary();
     try {
       // The pick only carries the entry id. Read the entry first so the
       // update sends back its score, dates, difficulty and notes.
       final current = await _library.getLibraryEntry(id);
       await _library.updateLibraryEntry(current, status: GameStatus.playing);
-      _refreshSharedLibrary();
       if (isClosed) return;
+      _refreshLibrary(library);
       emit(
         state.copyWith(
           startingIds: {...state.startingIds}..remove(id),

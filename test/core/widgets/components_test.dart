@@ -267,7 +267,25 @@ void main() {
       expect(find.byTooltip('Remove from favorites'), findsOneWidget);
       await tester.pumpAndSettle();
       final icon = tester.widget<Icon>(find.byIcon(Icons.favorite));
-      expect(icon.color, PicklogColors.dark.ember);
+      // Neutral, so the ember Add game button stays the one warm element.
+      expect(icon.color, PicklogColors.dark.textHi);
+    });
+
+    testWidgets('a filled FavoriteButton is neutral in the light theme', (
+      tester,
+    ) async {
+      await pumpPicklog(
+        tester,
+        FavoriteButton(
+          isFavorite: true,
+          addLabel: 'Add to favorites',
+          removeLabel: 'Remove from favorites',
+          onPressed: () {},
+        ),
+        brightness: Brightness.light,
+      );
+      final icon = tester.widget<Icon>(find.byIcon(Icons.favorite));
+      expect(icon.color, PicklogColors.light.textHi);
     });
 
     testWidgets('PressScale runs onTap from a keyboard activation', (

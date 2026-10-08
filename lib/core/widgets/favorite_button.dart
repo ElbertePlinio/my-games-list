@@ -4,8 +4,9 @@ import 'package:picklog/core/theme/picklog_colors.dart';
 
 /// Heart toggle with a short pop when it turns on.
 ///
-/// The filled heart uses the ember tone. The pop is skipped under reduced
-/// motion. Set [onImage] when the button sits on a photo.
+/// The filled heart uses the high-contrast neutral, so ember stays for the
+/// one primary action on screen. The pop is skipped under reduced motion.
+/// Set [onImage] when the button sits on a photo.
 class FavoriteButton extends StatefulWidget {
   const FavoriteButton({
     required this.isFavorite,
@@ -76,6 +77,7 @@ class _FavoriteButtonState extends State<FavoriteButton>
   Widget build(BuildContext context) {
     final colors = context.pfColors;
     final idleColor = widget.onImage ? PicklogColors.onImage : colors.textMed;
+    final filledColor = widget.onImage ? PicklogColors.onImage : colors.textHi;
     final label = widget.isFavorite ? widget.removeLabel : widget.addLabel;
 
     return IconButton(
@@ -86,7 +88,7 @@ class _FavoriteButtonState extends State<FavoriteButton>
         child: Icon(
           widget.isFavorite ? Icons.favorite : Icons.favorite_border,
           size: widget.size,
-          color: widget.isFavorite ? colors.ember : idleColor,
+          color: widget.isFavorite ? filledColor : idleColor,
           semanticLabel: label,
         ),
       ),

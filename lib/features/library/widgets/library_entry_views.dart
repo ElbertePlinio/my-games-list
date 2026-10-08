@@ -210,7 +210,7 @@ class LibraryEntryGridCard extends StatelessWidget {
                       child: Icon(
                         Icons.favorite,
                         size: 14,
-                        color: context.pfColors.ember,
+                        color: PicklogColors.onImage,
                         semanticLabel: l10n.favorited,
                       ),
                     )

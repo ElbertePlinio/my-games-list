@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/widgets/library_entry_actions.dart';
 import 'package:picklog/features/library/widgets/library_entry_views.dart';
@@ -49,6 +50,22 @@ void main() {
       findsOneWidget,
     );
     handle.dispose();
+  });
+
+  testWidgets('the grid favorite heart is neutral, not ember', (t) async {
+    await pumpPicklog(
+      t,
+      Center(
+        child: SizedBox(
+          width: 180,
+          height: 320,
+          child: LibraryEntryGridCard(entry: favorite, heroPrefix: 'test-'),
+        ),
+      ),
+    );
+
+    final heart = t.widget<Icon>(find.byIcon(Icons.favorite));
+    expect(heart.color, PicklogColors.onImage);
   });
 
   testWidgets('the grid menu is at least 44 px', (t) async {

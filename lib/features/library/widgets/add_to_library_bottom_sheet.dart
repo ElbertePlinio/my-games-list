@@ -463,12 +463,9 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     if (!mounted) return;
     if (failure != null) {
       context.showErrorMessage(failure.message(context));
-    } else {
-      context.showSuccessMessage(
-        isEditing
-            ? context.l10n.libraryEntryUpdated
-            : context.l10n.gameAddedToLibrary,
-      );
+    } else if (isEditing) {
+      // An add needs no toast; the card's library state already changes.
+      context.showSuccessMessage(context.l10n.libraryEntryUpdated);
     }
     Navigator.of(context).pop(true);
   }

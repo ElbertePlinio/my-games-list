@@ -1028,12 +1028,6 @@ abstract class AppLocalizations {
   /// **'Entry updated'**
   String get libraryEntryUpdated;
 
-  /// Snackbar after adding a game to the library
-  ///
-  /// In en, this message translates to:
-  /// **'Added to your library'**
-  String get gameAddedToLibrary;
-
   /// Button and sheet title for editing a library entry
   ///
   /// In en, this message translates to:

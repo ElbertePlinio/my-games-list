@@ -277,8 +277,9 @@ void main() {
       expect((captured as LibraryDeleteEntryRequested).entryId, 'entry-1');
     });
 
-    testWidgets('shows a success message when the bloc reports the game was '
-        'added', (tester) async {
+    testWidgets('adding a game shows no toast; the card state shows it', (
+      tester,
+    ) async {
       whenListen(
         libraryBloc,
         Stream<LibraryState>.fromIterable([
@@ -290,7 +291,7 @@ void main() {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
-      expect(find.text('Added to your library'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
     });
 
     testWidgets('shows a localized message when saving fails', (tester) async {

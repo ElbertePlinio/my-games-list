@@ -505,9 +505,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryEntryUpdated => 'Entry updated';
 
   @override
-  String get gameAddedToLibrary => 'Added to your library';
-
-  @override
   String get editEntry => 'Edit entry';
 
   @override

@@ -281,7 +281,6 @@
     "remove": "Remove",
     "save": "Save",
     "libraryEntryUpdated": "Entry updated",
-    "gameAddedToLibrary": "Added to your library",
     "editEntry": "Edit entry",
     "addToLibrary": "Add to library",
     "statusLabel": "Status",
@@ -790,9 +789,6 @@
     },
     "@libraryEntryUpdated": {
         "description": "Snackbar after updating a library entry"
-    },
-    "@gameAddedToLibrary": {
-        "description": "Snackbar after adding a game to the library"
     },
     "themeTitle": "Theme",
     "@themeTitle": {

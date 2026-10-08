@@ -509,9 +509,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryEntryUpdated => 'Registro atualizado';
 
   @override
-  String get gameAddedToLibrary => 'Adicionado à sua biblioteca';
-
-  @override
   String get editEntry => 'Editar registro';
 
   @override

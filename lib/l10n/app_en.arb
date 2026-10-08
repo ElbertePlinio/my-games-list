@@ -195,6 +195,15 @@
         "description": "Accessibility label/tooltip for a favorite toggle when the game is already favorited"
     },
     "libraryEntryLabel": "{name}, {status}",
+    "libraryEntryScoreLabel": "score {score}",
+    "@libraryEntryScoreLabel": {
+        "description": "Accessibility label part for the user's score of a library entry, 0-100",
+        "placeholders": {
+            "score": {
+                "type": "int"
+            }
+        }
+    },
     "@libraryEntryLabel": {
         "description": "Accessibility label for a library entry card combining the game name and its status",
         "placeholders": {

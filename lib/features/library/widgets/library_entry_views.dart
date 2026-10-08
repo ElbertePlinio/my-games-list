@@ -11,6 +11,29 @@ import 'package:picklog/features/library/library_formatters.dart';
 import 'package:picklog/features/library/widgets/library_entry_actions.dart';
 import 'package:picklog/features/library/widgets/library_status_pill.dart';
 
+/// Screen reader label with the metadata a row or card shows: name, status,
+/// score and favorite, plus platform and playtime when [detailed].
+String libraryEntrySemanticLabel(
+  BuildContext context,
+  LibraryEntry entry, {
+  bool detailed = false,
+}) {
+  final l10n = context.l10n;
+  final score = entry.score;
+  return [
+    l10n.libraryEntryLabel(
+      entry.game.name,
+      entry.status.localizedName(context),
+    ),
+    if (score != null) l10n.libraryEntryScoreLabel(score),
+    if (detailed) ...[
+      if (entry.platform != null) entry.platform!.displayName,
+      formatPlaytime(context, entry.playtimeMinutes),
+    ],
+    if (entry.isFavorite) l10n.favorited,
+  ].join(', ');
+}
+
 /// Library list row: swipe right to toggle the favorite, swipe left to change
 /// the status. Both offer an undo. The menu repeats the actions for pointer
 /// and screen reader users.
@@ -48,10 +71,7 @@ class LibraryEntryRow extends StatelessWidget {
       title: entry.game.name,
       coverUrl: entry.game.coverUrl,
       heroTag: gameCoverHeroTag(heroPrefix, entry.game.igdbId),
-      semanticLabel: l10n.libraryEntryLabel(
-        entry.game.name,
-        entry.status.localizedName(context),
-      ),
+      semanticLabel: libraryEntrySemanticLabel(context, entry, detailed: true),
       meta: meta,
       onTap: () =>
           openGameDetails(context, entry.game.igdbId, heroPrefix: heroPrefix),
@@ -179,10 +199,7 @@ class LibraryEntryGridCard extends StatelessWidget {
               score: entry.score,
               heroTag: gameCoverHeroTag(heroPrefix, entry.game.igdbId),
               subtitle: entry.status.localizedName(context),
-              semanticLabel: l10n.libraryEntryLabel(
-                entry.game.name,
-                entry.status.localizedName(context),
-              ),
+              semanticLabel: libraryEntrySemanticLabel(context, entry),
               overlay: entry.isFavorite
                   ? Container(
                       padding: const EdgeInsets.all(PfSpace.xs),
@@ -216,7 +233,7 @@ class LibraryEntryGridCard extends StatelessWidget {
             shape: const CircleBorder(),
             clipBehavior: Clip.antiAlias,
             child: SizedBox.square(
-              dimension: 36,
+              dimension: 44,
               child: LibraryEntryMenuButton(
                 entry: entry,
                 includeFavorite: true,

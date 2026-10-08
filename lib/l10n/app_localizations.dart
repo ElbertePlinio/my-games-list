@@ -770,6 +770,12 @@ abstract class AppLocalizations {
   /// **'{name}, {status}'**
   String libraryEntryLabel(String name, String status);
 
+  /// Accessibility label part for the user's score of a library entry, 0-100
+  ///
+  /// In en, this message translates to:
+  /// **'score {score}'**
+  String libraryEntryScoreLabel(int score);
+
   /// Accessibility label for a browseable genre card
   ///
   /// In en, this message translates to:

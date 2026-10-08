@@ -125,6 +125,7 @@
     "screenshotLabel": "Captura de tela de {name}",
     "favorited": "Favoritado",
     "libraryEntryLabel": "{name}, {status}",
+    "libraryEntryScoreLabel": "nota {score}",
     "genreCardLabel": "Gênero {name}",
     "navHome": "Início",
     "navBrowse": "Explorar",

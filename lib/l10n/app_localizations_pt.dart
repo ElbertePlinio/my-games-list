@@ -369,6 +369,11 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String libraryEntryScoreLabel(int score) {
+    return 'nota $score';
+  }
+
+  @override
   String genreCardLabel(String name) {
     return 'Gênero $name';
   }

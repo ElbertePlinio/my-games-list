@@ -72,11 +72,7 @@ class _GameBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = context.pfColors;
-    final progress = game.game;
     final achievements = game.sorted;
-    final igdbId = progress.igdbId;
 
     return ListView(
       padding: EdgeInsets.fromLTRB(
@@ -91,76 +87,7 @@ class _GameBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                child: InkWell(
-                  onTap: igdbId == null
-                      ? null
-                      : () => context.pushNamed(
-                          AppRouter.gameDetailsName,
-                          pathParameters: {'id': '$igdbId'},
-                        ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(PfSpace.lg),
-                    child: Row(
-                      children: [
-                        GameCover(
-                          url: progress.coverUrl,
-                          width: 64,
-                          height: 64 / kCoverAspectRatio,
-                          borderRadius: PfRadius.sm + 2,
-                          semanticLabel: l10n.gameCoverLabel(progress.name),
-                        ),
-                        const SizedBox(width: PfSpace.lg),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              StatusPill(
-                                label: progress.provider.displayName,
-                                tone: PfTone.neutral,
-                                icon: progress.provider.icon,
-                                dense: true,
-                              ),
-                              const SizedBox(height: PfSpace.sm),
-                              Text(
-                                progress.name,
-                                style: theme.textTheme.headlineSmall,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: PfSpace.sm),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: AchievementProgressBar(
-                                      fraction: progress.fraction,
-                                    ),
-                                  ),
-                                  const SizedBox(width: PfSpace.sm),
-                                  Text(
-                                    '${progress.completionPct.round()}%',
-                                    style: PfTypography.monoStyle(
-                                      colors.textHi,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: PfSpace.xs),
-                              Text(
-                                l10n.achievementsUnlockedOf(
-                                  progress.unlocked,
-                                  progress.total,
-                                ),
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              _GameHeaderCard(progress: game.game),
               const SizedBox(height: PfSpace.lg),
               if (achievements.isEmpty)
                 EmptyState(
@@ -169,26 +96,123 @@ class _GameBody extends StatelessWidget {
                   compact: true,
                 )
               else
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: PfSpace.lg,
-                      vertical: PfSpace.sm,
-                    ),
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < achievements.length; i++) ...[
-                          if (i > 0) const Divider(height: 1),
-                          AchievementTile.fromAchievement(achievements[i]),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
+                _AchievementListCard(achievements: achievements),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _GameHeaderCard extends StatelessWidget {
+  const _GameHeaderCard({required this.progress});
+
+  final GameProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final igdbId = progress.igdbId;
+    return Card(
+      child: InkWell(
+        onTap: igdbId == null
+            ? null
+            : () => context.pushNamed(
+                AppRouter.gameDetailsName,
+                pathParameters: {'id': '$igdbId'},
+              ),
+        child: Padding(
+          padding: const EdgeInsets.all(PfSpace.lg),
+          child: Row(
+            children: [
+              GameCover(
+                url: progress.coverUrl,
+                width: 64,
+                height: 64 / kCoverAspectRatio,
+                borderRadius: PfRadius.sm + 2,
+                semanticLabel: context.l10n.gameCoverLabel(progress.name),
+              ),
+              const SizedBox(width: PfSpace.lg),
+              Expanded(child: _GameHeaderDetails(progress: progress)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GameHeaderDetails extends StatelessWidget {
+  const _GameHeaderDetails({required this.progress});
+
+  final GameProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        StatusPill(
+          label: progress.provider.displayName,
+          tone: PfTone.neutral,
+          icon: progress.provider.icon,
+          dense: true,
+        ),
+        const SizedBox(height: PfSpace.sm),
+        Text(
+          progress.name,
+          style: theme.textTheme.headlineSmall,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: PfSpace.sm),
+        Row(
+          children: [
+            Expanded(
+              child: AchievementProgressBar(fraction: progress.fraction),
+            ),
+            const SizedBox(width: PfSpace.sm),
+            Text(
+              '${progress.completionPct.round()}%',
+              style: PfTypography.monoStyle(colors.textHi),
+            ),
+          ],
+        ),
+        const SizedBox(height: PfSpace.xs),
+        Text(
+          l10n.achievementsUnlockedOf(progress.unlocked, progress.total),
+          style: theme.textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+}
+
+class _AchievementListCard extends StatelessWidget {
+  const _AchievementListCard({required this.achievements});
+
+  final List<Achievement> achievements;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PfSpace.lg,
+          vertical: PfSpace.sm,
+        ),
+        child: Column(
+          children: [
+            for (var i = 0; i < achievements.length; i++) ...[
+              if (i > 0) const Divider(height: 1),
+              AchievementTile.fromAchievement(achievements[i]),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

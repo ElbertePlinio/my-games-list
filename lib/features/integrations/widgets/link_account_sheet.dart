@@ -89,21 +89,7 @@ class _LinkAccountSheetState extends State<LinkAccountSheet> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        Icon(provider.icon, color: colors.textHi),
-                        const SizedBox(width: PfSpace.md),
-                        Expanded(
-                          child: Semantics(
-                            header: true,
-                            child: Text(
-                              l10n.accountsLinkTitle(provider.displayName),
-                              style: theme.textTheme.headlineSmall,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _SheetTitle(provider: provider),
                     const SizedBox(height: PfSpace.md),
                     Text(
                       provider.help(context),
@@ -127,35 +113,7 @@ class _LinkAccountSheetState extends State<LinkAccountSheet> {
                     ),
                     if (note != null) ...[
                       const SizedBox(height: PfSpace.md),
-                      Container(
-                        padding: const EdgeInsets.all(PfSpace.md),
-                        decoration: BoxDecoration(
-                          color: colors.toneBackground(PfTone.info),
-                          borderRadius: PfRadius.mdAll,
-                          border: Border.all(
-                            color: colors.info.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 18,
-                              color: colors.infoFg,
-                            ),
-                            const SizedBox(width: PfSpace.sm),
-                            Expanded(
-                              child: Text(
-                                note,
-                                style: theme.textTheme.bodySmall!.copyWith(
-                                  color: colors.textHi,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      _ProviderNote(note: note),
                     ],
                     const SizedBox(height: PfSpace.xl),
                     PfButton(
@@ -172,6 +130,65 @@ class _LinkAccountSheetState extends State<LinkAccountSheet> {
           ),
         );
       },
+    );
+  }
+}
+
+class _SheetTitle extends StatelessWidget {
+  const _SheetTitle({required this.provider});
+
+  final GameProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(provider.icon, color: context.pfColors.textHi),
+        const SizedBox(width: PfSpace.md),
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(
+              context.l10n.accountsLinkTitle(provider.displayName),
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProviderNote extends StatelessWidget {
+  const _ProviderNote({required this.note});
+
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.pfColors;
+    return Container(
+      padding: const EdgeInsets.all(PfSpace.md),
+      decoration: BoxDecoration(
+        color: colors.toneBackground(PfTone.info),
+        borderRadius: PfRadius.mdAll,
+        border: Border.all(color: colors.info.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline, size: 18, color: colors.infoFg),
+          const SizedBox(width: PfSpace.sm),
+          Expanded(
+            child: Text(
+              note,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(color: colors.textHi),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -241,7 +241,6 @@ class _ProviderAccountCardState extends State<ProviderAccountCard> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final colors = context.pfColors;
     final entry = widget.entry;
     final provider = entry.provider;
     final account = entry.account;
@@ -311,49 +310,7 @@ class _ProviderAccountCardState extends State<ProviderAccountCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: colors.surface2,
-                        borderRadius: PfRadius.mdAll,
-                        border: Border.all(color: colors.hairline),
-                      ),
-                      child: Icon(
-                        provider.icon,
-                        color: colors.textHi,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: PfSpace.md),
-                    // The pills sit at the right edge when they fit beside
-                    // the title, and wrap under it on narrow cards.
-                    Expanded(
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: PfSpace.sm,
-                        runSpacing: PfSpace.xs,
-                        children: [
-                          Text(
-                            provider.displayName,
-                            style: theme.textTheme.titleLarge,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (pills.isNotEmpty)
-                            Wrap(
-                              spacing: PfSpace.xs,
-                              runSpacing: PfSpace.xs,
-                              children: pills,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                _ProviderHeader(provider: provider, pills: pills),
                 const SizedBox(height: PfSpace.md),
                 body,
               ],
@@ -387,69 +344,13 @@ class _LinkedBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     final colors = context.pfColors;
     final syncing = account.syncStatus == SyncStatus.syncing;
-    final lastSynced = account.lastSyncedAt;
-
-    final (
-      String statusLabel,
-      PfTone tone,
-      IconData? icon,
-    ) = switch (account.syncStatus) {
-      SyncStatus.syncing => (l10n.accountsSyncing, PfTone.info, Icons.sync),
-      SyncStatus.ok => (l10n.accountsSyncOk, PfTone.connected, Icons.check),
-      SyncStatus.error => (
-        l10n.accountsSyncError,
-        PfTone.error,
-        Icons.error_outline,
-      ),
-      SyncStatus.idle => (l10n.accountsNeverSynced, PfTone.neutral, null),
-    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            _Avatar(url: account.avatarUrl, name: account.displayName),
-            const SizedBox(width: PfSpace.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    account.displayName,
-                    style: theme.textTheme.titleMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: PfSpace.xs),
-                  Wrap(
-                    spacing: PfSpace.sm,
-                    runSpacing: PfSpace.xs,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      StatusPill(
-                        label: statusLabel,
-                        tone: tone,
-                        icon: icon,
-                        dense: true,
-                      ),
-                      if (lastSynced != null)
-                        Text(
-                          l10n.accountsLastSynced(
-                            formatRelativeTime(context, lastSynced),
-                          ),
-                          style: theme.textTheme.bodySmall,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        _AccountIdentity(account: account),
         if (syncing && !PfMotion.reduced(context)) ...[
           const SizedBox(height: PfSpace.md),
           ClipRRect(
@@ -494,6 +395,127 @@ class _LinkedBody extends StatelessWidget {
               label: Text(l10n.accountsUnlink),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ProviderHeader extends StatelessWidget {
+  const _ProviderHeader({required this.provider, required this.pills});
+
+  final GameProvider provider;
+  final List<Widget> pills;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: colors.surface2,
+            borderRadius: PfRadius.mdAll,
+            border: Border.all(color: colors.hairline),
+          ),
+          child: Icon(provider.icon, color: colors.textHi, size: 22),
+        ),
+        const SizedBox(width: PfSpace.md),
+        // The pills sit at the right edge when they fit beside
+        // the title, and wrap under it on narrow cards.
+        Expanded(
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: PfSpace.sm,
+            runSpacing: PfSpace.xs,
+            children: [
+              Text(
+                provider.displayName,
+                style: theme.textTheme.titleLarge,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (pills.isNotEmpty)
+                Wrap(
+                  spacing: PfSpace.xs,
+                  runSpacing: PfSpace.xs,
+                  children: pills,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AccountIdentity extends StatelessWidget {
+  const _AccountIdentity({required this.account});
+
+  final LinkedAccount account;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final lastSynced = account.lastSyncedAt;
+
+    final (
+      String statusLabel,
+      PfTone tone,
+      IconData? icon,
+    ) = switch (account.syncStatus) {
+      SyncStatus.syncing => (l10n.accountsSyncing, PfTone.info, Icons.sync),
+      SyncStatus.ok => (l10n.accountsSyncOk, PfTone.connected, Icons.check),
+      SyncStatus.error => (
+        l10n.accountsSyncError,
+        PfTone.error,
+        Icons.error_outline,
+      ),
+      SyncStatus.idle => (l10n.accountsNeverSynced, PfTone.neutral, null),
+    };
+
+    return Row(
+      children: [
+        _Avatar(url: account.avatarUrl, name: account.displayName),
+        const SizedBox(width: PfSpace.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                account.displayName,
+                style: theme.textTheme.titleMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: PfSpace.xs),
+              Wrap(
+                spacing: PfSpace.sm,
+                runSpacing: PfSpace.xs,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  StatusPill(
+                    label: statusLabel,
+                    tone: tone,
+                    icon: icon,
+                    dense: true,
+                  ),
+                  if (lastSynced != null)
+                    Text(
+                      l10n.accountsLastSynced(
+                        formatRelativeTime(context, lastSynced),
+                      ),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );

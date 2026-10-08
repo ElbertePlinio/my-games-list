@@ -109,10 +109,39 @@ class _Hub extends StatelessWidget {
   final AchievementsState state;
   final AchievementSummary summary;
 
+  Widget _buildProviderFilter(
+    BuildContext context,
+    List<GameProvider> providers,
+  ) {
+    final l10n = context.l10n;
+    final cubit = context.read<AchievementsCubit>();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          ChoiceChip(
+            label: Text(l10n.achievementsFilterAll),
+            selected: state.providerFilter == null,
+            onSelected: (_) => cubit.filterProvider(null),
+          ),
+          for (final p in providers) ...[
+            const SizedBox(width: PfSpace.sm),
+            ChoiceChip(
+              avatar: Icon(p.icon, size: 16),
+              label: Text(p.displayName),
+              selected: state.providerFilter == p,
+              onSelected: (_) =>
+                  cubit.filterProvider(state.providerFilter == p ? null : p),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cubit = context.read<AchievementsCubit>();
     final games = state.games;
     final providers = state.providersWithGames;
     final recent = summary.recent.take(kHubRecentLimit).toList();
@@ -153,29 +182,7 @@ class _Hub extends StatelessWidget {
                     ),
                   ),
                   if (providers.length > 1) ...[
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          ChoiceChip(
-                            label: Text(l10n.achievementsFilterAll),
-                            selected: state.providerFilter == null,
-                            onSelected: (_) => cubit.filterProvider(null),
-                          ),
-                          for (final p in providers) ...[
-                            const SizedBox(width: PfSpace.sm),
-                            ChoiceChip(
-                              avatar: Icon(p.icon, size: 16),
-                              label: Text(p.displayName),
-                              selected: state.providerFilter == p,
-                              onSelected: (_) => cubit.filterProvider(
-                                state.providerFilter == p ? null : p,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                    _buildProviderFilter(context, providers),
                     const SizedBox(height: PfSpace.md),
                   ],
                 ],
@@ -324,6 +331,28 @@ class _RecentList extends StatelessWidget {
     ),
   );
 
+  Widget _row(
+    BuildContext context,
+    List<RecentAchievement> cells,
+    int columns,
+  ) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var j = 0; j < columns; j++) ...[
+            if (j > 0) const SizedBox(width: PfSpace.xl),
+            Expanded(
+              child: j < cells.length
+                  ? _tile(context, cells[j])
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -346,21 +375,7 @@ class _RecentList extends StatelessWidget {
               children: [
                 for (var i = 0; i < rows.length; i++) ...[
                   if (i > 0) const Divider(height: 1),
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (var j = 0; j < columns; j++) ...[
-                          if (j > 0) const SizedBox(width: PfSpace.xl),
-                          Expanded(
-                            child: j < rows[i].length
-                                ? _tile(context, rows[i][j])
-                                : const SizedBox.shrink(),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+                  _row(context, rows[i], columns),
                 ],
               ],
             );

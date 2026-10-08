@@ -14,8 +14,8 @@
     "@loadingLabel": {
       "description": "Accessibility label announced while a section is loading"
     },
-    "goHome": "Go to Home",
-    "signInTitle": "Sign In",
+    "goHome": "Go home",
+    "signInTitle": "Sign in",
     "signInSubtitle": "Sign in to continue",
     "emailLabel": "Email",
     "emailHint": "Enter your email",
@@ -25,11 +25,10 @@
     "passwordHint": "Enter your password",
     "passwordRequired": "Password is required",
     "passwordMinLength": "Password must be at least 6 characters",
-    "signInButton": "Sign In",
+    "signInButton": "Sign in",
     "noAccount": "Don't have an account?",
-    "signUpLink": "Sign Up",
-    "signUpAppBarTitle": "Sign Up",
-    "signUpBodyTitle": "Create Account",
+    "signUpLink": "Sign up",
+    "signUpBodyTitle": "Create your account",
     "signUpSubtitle": "Sign up to get started",
     "usernameLabel": "Username",
     "usernameHint": "Choose a username",
@@ -37,15 +36,15 @@
     "usernameMinLength": "Username must be at least 3 characters",
     "usernameMaxLength": "Username must be at most 20 characters",
     "passwordCreateHint": "Create a password",
-    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordLabel": "Confirm password",
     "confirmPasswordHint": "Re-enter your password",
     "confirmPasswordRequired": "Please confirm your password",
     "passwordMismatch": "Passwords do not match",
-    "signUpButton": "Sign Up",
+    "signUpButton": "Create account",
     "alreadyHaveAccount": "Already have an account?",
-    "signInLink": "Sign In",
+    "signInLink": "Sign in",
     "settingsTitle": "Settings",
-    "userInformationTitle": "User Information",
+    "userInformationTitle": "Account",
     "nameFormat": "Name: {name}",
     "@nameFormat": {
       "placeholders": {
@@ -64,12 +63,10 @@
     },
     "unknown": "Unknown",
     "appearanceTitle": "Appearance",
-    "darkModeTitle": "Dark Mode",
-    "darkModeSubtitle": "Toggle between light and dark theme",
     "logoutButton": "Logout",
-    "searchGamesTitle": "Search Games",
+    "searchGamesTitle": "Search",
     "searchGamesHint": "Search for games...",
-    "searchGamesTooltip": "Search Games",
+    "searchGamesTooltip": "Search games",
     "searchGamesInitialMessage": "Search for your favorite games",
     "searchGamesNoResults": "No results found for \"{query}\"",
     "@searchGamesNoResults": {
@@ -126,19 +123,19 @@
     "screenshots": "Screenshots",
     "videos": "Videos",
     "videoPlayerTitle": "Video",
-    "similarGames": "Similar Games",
-    "whereToBuy": "Where to Buy",
-    "readMore": "Read More",
-    "readLess": "Read Less",
+    "similarGames": "Similar games",
+    "whereToBuy": "Where to buy",
+    "readMore": "Read more",
+    "readLess": "Read less",
     "noVideosAvailable": "No videos available",
     "noScreenshotsAvailable": "No screenshots available",
     "errorLoadingData": "Error loading data",
-    "discoveryTrending": "Trending Now",
-    "discoveryIndie": "Indie Gems",
-    "discoveryUpcoming": "Upcoming Games",
-    "discoveryNewReleases": "New Releases",
-    "discoveryComingSoon": "Coming Soon",
-    "recommendationsTitle": "Recommended for You",
+    "discoveryTrending": "Trending now",
+    "discoveryIndie": "Indie gems",
+    "discoveryUpcoming": "Upcoming games",
+    "discoveryNewReleases": "New releases",
+    "discoveryComingSoon": "Coming soon",
+    "recommendationsTitle": "Recommended for you",
     "signInWithGoogle": "Continue with Google",
     "orContinueWith": "or continue with",
     "signInWithEmail": "Sign in with email",
@@ -222,9 +219,9 @@
     "navBrowse": "Browse",
     "navLibrary": "Library",
     "navProfile": "Profile",
-    "libraryTitle": "My Library",
-    "addGame": "Add Game",
-    "addFirstGame": "Add Your First Game",
+    "libraryTitle": "Library",
+    "addGame": "Add game",
+    "addFirstGame": "Add your first game",
     "failedToLoadLibrary": "Failed to load library",
     "favoritesWithCount": "Favorites ({count})",
     "@favoritesWithCount": {
@@ -246,8 +243,8 @@
     "somethingWentWrong": "Something went wrong",
     "noGamesFound": "No games found",
     "noGamesInCategory": "There are no games in this category yet.",
-    "seeAll": "See All",
-    "linkCopied": "Link copied to clipboard!",
+    "seeAll": "See all",
+    "linkCopied": "Link copied",
     "addToFavorites": "Add to favorites",
     "removeFromFavorites": "Remove from favorites",
     "share": "Share",
@@ -257,8 +254,8 @@
     "statusPlaying": "Playing",
     "statusFinished": "Finished",
     "statusDropped": "Dropped",
-    "statusOnHold": "On Hold",
-    "mostAnticipated": "Most Anticipated",
+    "statusOnHold": "On hold",
+    "mostAnticipated": "Most anticipated",
     "noUpcomingGames": "No upcoming games found",
     "shareGameMessage": "Check out {gameName} on Picklog!\n{url}",
     "@shareGameMessage": {
@@ -271,7 +268,7 @@
         }
       }
     },
-    "removeFromLibrary": "Remove from Library",
+    "removeFromLibrary": "Remove from library",
     "removeFromLibraryConfirm": "Are you sure you want to remove \"{gameName}\" from your library?",
     "@removeFromLibraryConfirm": {
       "placeholders": {
@@ -283,10 +280,10 @@
     "cancel": "Cancel",
     "remove": "Remove",
     "save": "Save",
-    "libraryEntryUpdated": "Library entry updated successfully.",
-    "gameAddedToLibrary": "Game added to library successfully.",
-    "editEntry": "Edit Entry",
-    "addToLibrary": "Add to Library",
+    "libraryEntryUpdated": "Entry updated",
+    "gameAddedToLibrary": "Added to your library",
+    "editEntry": "Edit entry",
+    "addToLibrary": "Add to library",
     "statusLabel": "Status",
     "platformLabel": "Platform",
     "selectPlatformHint": "Select platform (optional)",
@@ -297,8 +294,8 @@
     "hours": "Hours",
     "minutes": "Minutes",
     "dates": "Dates",
-    "startDate": "Start Date",
-    "endDate": "End Date",
+    "startDate": "Start date",
+    "endDate": "End date",
     "difficulty": "Difficulty",
     "difficultyHint": "e.g., Normal, Hard, Nightmare",
     "notes": "Notes",
@@ -439,5 +436,432 @@
     "signInLegalNotice": "By continuing you accept our Privacy Policy and Terms of Service.",
     "@signInLegalNotice": {
       "description": "Notice shown near the social sign-in buttons stating that continuing implies acceptance"
+    },
+    "errorNetwork": "Can't reach Picklog right now. Check your connection.",
+    "@errorNetwork": {
+      "description": "Error message when the server cannot be reached"
+    },
+    "errorNotFound": "We couldn't find that.",
+    "@errorNotFound": {
+      "description": "Error message when the requested item does not exist"
+    },
+    "errorUnauthorized": "Your session ended. Sign in again.",
+    "@errorUnauthorized": {
+      "description": "Error message when the session is missing or expired"
+    },
+    "errorServer": "The server had a problem. Try again in a moment.",
+    "@errorServer": {
+      "description": "Error message when the server fails"
+    },
+    "errorUnknown": "Something went wrong. Try again.",
+    "@errorUnknown": {
+      "description": "Generic error message"
+    },
+    "splashTagline": "Your game library, logged",
+    "@splashTagline": {
+      "description": "Short tagline under the app name on the splash screen"
+    },
+    "onboardingTrackEyebrow": "01 · Track",
+    "@onboardingTrackEyebrow": {
+      "description": "Onboarding page eyebrow for the tracking page"
+    },
+    "onboardingDiscoverEyebrow": "02 · Discover",
+    "@onboardingDiscoverEyebrow": {
+      "description": "Onboarding page eyebrow for the discovery page"
+    },
+    "onboardingShareEyebrow": "03 · Make it yours",
+    "@onboardingShareEyebrow": {
+      "description": "Onboarding page eyebrow for the personalization page"
+    },
+    "pageIndicatorLabel": "Page {current} of {total}",
+    "@pageIndicatorLabel": {
+      "description": "Spoken position of a page indicator",
+      "placeholders": {
+        "current": {
+          "type": "int"
+        },
+        "total": {
+          "type": "int"
+        }
+      }
+    },
+    "signInEyebrow": "Picklog · Sign in",
+    "@signInEyebrow": {
+      "description": "Eyebrow above the sign-in headline"
+    },
+    "signInHeadline": "Welcome back",
+    "@signInHeadline": {
+      "description": "Sign-in screen headline"
+    },
+    "signUpEyebrow": "Picklog · Create account",
+    "@signUpEyebrow": {
+      "description": "Eyebrow above the sign-up headline"
+    },
+    "gameWithScoreLabel": "{name}, rating {score}",
+    "@gameWithScoreLabel": {
+      "description": "Accessibility label for a game card that shows a 0-100 score",
+      "placeholders": {
+        "name": {
+          "type": "String"
+        },
+        "score": {
+          "type": "int"
+        }
+      }
+    },
+    "@seeAll": {
+      "description": "Section header link that opens the full list"
+    },
+    "recommendationsSubtitle": "Picked from the genres you play",
+    "@recommendationsSubtitle": {
+      "description": "Subtitle under the Recommended for you section"
+    },
+    "@recommendationsTitle": {
+      "description": "Title of the personalized recommendations section"
+    },
+    "@mostAnticipated": {
+      "description": "Title of the most anticipated games carousel"
+    },
+    "collectionsSectionTitle": "Collections",
+    "@collectionsSectionTitle": {
+      "description": "Title shown for the curated collections section when it fails to load"
+    },
+    "featuredEyebrow": "Featured",
+    "@featuredEyebrow": {
+      "description": "Eyebrow on a featured banner card"
+    },
+    "featuredError": "Couldn't load featured picks.",
+    "@featuredError": {
+      "description": "Inline error when the featured banners fail to load"
+    },
+    "countdownDaysHoursMinutes": "{days}d {hours}h {minutes}m",
+    "@countdownDaysHoursMinutes": {
+      "description": "Countdown to release with days, hours and minutes",
+      "placeholders": {
+        "days": {
+          "type": "int"
+        },
+        "hours": {
+          "type": "int"
+        },
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "countdownHoursMinutes": "{hours}h {minutes}m",
+    "@countdownHoursMinutes": {
+      "description": "Countdown to release with hours and minutes",
+      "placeholders": {
+        "hours": {
+          "type": "int"
+        },
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "countdownMinutes": "{minutes}m",
+    "@countdownMinutes": {
+      "description": "Countdown to release with minutes only",
+      "placeholders": {
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "countdownReleased": "Out now",
+    "@countdownReleased": {
+      "description": "Countdown badge text once a game has released"
+    },
+    "anticipatedHypes": "{count, plural, =1{1 hype} other{{count} hypes}}",
+    "@anticipatedHypes": {
+      "description": "Number of IGDB hype votes for an upcoming game",
+      "placeholders": {
+        "count": {
+          "type": "int"
+        }
+      }
+    },
+    "playtimeNone": "No playtime",
+    "@playtimeNone": {
+      "description": "Library row when no playtime is logged"
+    },
+    "playtimeMinutesShort": "{minutes} min",
+    "@playtimeMinutesShort": {
+      "description": "Playtime under one hour",
+      "placeholders": {
+        "minutes": {
+          "type": "int"
+        }
+      }
+    },
+    "playtimeHoursShort": "{hours} h",
+    "@playtimeHoursShort": {
+      "description": "Playtime in hours; hours is already formatted for the locale",
+      "placeholders": {
+        "hours": {
+          "type": "String"
+        }
+      }
+    },
+    "homeEyebrow": "Picklog · Home",
+    "@homeEyebrow": {
+      "description": "Eyebrow above the home greeting"
+    },
+    "homeGreetingMorning": "Good morning, {name}",
+    "@homeGreetingMorning": {
+      "description": "Home greeting before noon",
+      "placeholders": {
+        "name": {
+          "type": "String"
+        }
+      }
+    },
+    "homeGreetingAfternoon": "Good afternoon, {name}",
+    "@homeGreetingAfternoon": {
+      "description": "Home greeting in the afternoon",
+      "placeholders": {
+        "name": {
+          "type": "String"
+        }
+      }
+    },
+    "homeGreetingEvening": "Good evening, {name}",
+    "@homeGreetingEvening": {
+      "description": "Home greeting in the evening",
+      "placeholders": {
+        "name": {
+          "type": "String"
+        }
+      }
+    },
+    "homeGreetingAnonymous": "Welcome back",
+    "@homeGreetingAnonymous": {
+      "description": "Home greeting when the user name is unknown"
+    },
+    "homeSubtitle": "What are you playing next?",
+    "@homeSubtitle": {
+      "description": "Line under the home greeting"
+    },
+    "libraryEyebrow": "Picklog · Library",
+    "@libraryEyebrow": {
+      "description": "Eyebrow above the library title"
+    },
+    "libraryGameCount": "{count, plural, =0{No games yet} =1{1 game} other{{count} games}}",
+    "@libraryGameCount": {
+      "description": "Number of games in the library",
+      "placeholders": {
+        "count": {
+          "type": "int"
+        }
+      }
+    },
+    "libraryFavoriteFailed": "Couldn't update the favorite. Try again.",
+    "@libraryFavoriteFailed": {
+      "description": "Snackbar when toggling a favorite fails"
+    },
+    "libraryDeleteFailed": "Couldn't remove the game. It's back in your library.",
+    "@libraryDeleteFailed": {
+      "description": "Snackbar when removing a library entry fails"
+    },
+    "libraryRefreshFailed": "Couldn't refresh your library.",
+    "@libraryRefreshFailed": {
+      "description": "Snackbar when refreshing the library fails"
+    },
+    "librarySaveFailed": "Couldn't save your changes. Try again.",
+    "@librarySaveFailed": {
+      "description": "Snackbar when adding or updating a library entry fails"
+    },
+    "@libraryTitle": {
+      "description": "Library screen title"
+    },
+    "@addGame": {
+      "description": "Button that opens search to add a game"
+    },
+    "@addFirstGame": {
+      "description": "Empty library call to action"
+    },
+    "lightboxPosition": "{current} / {total}",
+    "@lightboxPosition": {
+      "description": "Screenshot lightbox position counter",
+      "placeholders": {
+        "current": {
+          "type": "int"
+        },
+        "total": {
+          "type": "int"
+        }
+      }
+    },
+    "lightboxClose": "Close",
+    "@lightboxClose": {
+      "description": "Tooltip for closing the screenshot viewer"
+    },
+    "lightboxPrevious": "Previous screenshot",
+    "@lightboxPrevious": {
+      "description": "Tooltip for the previous screenshot button"
+    },
+    "lightboxNext": "Next screenshot",
+    "@lightboxNext": {
+      "description": "Tooltip for the next screenshot button"
+    },
+    "inYourLibrary": "In your library",
+    "@inYourLibrary": {
+      "description": "Title of the card on game details when the game is in the library"
+    },
+    "yourScore": "Your score",
+    "@yourScore": {
+      "description": "Label for the user's own 0-100 score"
+    },
+    "igdbScore": "Critic and player score",
+    "@igdbScore": {
+      "description": "Label for the IGDB 0-100 rating on game details"
+    },
+    "releaseDate": "Release",
+    "@releaseDate": {
+      "description": "Label for a game's release date"
+    },
+    "@editEntry": {
+      "description": "Button and sheet title for editing a library entry"
+    },
+    "@addToLibrary": {
+      "description": "Button and sheet title for adding a game to the library"
+    },
+    "@linkCopied": {
+      "description": "Snackbar after copying a share link"
+    },
+    "detailsAbout": "About",
+    "@detailsAbout": {
+      "description": "Game details section title for the storyline and summary"
+    },
+    "@readMore": {
+      "description": "Expands a long description"
+    },
+    "@readLess": {
+      "description": "Collapses a long description"
+    },
+    "@similarGames": {
+      "description": "Game details section of similar games"
+    },
+    "@whereToBuy": {
+      "description": "Game details section of store links"
+    },
+    "@screenshots": {
+      "description": "Game details screenshots section title"
+    },
+    "searchLoadMoreFailed": "Couldn't load more results.",
+    "@searchLoadMoreFailed": {
+      "description": "Inline error when fetching the next page of search results fails"
+    },
+    "browseEyebrow": "Picklog · Browse",
+    "@browseEyebrow": {
+      "description": "Eyebrow above the browse sections"
+    },
+    "libraryDetailsSection": "More details",
+    "@libraryDetailsSection": {
+      "description": "Toggle that reveals playtime, dates, difficulty and notes in the add-to-library sheet"
+    },
+    "libraryDetailsHint": "Playtime, dates, difficulty and notes",
+    "@libraryDetailsHint": {
+      "description": "Hint under the More details toggle"
+    },
+    "scoreNotSet": "Not rated",
+    "@scoreNotSet": {
+      "description": "Shown when no 0-100 score is set"
+    },
+    "@removeFromLibrary": {
+      "description": "Button and dialog title to remove a game from the library"
+    },
+    "@startDate": {
+      "description": "Library entry start date label"
+    },
+    "@endDate": {
+      "description": "Library entry end date label"
+    },
+    "@libraryEntryUpdated": {
+      "description": "Snackbar after updating a library entry"
+    },
+    "@gameAddedToLibrary": {
+      "description": "Snackbar after adding a game to the library"
+    },
+    "themeTitle": "Theme",
+    "@themeTitle": {
+      "description": "Settings label for the theme selector"
+    },
+    "themeSystem": "System",
+    "@themeSystem": {
+      "description": "Theme option that follows the device setting"
+    },
+    "themeLight": "Light",
+    "@themeLight": {
+      "description": "Light theme option"
+    },
+    "themeDark": "Dark",
+    "@themeDark": {
+      "description": "Dark theme option"
+    },
+    "settingsEyebrow": "Picklog · Settings",
+    "@settingsEyebrow": {
+      "description": "Eyebrow above the settings sections"
+    },
+    "profileEyebrow": "Picklog · Profile",
+    "@profileEyebrow": {
+      "description": "Eyebrow above the profile header"
+    },
+    "routeNotFoundMessage": "This page doesn't exist or moved.",
+    "@routeNotFoundMessage": {
+      "description": "Body of the router error screen"
+    },
+    "@discoveryTrending": {
+      "description": "Discovery list title for trending games"
+    },
+    "@discoveryIndie": {
+      "description": "Discovery list title for indie games"
+    },
+    "@discoveryUpcoming": {
+      "description": "Discovery list title for upcoming games"
+    },
+    "@discoveryNewReleases": {
+      "description": "Discovery list title for new releases"
+    },
+    "@discoveryComingSoon": {
+      "description": "Discovery list title for games coming soon"
+    },
+    "@goHome": {
+      "description": "Button that returns to the home tab"
+    },
+    "@signInTitle": {
+      "description": "Sign-in title"
+    },
+    "@signInButton": {
+      "description": "Email sign-in submit button"
+    },
+    "@signUpLink": {
+      "description": "Link from sign-in to sign-up"
+    },
+    "@signUpBodyTitle": {
+      "description": "Sign-up headline"
+    },
+    "@confirmPasswordLabel": {
+      "description": "Confirm password field label"
+    },
+    "@signUpButton": {
+      "description": "Sign-up submit button"
+    },
+    "@signInLink": {
+      "description": "Link from sign-up to sign-in"
+    },
+    "@userInformationTitle": {
+      "description": "Settings group label for the user's account"
+    },
+    "@searchGamesTitle": {
+      "description": "Search screen title"
+    },
+    "@searchGamesTooltip": {
+      "description": "Tooltip for the search action"
+    },
+    "@statusOnHold": {
+      "description": "Library status: on hold"
     }
 }

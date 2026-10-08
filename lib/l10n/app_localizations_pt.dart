@@ -27,7 +27,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loadingLabel => 'Carregando';
 
   @override
-  String get goHome => 'Ir para o Início';
+  String get goHome => 'Ir para o início';
 
   @override
   String get signInTitle => 'Entrar';
@@ -69,10 +69,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get signUpLink => 'Cadastre-se';
 
   @override
-  String get signUpAppBarTitle => 'Cadastro';
-
-  @override
-  String get signUpBodyTitle => 'Criar Conta';
+  String get signUpBodyTitle => 'Crie sua conta';
 
   @override
   String get signUpSubtitle => 'Cadastre-se para começar';
@@ -98,7 +95,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get passwordCreateHint => 'Crie uma senha';
 
   @override
-  String get confirmPasswordLabel => 'Confirmar Senha';
+  String get confirmPasswordLabel => 'Confirmar senha';
 
   @override
   String get confirmPasswordHint => 'Digite sua senha novamente';
@@ -110,7 +107,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get passwordMismatch => 'As senhas não coincidem';
 
   @override
-  String get signUpButton => 'Cadastrar';
+  String get signUpButton => 'Criar conta';
 
   @override
   String get alreadyHaveAccount => 'Já tem uma conta?';
@@ -122,7 +119,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsTitle => 'Configurações';
 
   @override
-  String get userInformationTitle => 'Informações do Usuário';
+  String get userInformationTitle => 'Conta';
 
   @override
   String nameFormat(String name) {
@@ -141,22 +138,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get appearanceTitle => 'Aparência';
 
   @override
-  String get darkModeTitle => 'Modo Escuro';
-
-  @override
-  String get darkModeSubtitle => 'Alternar entre tema claro e escuro';
-
-  @override
   String get logoutButton => 'Sair';
 
   @override
-  String get searchGamesTitle => 'Buscar Jogos';
+  String get searchGamesTitle => 'Buscar';
 
   @override
   String get searchGamesHint => 'Buscar jogos...';
 
   @override
-  String get searchGamesTooltip => 'Buscar Jogos';
+  String get searchGamesTooltip => 'Buscar jogos';
 
   @override
   String get searchGamesInitialMessage => 'Busque seus jogos favoritos';
@@ -265,7 +256,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get summary => 'Resumo';
 
   @override
-  String get screenshots => 'Capturas de Tela';
+  String get screenshots => 'Capturas de tela';
 
   @override
   String get videos => 'Vídeos';
@@ -274,16 +265,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get videoPlayerTitle => 'Vídeo';
 
   @override
-  String get similarGames => 'Jogos Similares';
+  String get similarGames => 'Jogos similares';
 
   @override
-  String get whereToBuy => 'Onde Comprar';
+  String get whereToBuy => 'Onde comprar';
 
   @override
-  String get readMore => 'Ler Mais';
+  String get readMore => 'Ler mais';
 
   @override
-  String get readLess => 'Ler Menos';
+  String get readLess => 'Ler menos';
 
   @override
   String get noVideosAvailable => 'Nenhum vídeo disponível';
@@ -295,22 +286,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errorLoadingData => 'Erro ao carregar dados';
 
   @override
-  String get discoveryTrending => 'Em Alta';
+  String get discoveryTrending => 'Em alta';
 
   @override
   String get discoveryIndie => 'Indie';
 
   @override
-  String get discoveryUpcoming => 'Em Breve';
+  String get discoveryUpcoming => 'Em breve';
 
   @override
-  String get discoveryNewReleases => 'Novos Lançamentos';
+  String get discoveryNewReleases => 'Novos lançamentos';
 
   @override
-  String get discoveryComingSoon => 'Chegando em Breve';
+  String get discoveryComingSoon => 'Chegando em breve';
 
   @override
-  String get recommendationsTitle => 'Recomendados para Você';
+  String get recommendationsTitle => 'Recomendados para você';
 
   @override
   String get signInWithGoogle => 'Continuar com Google';
@@ -395,13 +386,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navProfile => 'Perfil';
 
   @override
-  String get libraryTitle => 'Minha Biblioteca';
+  String get libraryTitle => 'Biblioteca';
 
   @override
-  String get addGame => 'Adicionar Jogo';
+  String get addGame => 'Adicionar jogo';
 
   @override
-  String get addFirstGame => 'Adicione Seu Primeiro Jogo';
+  String get addFirstGame => 'Adicione seu primeiro jogo';
 
   @override
   String get failedToLoadLibrary => 'Falha ao carregar a biblioteca';
@@ -451,10 +442,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get noGamesInCategory => 'Ainda não há jogos nesta categoria.';
 
   @override
-  String get seeAll => 'Ver Todos';
+  String get seeAll => 'Ver tudo';
 
   @override
-  String get linkCopied => 'Link copiado!';
+  String get linkCopied => 'Link copiado';
 
   @override
   String get addToFavorites => 'Adicionar aos favoritos';
@@ -487,7 +478,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get statusOnHold => 'Pausado';
 
   @override
-  String get mostAnticipated => 'Mais Aguardados';
+  String get mostAnticipated => 'Mais aguardados';
 
   @override
   String get noUpcomingGames => 'Nenhum jogo futuro encontrado';
@@ -498,7 +489,7 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get removeFromLibrary => 'Remover da Biblioteca';
+  String get removeFromLibrary => 'Remover da biblioteca';
 
   @override
   String removeFromLibraryConfirm(String gameName) {
@@ -515,17 +506,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get save => 'Salvar';
 
   @override
-  String get libraryEntryUpdated =>
-      'Entrada da biblioteca atualizada com sucesso.';
+  String get libraryEntryUpdated => 'Registro atualizado';
 
   @override
-  String get gameAddedToLibrary => 'Jogo adicionado à biblioteca com sucesso.';
+  String get gameAddedToLibrary => 'Adicionado à sua biblioteca';
 
   @override
-  String get editEntry => 'Editar Entrada';
+  String get editEntry => 'Editar registro';
 
   @override
-  String get addToLibrary => 'Adicionar à Biblioteca';
+  String get addToLibrary => 'Adicionar à biblioteca';
 
   @override
   String get statusLabel => 'Status';
@@ -558,10 +548,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dates => 'Datas';
 
   @override
-  String get startDate => 'Data de Início';
+  String get startDate => 'Data de início';
 
   @override
-  String get endDate => 'Data de Término';
+  String get endDate => 'Data de término';
 
   @override
   String get difficulty => 'Dificuldade';
@@ -756,4 +746,228 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get signInLegalNotice =>
       'Ao continuar, você aceita nossa Política de Privacidade e os Termos de Uso.';
+
+  @override
+  String get errorNetwork =>
+      'Não foi possível conectar ao Picklog. Verifique sua conexão.';
+
+  @override
+  String get errorNotFound => 'Não encontramos isso.';
+
+  @override
+  String get errorUnauthorized => 'Sua sessão terminou. Entre novamente.';
+
+  @override
+  String get errorServer =>
+      'O servidor teve um problema. Tente de novo em instantes.';
+
+  @override
+  String get errorUnknown => 'Algo deu errado. Tente de novo.';
+
+  @override
+  String get splashTagline => 'Sua biblioteca de jogos, registrada';
+
+  @override
+  String get onboardingTrackEyebrow => '01 · Registre';
+
+  @override
+  String get onboardingDiscoverEyebrow => '02 · Descubra';
+
+  @override
+  String get onboardingShareEyebrow => '03 · Do seu jeito';
+
+  @override
+  String pageIndicatorLabel(int current, int total) {
+    return 'Página $current de $total';
+  }
+
+  @override
+  String get signInEyebrow => 'Picklog · Entrar';
+
+  @override
+  String get signInHeadline => 'Bem-vindo de volta';
+
+  @override
+  String get signUpEyebrow => 'Picklog · Criar conta';
+
+  @override
+  String gameWithScoreLabel(String name, int score) {
+    return '$name, nota $score';
+  }
+
+  @override
+  String get recommendationsSubtitle =>
+      'Escolhidos pelos gêneros que você joga';
+
+  @override
+  String get collectionsSectionTitle => 'Coleções';
+
+  @override
+  String get featuredEyebrow => 'Destaque';
+
+  @override
+  String get featuredError => 'Não foi possível carregar os destaques.';
+
+  @override
+  String countdownDaysHoursMinutes(int days, int hours, int minutes) {
+    return '${days}d ${hours}h ${minutes}min';
+  }
+
+  @override
+  String countdownHoursMinutes(int hours, int minutes) {
+    return '${hours}h ${minutes}min';
+  }
+
+  @override
+  String countdownMinutes(int minutes) {
+    return '${minutes}min';
+  }
+
+  @override
+  String get countdownReleased => 'Já disponível';
+
+  @override
+  String anticipatedHypes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hypes',
+      one: '1 hype',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playtimeNone => 'Sem tempo de jogo';
+
+  @override
+  String playtimeMinutesShort(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String playtimeHoursShort(String hours) {
+    return '$hours h';
+  }
+
+  @override
+  String get homeEyebrow => 'Picklog · Início';
+
+  @override
+  String homeGreetingMorning(String name) {
+    return 'Bom dia, $name';
+  }
+
+  @override
+  String homeGreetingAfternoon(String name) {
+    return 'Boa tarde, $name';
+  }
+
+  @override
+  String homeGreetingEvening(String name) {
+    return 'Boa noite, $name';
+  }
+
+  @override
+  String get homeGreetingAnonymous => 'Que bom te ver';
+
+  @override
+  String get homeSubtitle => 'O que você vai jogar agora?';
+
+  @override
+  String get libraryEyebrow => 'Picklog · Biblioteca';
+
+  @override
+  String libraryGameCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos',
+      one: '1 jogo',
+      zero: 'Nenhum jogo ainda',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryFavoriteFailed =>
+      'Não foi possível atualizar o favorito. Tente de novo.';
+
+  @override
+  String get libraryDeleteFailed =>
+      'Não foi possível remover o jogo. Ele voltou para sua biblioteca.';
+
+  @override
+  String get libraryRefreshFailed =>
+      'Não foi possível atualizar sua biblioteca.';
+
+  @override
+  String get librarySaveFailed => 'Não foi possível salvar. Tente de novo.';
+
+  @override
+  String lightboxPosition(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String get lightboxClose => 'Fechar';
+
+  @override
+  String get lightboxPrevious => 'Captura anterior';
+
+  @override
+  String get lightboxNext => 'Próxima captura';
+
+  @override
+  String get inYourLibrary => 'Na sua biblioteca';
+
+  @override
+  String get yourScore => 'Sua nota';
+
+  @override
+  String get igdbScore => 'Nota de críticos e jogadores';
+
+  @override
+  String get releaseDate => 'Lançamento';
+
+  @override
+  String get detailsAbout => 'Sobre';
+
+  @override
+  String get searchLoadMoreFailed =>
+      'Não foi possível carregar mais resultados.';
+
+  @override
+  String get browseEyebrow => 'Picklog · Explorar';
+
+  @override
+  String get libraryDetailsSection => 'Mais detalhes';
+
+  @override
+  String get libraryDetailsHint => 'Tempo de jogo, datas, dificuldade e notas';
+
+  @override
+  String get scoreNotSet => 'Sem nota';
+
+  @override
+  String get themeTitle => 'Tema';
+
+  @override
+  String get themeSystem => 'Sistema';
+
+  @override
+  String get themeLight => 'Claro';
+
+  @override
+  String get themeDark => 'Escuro';
+
+  @override
+  String get settingsEyebrow => 'Picklog · Configurações';
+
+  @override
+  String get profileEyebrow => 'Picklog · Perfil';
+
+  @override
+  String get routeNotFoundMessage =>
+      'Esta página não existe ou mudou de lugar.';
 }

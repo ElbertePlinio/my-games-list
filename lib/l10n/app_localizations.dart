@@ -134,16 +134,16 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loadingLabel;
 
-  /// No description provided for @goHome.
+  /// Button that returns to the home tab
   ///
   /// In en, this message translates to:
-  /// **'Go to Home'**
+  /// **'Go home'**
   String get goHome;
 
-  /// No description provided for @signInTitle.
+  /// Sign-in title
   ///
   /// In en, this message translates to:
-  /// **'Sign In'**
+  /// **'Sign in'**
   String get signInTitle;
 
   /// No description provided for @signInSubtitle.
@@ -200,10 +200,10 @@ abstract class AppLocalizations {
   /// **'Password must be at least 6 characters'**
   String get passwordMinLength;
 
-  /// No description provided for @signInButton.
+  /// Email sign-in submit button
   ///
   /// In en, this message translates to:
-  /// **'Sign In'**
+  /// **'Sign in'**
   String get signInButton;
 
   /// No description provided for @noAccount.
@@ -212,22 +212,16 @@ abstract class AppLocalizations {
   /// **'Don\'t have an account?'**
   String get noAccount;
 
-  /// No description provided for @signUpLink.
+  /// Link from sign-in to sign-up
   ///
   /// In en, this message translates to:
-  /// **'Sign Up'**
+  /// **'Sign up'**
   String get signUpLink;
 
-  /// No description provided for @signUpAppBarTitle.
+  /// Sign-up headline
   ///
   /// In en, this message translates to:
-  /// **'Sign Up'**
-  String get signUpAppBarTitle;
-
-  /// No description provided for @signUpBodyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Create Account'**
+  /// **'Create your account'**
   String get signUpBodyTitle;
 
   /// No description provided for @signUpSubtitle.
@@ -272,10 +266,10 @@ abstract class AppLocalizations {
   /// **'Create a password'**
   String get passwordCreateHint;
 
-  /// No description provided for @confirmPasswordLabel.
+  /// Confirm password field label
   ///
   /// In en, this message translates to:
-  /// **'Confirm Password'**
+  /// **'Confirm password'**
   String get confirmPasswordLabel;
 
   /// No description provided for @confirmPasswordHint.
@@ -296,10 +290,10 @@ abstract class AppLocalizations {
   /// **'Passwords do not match'**
   String get passwordMismatch;
 
-  /// No description provided for @signUpButton.
+  /// Sign-up submit button
   ///
   /// In en, this message translates to:
-  /// **'Sign Up'**
+  /// **'Create account'**
   String get signUpButton;
 
   /// No description provided for @alreadyHaveAccount.
@@ -308,10 +302,10 @@ abstract class AppLocalizations {
   /// **'Already have an account?'**
   String get alreadyHaveAccount;
 
-  /// No description provided for @signInLink.
+  /// Link from sign-up to sign-in
   ///
   /// In en, this message translates to:
-  /// **'Sign In'**
+  /// **'Sign in'**
   String get signInLink;
 
   /// No description provided for @settingsTitle.
@@ -320,10 +314,10 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
-  /// No description provided for @userInformationTitle.
+  /// Settings group label for the user's account
   ///
   /// In en, this message translates to:
-  /// **'User Information'**
+  /// **'Account'**
   String get userInformationTitle;
 
   /// No description provided for @nameFormat.
@@ -350,28 +344,16 @@ abstract class AppLocalizations {
   /// **'Appearance'**
   String get appearanceTitle;
 
-  /// No description provided for @darkModeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark Mode'**
-  String get darkModeTitle;
-
-  /// No description provided for @darkModeSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Toggle between light and dark theme'**
-  String get darkModeSubtitle;
-
   /// No description provided for @logoutButton.
   ///
   /// In en, this message translates to:
   /// **'Logout'**
   String get logoutButton;
 
-  /// No description provided for @searchGamesTitle.
+  /// Search screen title
   ///
   /// In en, this message translates to:
-  /// **'Search Games'**
+  /// **'Search'**
   String get searchGamesTitle;
 
   /// No description provided for @searchGamesHint.
@@ -380,10 +362,10 @@ abstract class AppLocalizations {
   /// **'Search for games...'**
   String get searchGamesHint;
 
-  /// No description provided for @searchGamesTooltip.
+  /// Tooltip for the search action
   ///
   /// In en, this message translates to:
-  /// **'Search Games'**
+  /// **'Search games'**
   String get searchGamesTooltip;
 
   /// No description provided for @searchGamesInitialMessage.
@@ -578,7 +560,7 @@ abstract class AppLocalizations {
   /// **'Summary'**
   String get summary;
 
-  /// No description provided for @screenshots.
+  /// Game details screenshots section title
   ///
   /// In en, this message translates to:
   /// **'Screenshots'**
@@ -596,28 +578,28 @@ abstract class AppLocalizations {
   /// **'Video'**
   String get videoPlayerTitle;
 
-  /// No description provided for @similarGames.
+  /// Game details section of similar games
   ///
   /// In en, this message translates to:
-  /// **'Similar Games'**
+  /// **'Similar games'**
   String get similarGames;
 
-  /// No description provided for @whereToBuy.
+  /// Game details section of store links
   ///
   /// In en, this message translates to:
-  /// **'Where to Buy'**
+  /// **'Where to buy'**
   String get whereToBuy;
 
-  /// No description provided for @readMore.
+  /// Expands a long description
   ///
   /// In en, this message translates to:
-  /// **'Read More'**
+  /// **'Read more'**
   String get readMore;
 
-  /// No description provided for @readLess.
+  /// Collapses a long description
   ///
   /// In en, this message translates to:
-  /// **'Read Less'**
+  /// **'Read less'**
   String get readLess;
 
   /// No description provided for @noVideosAvailable.
@@ -638,40 +620,40 @@ abstract class AppLocalizations {
   /// **'Error loading data'**
   String get errorLoadingData;
 
-  /// No description provided for @discoveryTrending.
+  /// Discovery list title for trending games
   ///
   /// In en, this message translates to:
-  /// **'Trending Now'**
+  /// **'Trending now'**
   String get discoveryTrending;
 
-  /// No description provided for @discoveryIndie.
+  /// Discovery list title for indie games
   ///
   /// In en, this message translates to:
-  /// **'Indie Gems'**
+  /// **'Indie gems'**
   String get discoveryIndie;
 
-  /// No description provided for @discoveryUpcoming.
+  /// Discovery list title for upcoming games
   ///
   /// In en, this message translates to:
-  /// **'Upcoming Games'**
+  /// **'Upcoming games'**
   String get discoveryUpcoming;
 
-  /// No description provided for @discoveryNewReleases.
+  /// Discovery list title for new releases
   ///
   /// In en, this message translates to:
-  /// **'New Releases'**
+  /// **'New releases'**
   String get discoveryNewReleases;
 
-  /// No description provided for @discoveryComingSoon.
+  /// Discovery list title for games coming soon
   ///
   /// In en, this message translates to:
-  /// **'Coming Soon'**
+  /// **'Coming soon'**
   String get discoveryComingSoon;
 
-  /// No description provided for @recommendationsTitle.
+  /// Title of the personalized recommendations section
   ///
   /// In en, this message translates to:
-  /// **'Recommended for You'**
+  /// **'Recommended for you'**
   String get recommendationsTitle;
 
   /// No description provided for @signInWithGoogle.
@@ -818,22 +800,22 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get navProfile;
 
-  /// No description provided for @libraryTitle.
+  /// Library screen title
   ///
   /// In en, this message translates to:
-  /// **'My Library'**
+  /// **'Library'**
   String get libraryTitle;
 
-  /// No description provided for @addGame.
+  /// Button that opens search to add a game
   ///
   /// In en, this message translates to:
-  /// **'Add Game'**
+  /// **'Add game'**
   String get addGame;
 
-  /// No description provided for @addFirstGame.
+  /// Empty library call to action
   ///
   /// In en, this message translates to:
-  /// **'Add Your First Game'**
+  /// **'Add your first game'**
   String get addFirstGame;
 
   /// No description provided for @failedToLoadLibrary.
@@ -920,16 +902,16 @@ abstract class AppLocalizations {
   /// **'There are no games in this category yet.'**
   String get noGamesInCategory;
 
-  /// No description provided for @seeAll.
+  /// Section header link that opens the full list
   ///
   /// In en, this message translates to:
-  /// **'See All'**
+  /// **'See all'**
   String get seeAll;
 
-  /// No description provided for @linkCopied.
+  /// Snackbar after copying a share link
   ///
   /// In en, this message translates to:
-  /// **'Link copied to clipboard!'**
+  /// **'Link copied'**
   String get linkCopied;
 
   /// No description provided for @addToFavorites.
@@ -986,16 +968,16 @@ abstract class AppLocalizations {
   /// **'Dropped'**
   String get statusDropped;
 
-  /// No description provided for @statusOnHold.
+  /// Library status: on hold
   ///
   /// In en, this message translates to:
-  /// **'On Hold'**
+  /// **'On hold'**
   String get statusOnHold;
 
-  /// No description provided for @mostAnticipated.
+  /// Title of the most anticipated games carousel
   ///
   /// In en, this message translates to:
-  /// **'Most Anticipated'**
+  /// **'Most anticipated'**
   String get mostAnticipated;
 
   /// No description provided for @noUpcomingGames.
@@ -1010,10 +992,10 @@ abstract class AppLocalizations {
   /// **'Check out {gameName} on Picklog!\n{url}'**
   String shareGameMessage(String gameName, String url);
 
-  /// No description provided for @removeFromLibrary.
+  /// Button and dialog title to remove a game from the library
   ///
   /// In en, this message translates to:
-  /// **'Remove from Library'**
+  /// **'Remove from library'**
   String get removeFromLibrary;
 
   /// No description provided for @removeFromLibraryConfirm.
@@ -1040,28 +1022,28 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
-  /// No description provided for @libraryEntryUpdated.
+  /// Snackbar after updating a library entry
   ///
   /// In en, this message translates to:
-  /// **'Library entry updated successfully.'**
+  /// **'Entry updated'**
   String get libraryEntryUpdated;
 
-  /// No description provided for @gameAddedToLibrary.
+  /// Snackbar after adding a game to the library
   ///
   /// In en, this message translates to:
-  /// **'Game added to library successfully.'**
+  /// **'Added to your library'**
   String get gameAddedToLibrary;
 
-  /// No description provided for @editEntry.
+  /// Button and sheet title for editing a library entry
   ///
   /// In en, this message translates to:
-  /// **'Edit Entry'**
+  /// **'Edit entry'**
   String get editEntry;
 
-  /// No description provided for @addToLibrary.
+  /// Button and sheet title for adding a game to the library
   ///
   /// In en, this message translates to:
-  /// **'Add to Library'**
+  /// **'Add to library'**
   String get addToLibrary;
 
   /// No description provided for @statusLabel.
@@ -1124,16 +1106,16 @@ abstract class AppLocalizations {
   /// **'Dates'**
   String get dates;
 
-  /// No description provided for @startDate.
+  /// Library entry start date label
   ///
   /// In en, this message translates to:
-  /// **'Start Date'**
+  /// **'Start date'**
   String get startDate;
 
-  /// No description provided for @endDate.
+  /// Library entry end date label
   ///
   /// In en, this message translates to:
-  /// **'End Date'**
+  /// **'End date'**
   String get endDate;
 
   /// No description provided for @difficulty.
@@ -1483,6 +1465,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By continuing you accept our Privacy Policy and Terms of Service.'**
   String get signInLegalNotice;
+
+  /// Error message when the server cannot be reached
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach Picklog right now. Check your connection.'**
+  String get errorNetwork;
+
+  /// Error message when the requested item does not exist
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find that.'**
+  String get errorNotFound;
+
+  /// Error message when the session is missing or expired
+  ///
+  /// In en, this message translates to:
+  /// **'Your session ended. Sign in again.'**
+  String get errorUnauthorized;
+
+  /// Error message when the server fails
+  ///
+  /// In en, this message translates to:
+  /// **'The server had a problem. Try again in a moment.'**
+  String get errorServer;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get errorUnknown;
+
+  /// Short tagline under the app name on the splash screen
+  ///
+  /// In en, this message translates to:
+  /// **'Your game library, logged'**
+  String get splashTagline;
+
+  /// Onboarding page eyebrow for the tracking page
+  ///
+  /// In en, this message translates to:
+  /// **'01 · Track'**
+  String get onboardingTrackEyebrow;
+
+  /// Onboarding page eyebrow for the discovery page
+  ///
+  /// In en, this message translates to:
+  /// **'02 · Discover'**
+  String get onboardingDiscoverEyebrow;
+
+  /// Onboarding page eyebrow for the personalization page
+  ///
+  /// In en, this message translates to:
+  /// **'03 · Make it yours'**
+  String get onboardingShareEyebrow;
+
+  /// Spoken position of a page indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageIndicatorLabel(int current, int total);
+
+  /// Eyebrow above the sign-in headline
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Sign in'**
+  String get signInEyebrow;
+
+  /// Sign-in screen headline
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get signInHeadline;
+
+  /// Eyebrow above the sign-up headline
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Create account'**
+  String get signUpEyebrow;
+
+  /// Accessibility label for a game card that shows a 0-100 score
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, rating {score}'**
+  String gameWithScoreLabel(String name, int score);
+
+  /// Subtitle under the Recommended for you section
+  ///
+  /// In en, this message translates to:
+  /// **'Picked from the genres you play'**
+  String get recommendationsSubtitle;
+
+  /// Title shown for the curated collections section when it fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get collectionsSectionTitle;
+
+  /// Eyebrow on a featured banner card
+  ///
+  /// In en, this message translates to:
+  /// **'Featured'**
+  String get featuredEyebrow;
+
+  /// Inline error when the featured banners fail to load
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load featured picks.'**
+  String get featuredError;
+
+  /// Countdown to release with days, hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h {minutes}m'**
+  String countdownDaysHoursMinutes(int days, int hours, int minutes);
+
+  /// Countdown to release with hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String countdownHoursMinutes(int hours, int minutes);
+
+  /// Countdown to release with minutes only
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m'**
+  String countdownMinutes(int minutes);
+
+  /// Countdown badge text once a game has released
+  ///
+  /// In en, this message translates to:
+  /// **'Out now'**
+  String get countdownReleased;
+
+  /// Number of IGDB hype votes for an upcoming game
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hype} other{{count} hypes}}'**
+  String anticipatedHypes(int count);
+
+  /// Library row when no playtime is logged
+  ///
+  /// In en, this message translates to:
+  /// **'No playtime'**
+  String get playtimeNone;
+
+  /// Playtime under one hour
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String playtimeMinutesShort(int minutes);
+
+  /// Playtime in hours; hours is already formatted for the locale
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h'**
+  String playtimeHoursShort(String hours);
+
+  /// Eyebrow above the home greeting
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Home'**
+  String get homeEyebrow;
+
+  /// Home greeting before noon
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning, {name}'**
+  String homeGreetingMorning(String name);
+
+  /// Home greeting in the afternoon
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon, {name}'**
+  String homeGreetingAfternoon(String name);
+
+  /// Home greeting in the evening
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening, {name}'**
+  String homeGreetingEvening(String name);
+
+  /// Home greeting when the user name is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get homeGreetingAnonymous;
+
+  /// Line under the home greeting
+  ///
+  /// In en, this message translates to:
+  /// **'What are you playing next?'**
+  String get homeSubtitle;
+
+  /// Eyebrow above the library title
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Library'**
+  String get libraryEyebrow;
+
+  /// Number of games in the library
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No games yet} =1{1 game} other{{count} games}}'**
+  String libraryGameCount(int count);
+
+  /// Snackbar when toggling a favorite fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update the favorite. Try again.'**
+  String get libraryFavoriteFailed;
+
+  /// Snackbar when removing a library entry fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t remove the game. It\'s back in your library.'**
+  String get libraryDeleteFailed;
+
+  /// Snackbar when refreshing the library fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t refresh your library.'**
+  String get libraryRefreshFailed;
+
+  /// Snackbar when adding or updating a library entry fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your changes. Try again.'**
+  String get librarySaveFailed;
+
+  /// Screenshot lightbox position counter
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String lightboxPosition(int current, int total);
+
+  /// Tooltip for closing the screenshot viewer
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get lightboxClose;
+
+  /// Tooltip for the previous screenshot button
+  ///
+  /// In en, this message translates to:
+  /// **'Previous screenshot'**
+  String get lightboxPrevious;
+
+  /// Tooltip for the next screenshot button
+  ///
+  /// In en, this message translates to:
+  /// **'Next screenshot'**
+  String get lightboxNext;
+
+  /// Title of the card on game details when the game is in the library
+  ///
+  /// In en, this message translates to:
+  /// **'In your library'**
+  String get inYourLibrary;
+
+  /// Label for the user's own 0-100 score
+  ///
+  /// In en, this message translates to:
+  /// **'Your score'**
+  String get yourScore;
+
+  /// Label for the IGDB 0-100 rating on game details
+  ///
+  /// In en, this message translates to:
+  /// **'Critic and player score'**
+  String get igdbScore;
+
+  /// Label for a game's release date
+  ///
+  /// In en, this message translates to:
+  /// **'Release'**
+  String get releaseDate;
+
+  /// Game details section title for the storyline and summary
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get detailsAbout;
+
+  /// Inline error when fetching the next page of search results fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load more results.'**
+  String get searchLoadMoreFailed;
+
+  /// Eyebrow above the browse sections
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Browse'**
+  String get browseEyebrow;
+
+  /// Toggle that reveals playtime, dates, difficulty and notes in the add-to-library sheet
+  ///
+  /// In en, this message translates to:
+  /// **'More details'**
+  String get libraryDetailsSection;
+
+  /// Hint under the More details toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Playtime, dates, difficulty and notes'**
+  String get libraryDetailsHint;
+
+  /// Shown when no 0-100 score is set
+  ///
+  /// In en, this message translates to:
+  /// **'Not rated'**
+  String get scoreNotSet;
+
+  /// Settings label for the theme selector
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeTitle;
+
+  /// Theme option that follows the device setting
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// Light theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// Dark theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// Eyebrow above the settings sections
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Settings'**
+  String get settingsEyebrow;
+
+  /// Eyebrow above the profile header
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Profile'**
+  String get profileEyebrow;
+
+  /// Body of the router error screen
+  ///
+  /// In en, this message translates to:
+  /// **'This page doesn\'t exist or moved.'**
+  String get routeNotFoundMessage;
 }
 
 class _AppLocalizationsDelegate

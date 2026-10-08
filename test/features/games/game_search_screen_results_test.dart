@@ -3,7 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/features/games/bloc/filter_options_cubit.dart';
 import 'package:picklog/features/games/bloc/game_search_bloc.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
+import 'package:picklog/features/games/i_games_repository.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/bloc/game_search_state.dart';
@@ -28,6 +32,8 @@ List<SearchGame> _games(int count) {
   );
 }
 
+class _MockGamesRepository extends Mock implements IGamesRepository {}
+
 void main() {
   setUpAll(() => registerFallbackValue(_FakeGameSearchEvent()));
 
@@ -51,8 +57,14 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('en'),
-        home: BlocProvider<GameSearchBloc>.value(
-          value: bloc,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<GameSearchBloc>.value(value: bloc),
+            BlocProvider(
+              create: (_) =>
+                  FilterOptionsCubit(gamesRepository: _MockGamesRepository()),
+            ),
+          ],
           child: const GameSearchScreen(),
         ),
       );
@@ -61,8 +73,8 @@ void main() {
     testWidgets('renders the title and the search field', (tester) async {
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Search Games'), findsOneWidget);
-      expect(find.widgetWithText(AppBar, 'Search Games'), findsOneWidget);
+      expect(find.text('Search'), findsOneWidget);
+      expect(find.widgetWithText(AppBar, 'Search'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
     });
 
@@ -103,23 +115,30 @@ void main() {
       expect(find.bySemanticsLabel('Loading'), findsOneWidget);
     });
 
-    testWidgets('failure state shows the error message and icon', (
+    testWidgets('failure state shows a localized message with retry', (
       tester,
     ) async {
       when(() => bloc.state).thenReturn(
         const GameSearchState(
           status: GameSearchStatus.failure,
-          errorMessage: 'Search failed',
+          query: 'zelda',
+          errorKind: AppErrorKind.network,
         ),
       );
 
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Search failed'), findsOneWidget);
+      expect(
+        find.text("Can't reach Picklog right now. Check your connection."),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.error_outline), findsOneWidget);
+
+      await tester.tap(find.text('Try again'));
+      verify(() => bloc.add(const GameSearchRetryRequested())).called(1);
     });
 
-    testWidgets('failure state falls back to the default message', (
+    testWidgets('failure state falls back to the generic message', (
       tester,
     ) async {
       when(
@@ -128,7 +147,7 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('An error occurred'), findsOneWidget);
+      expect(find.text('Something went wrong. Try again.'), findsOneWidget);
     });
 
     testWidgets('success with results renders a card per game', (tester) async {
@@ -188,56 +207,51 @@ void main() {
       verify(() => bloc.add(const GameSearchLoadMore())).called(1);
     });
 
-    testWidgets('filters that hide every loaded result keep paging while '
-        'hasMore is true so later matching pages are still fetched', (
-      tester,
-    ) async {
-      // The active filter narrows the only loaded game out (year 1990 vs a
-      // game with no release date), so the screen shows the filtered-empty
-      // guidance. Because hasMore is true, it must auto-fetch the next page
-      // instead of dead-ending pagination.
+    testWidgets('a server-filtered empty result offers clear filters and '
+        'does not page', (tester) async {
       when(() => bloc.state).thenReturn(
-        GameSearchState(
+        const GameSearchState(
           status: GameSearchStatus.success,
           query: 'game',
-          games: _games(2),
-          hasMore: true,
-          filters: const GameSearchFilters(year: 1990),
+          hasMore: false,
+          filters: GameSearchFilters(catalog: CatalogFilters(genreIds: {12})),
         ),
       );
 
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
-      // The recovery guidance is still present...
       expect(find.text('No matches for these filters'), findsOneWidget);
       expect(find.text('Clear filters'), findsOneWidget);
-      // ...but paging continues regardless.
-      verify(() => bloc.add(const GameSearchLoadMore())).called(1);
-    });
-
-    testWidgets('the filtered-empty state does not page when the catalog is '
-        'exhausted', (tester) async {
-      when(() => bloc.state).thenReturn(
-        GameSearchState(
-          status: GameSearchStatus.success,
-          query: 'game',
-          games: _games(2),
-          hasMore: false,
-          filters: const GameSearchFilters(year: 1990),
-        ),
-      );
-
-      await tester.pumpWidget(buildSubject());
-      await tester.pump();
-
-      expect(find.text('No matches for these filters'), findsOneWidget);
       verifyNever(() => bloc.add(const GameSearchLoadMore()));
     });
 
-    testWidgets('a caption clarifies that filters apply to loaded results', (
-      tester,
-    ) async {
+    testWidgets('server-side filters show chips without the loaded-results '
+        'caveat', (tester) async {
+      when(() => bloc.state).thenReturn(
+        GameSearchState(
+          status: GameSearchStatus.success,
+          query: 'game',
+          games: _games(3),
+          filters: const GameSearchFilters(
+            catalog: CatalogFilters(minRating: 80),
+          ),
+          hasMore: false,
+        ),
+      );
+
+      await tester.pumpWidget(buildSubject());
+
+      expect(find.text('Rating 80+'), findsOneWidget);
+      expect(find.text('Filters apply to loaded results'), findsNothing);
+      expect(
+        find.text('Sorting reorders the results loaded so far.'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('a client-side sort explains that it reorders loaded '
+        'results', (tester) async {
       when(() => bloc.state).thenReturn(
         GameSearchState(
           status: GameSearchStatus.success,
@@ -250,7 +264,10 @@ void main() {
 
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Filters apply to loaded results'), findsOneWidget);
+      expect(
+        find.text('Sorting reorders the results loaded so far.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('the offset-limit message shows at the list tail when the '

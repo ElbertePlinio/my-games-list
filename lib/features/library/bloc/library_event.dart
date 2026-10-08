@@ -42,6 +42,7 @@ class LibraryAddGameRequested extends LibraryEvent {
     this.difficulty,
     this.isFavorite = false,
     this.notes,
+    this.requestId,
   });
 
   final int igdbId;
@@ -55,6 +56,9 @@ class LibraryAddGameRequested extends LibraryEvent {
   final bool isFavorite;
   final String? notes;
 
+  /// Echoed in the result state, so the sender can match it.
+  final int? requestId;
+
   @override
   List<Object?> get props => [
     igdbId,
@@ -67,47 +71,47 @@ class LibraryAddGameRequested extends LibraryEvent {
     difficulty,
     isFavorite,
     notes,
+    requestId,
   ];
 }
 
-/// Event triggered when a library entry should be updated
+/// Saves changes to [entry]. Fields left null keep their current values.
+///
+/// Set [details] only from the full edit form. Without it the current score,
+/// dates, difficulty and notes of [entry] are sent back, because the API
+/// clears any of them that a request leaves out.
 class LibraryUpdateEntryRequested extends LibraryEvent {
   const LibraryUpdateEntryRequested({
-    required this.entryId,
+    required this.entry,
     this.igdbPlatformId,
     this.status,
-    this.score,
     this.playtimeMinutes,
-    this.startDate,
-    this.endDate,
-    this.difficulty,
     this.isFavorite,
-    this.notes,
+    this.details,
+    this.requestId,
   });
 
-  final String entryId;
+  final LibraryEntry entry;
   final int? igdbPlatformId;
   final GameStatus? status;
-  final int? score;
   final int? playtimeMinutes;
-  final String? startDate;
-  final String? endDate;
-  final String? difficulty;
   final bool? isFavorite;
-  final String? notes;
+  final LibraryEntryDetails? details;
+
+  /// Echoed in the result state, so the sender can match it.
+  final int? requestId;
+
+  String get entryId => entry.id;
 
   @override
   List<Object?> get props => [
-    entryId,
+    entry,
     igdbPlatformId,
     status,
-    score,
     playtimeMinutes,
-    startDate,
-    endDate,
-    difficulty,
     isFavorite,
-    notes,
+    details,
+    requestId,
   ];
 }
 
@@ -149,4 +153,29 @@ class LibraryStatusFilterChanged extends LibraryEvent {
 
   @override
   List<Object?> get props => [status];
+}
+
+/// Applies a new collection membership to one entry after the collections
+/// API confirmed it. Local only; no request is sent.
+class LibraryEntryCollectionsChanged extends LibraryEvent {
+  const LibraryEntryCollectionsChanged({
+    required this.entryId,
+    required this.collectionIds,
+  });
+
+  final String entryId;
+  final List<String> collectionIds;
+
+  @override
+  List<Object?> get props => [entryId, collectionIds];
+}
+
+/// Drops a deleted collection id from every entry. Local only.
+class LibraryCollectionRemoved extends LibraryEvent {
+  const LibraryCollectionRemoved({required this.collectionId});
+
+  final String collectionId;
+
+  @override
+  List<Object?> get props => [collectionId];
 }

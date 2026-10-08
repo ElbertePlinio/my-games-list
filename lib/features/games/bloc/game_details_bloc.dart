@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/games/bloc/game_details_event.dart';
 import 'package:picklog/features/games/bloc/game_details_state.dart';
 import 'package:picklog/features/games/i_games_repository.dart';
@@ -26,7 +27,7 @@ class GameDetailsBloc extends Bloc<GameDetailsEvent, GameDetailsState> {
       emit(
         state.copyWith(
           status: GameDetailsStatus.failure,
-          errorMessage: e.toString(),
+          errorKind: AppErrorKind.from(e),
         ),
       );
     }

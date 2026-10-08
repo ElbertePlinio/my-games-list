@@ -1,14 +1,30 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/messages_extensions.dart';
+import 'package:picklog/core/utils/service_locator.dart';
+import 'package:picklog/core/widgets/favorite_button.dart';
+import 'package:picklog/core/widgets/pf_button.dart';
+import 'package:picklog/core/widgets/pf_dialog.dart';
+import 'package:picklog/core/widgets/score_badge.dart';
+import 'package:picklog/core/widgets/section_header.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_event.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_state.dart';
+import 'package:picklog/features/library/collections/collection_failure.dart';
+import 'package:picklog/features/library/collections/widgets/collection_form_dialog.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/widgets/library_status_pill.dart';
 
 /// Bottom sheet for adding or editing a game in the library
 class AddToLibraryBottomSheet extends StatefulWidget {
@@ -18,12 +34,34 @@ class AddToLibraryBottomSheet extends StatefulWidget {
     required this.gameName,
     required this.platforms,
     this.existingEntry,
+    this.initialStatus,
+    this.loadPlatforms,
+    this.onSavePending,
+    this.collectionsBloc,
   });
 
   final int gameId;
   final String gameName;
   final List<Platform> platforms;
   final LibraryEntry? existingEntry;
+
+  /// Status to preselect instead of the entry's own, for example when the
+  /// user just picked Finished. Finished also fills an empty end date.
+  final GameStatus? initialStatus;
+
+  /// Loads the game's full platform list when [platforms] holds only the
+  /// entry's current platform.
+  final Future<List<Platform>> Function()? loadPlatforms;
+
+  /// Called with true when Save sends the entry and with false when that
+  /// save fails, so a caller knows a write is on its way even if the sheet
+  /// closes before it finishes.
+  final ValueChanged<bool>? onSavePending;
+
+  /// Source of the user's collections. Defaults to a provided bloc, then the
+  /// shared instance in the service locator. Without one the collections
+  /// section is hidden.
+  final UserCollectionsBloc? collectionsBloc;
 
   /// Shows the bottom sheet and returns true if saved successfully
   static Future<bool?> show({
@@ -36,7 +74,7 @@ class AddToLibraryBottomSheet extends StatefulWidget {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      showDragHandle: false,
       builder: (context) => AddToLibraryBottomSheet(
         gameId: gameId,
         gameName: gameName,
@@ -62,6 +100,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   String? _difficulty;
   bool _isFavorite = false;
   String? _notes;
+  late List<Platform> _platforms = widget.platforms;
 
   final _notesController = TextEditingController();
   final _difficultyController = TextEditingController();
@@ -70,10 +109,152 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
   bool get isEditing => widget.existingEntry != null;
 
+  /// Optional details start open when the entry already has some.
+  bool _detailsExpanded = false;
+
+  UserCollectionsBloc? _collections;
+  bool _collectionsResolved = false;
+
+  /// True once the entry saved, while the collection changes finish.
+  bool _finishing = false;
+
+  /// Id of this sheet's save while it is in flight. Library writes started
+  /// elsewhere carry other ids and do not affect the sheet.
+  int? _requestId;
+
+  /// Changes when the full platform list arrives, to rebuild the dropdown.
+  int _platformsVersion = 0;
+
+  /// Collections chosen in the sheet. Applied after the entry saves.
+  late Set<String> _collectionIds = {...?widget.existingEntry?.collectionIds};
+
   @override
   void initState() {
     super.initState();
     _initializeFromExisting();
+    _loadPlatforms();
+  }
+
+  Future<void> _loadPlatforms() async {
+    final load = widget.loadPlatforms;
+    if (load == null) return;
+    final List<Platform> loaded;
+    try {
+      loaded = await load();
+    } catch (_) {
+      // The current platform stays the only choice.
+      return;
+    }
+    if (!mounted || loaded.isEmpty) return;
+    final current = _selectedPlatform;
+    setState(() {
+      _platformsVersion++;
+      _platforms = [
+        ...loaded,
+        if (current != null && loaded.every((p) => p.id != current.id)) current,
+      ];
+      _selectedPlatform = current == null
+          ? null
+          : _platforms.firstWhere((p) => p.id == current.id);
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_collectionsResolved) return;
+    _collectionsResolved = true;
+    _collections = widget.collectionsBloc ?? _lookupCollections(context);
+    final bloc = _collections;
+    if (bloc != null &&
+        (bloc.state.status == UserCollectionsStatus.initial ||
+            bloc.state.status == UserCollectionsStatus.failure)) {
+      bloc.add(const UserCollectionsLoadRequested());
+    }
+  }
+
+  static UserCollectionsBloc? _lookupCollections(BuildContext context) {
+    try {
+      return context.read<UserCollectionsBloc>();
+    } on ProviderNotFoundException {
+      return sl.isRegistered<UserCollectionsBloc>()
+          ? sl<UserCollectionsBloc>()
+          : null;
+    }
+  }
+
+  /// Sends the collection changes for the saved [entry] and publishes only
+  /// the memberships the API confirmed. Returns the first failure, if any.
+  Future<CollectionFailure?> _applyCollections(
+    LibraryBloc library,
+    LibraryEntry entry,
+  ) async {
+    final bloc = _collections;
+    if (bloc == null) return null;
+    final before = entry.collectionIds.toSet();
+    final changes = {
+      for (final id in _collectionIds.difference(before)) id: true,
+      for (final id in before.difference(_collectionIds)) id: false,
+    };
+    if (changes.isEmpty) return null;
+    final failures = await Future.wait([
+      for (final MapEntry(key: id, value: add) in changes.entries)
+        _toggleCollection(bloc, entry.id, id, add: add),
+    ]);
+    final confirmed = {...before};
+    for (final (i, MapEntry(key: id, value: add)) in changes.entries.indexed) {
+      if (failures[i] != null) continue;
+      add ? confirmed.add(id) : confirmed.remove(id);
+    }
+    if (!setEquals(confirmed, before)) {
+      library.add(
+        LibraryEntryCollectionsChanged(
+          entryId: entry.id,
+          collectionIds: confirmed.toList(),
+        ),
+      );
+    }
+    return failures.nonNulls.firstOrNull;
+  }
+
+  /// Adds or removes one membership and waits for its result.
+  static Future<CollectionFailure?> _toggleCollection(
+    UserCollectionsBloc bloc,
+    String entryId,
+    String collectionId, {
+    required bool add,
+  }) async {
+    final requestId = UserCollectionsBloc.newRequestId();
+    final result = bloc.stream
+        .map((s) => s.mutation)
+        .firstWhere((m) => m?.requestId == requestId);
+    bloc.add(
+      UserCollectionEntryToggled(
+        requestId: requestId,
+        collectionId: collectionId,
+        libraryEntryId: entryId,
+        add: add,
+      ),
+    );
+    try {
+      return (await result)?.failure;
+    } on StateError {
+      // The bloc closed before it answered.
+      return CollectionFailure.of(
+        add ? CollectionAction.addEntry : CollectionAction.removeEntry,
+        CollectionErrorKind.other,
+        AppErrorKind.unknown,
+      );
+    }
+  }
+
+  Future<void> _createCollection() async {
+    final bloc = _collections;
+    if (bloc == null) return;
+    final created = await showCollectionFormDialog(context, bloc: bloc);
+    if (created != null && mounted) {
+      setState(() => _collectionIds = {..._collectionIds, created.id});
+    }
   }
 
   void _initializeFromExisting() {
@@ -102,13 +283,27 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
       // Find matching platform
       if (entry.platform != null) {
-        _selectedPlatform = widget.platforms.cast<Platform?>().firstWhere(
+        _selectedPlatform = _platforms.cast<Platform?>().firstWhere(
           (p) => p?.id == entry.platform!.igdbPlatformId,
           orElse: () => null,
         );
       }
     } else {
       _selectedStatus = GameStatus.planned;
+    }
+    _applyInitialStatus();
+    _detailsExpanded = _hasDetails;
+  }
+
+  /// Preselects [AddToLibraryBottomSheet.initialStatus]. Finished also
+  /// fills an empty end date with today.
+  void _applyInitialStatus() {
+    final initialStatus = widget.initialStatus;
+    if (initialStatus == null) return;
+    _selectedStatus = initialStatus;
+    if (initialStatus == GameStatus.finished && _endDate == null) {
+      final now = DateTime.now();
+      _endDate = DateTime(now.year, now.month, now.day);
     }
   }
 
@@ -130,20 +325,27 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
   void _save() {
     final bloc = context.read<LibraryBloc>();
+    final requestId = LibraryBloc.newRequestId();
+    setState(() => _requestId = requestId);
+    widget.onSavePending?.call(true);
 
     if (isEditing) {
       bloc.add(
         LibraryUpdateEntryRequested(
-          entryId: widget.existingEntry!.id,
+          entry: widget.existingEntry!,
           status: _selectedStatus,
           igdbPlatformId: _selectedPlatform?.id,
-          score: _score,
           playtimeMinutes: _totalPlaytimeMinutes,
-          startDate: _startDate?.toIso8601String().split('T').first,
-          endDate: _endDate?.toIso8601String().split('T').first,
-          difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
           isFavorite: _isFavorite,
-          notes: _notes?.isNotEmpty == true ? _notes : null,
+          // The form shows every detail, so empty fields are cleared.
+          details: LibraryEntryDetails(
+            score: _score,
+            startDate: _startDate,
+            endDate: _endDate,
+            difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
+            notes: _notes?.isNotEmpty == true ? _notes : null,
+          ),
+          requestId: requestId,
         ),
       );
     } else {
@@ -159,6 +361,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
           difficulty: _difficulty?.isNotEmpty == true ? _difficulty : null,
           isFavorite: _isFavorite,
           notes: _notes?.isNotEmpty == true ? _notes : null,
+          requestId: requestId,
         ),
       );
     }
@@ -167,7 +370,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   void _delete() {
     if (!isEditing) return;
 
-    showDialog(
+    showPfDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(context.l10n.removeFromLibrary),
@@ -185,7 +388,9 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
               Navigator.of(dialogContext).pop(); // Close dialog
               Navigator.of(context).pop(true); // Close bottom sheet
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: context.pfColors.errorFg,
+            ),
             child: Text(context.l10n.remove),
           ),
         ],
@@ -212,488 +417,575 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     }
   }
 
+  bool get _hasDetails => [
+    _totalPlaytimeMinutes != null,
+    _startDate != null,
+    _endDate != null,
+    _difficulty?.isNotEmpty ?? false,
+    _notes?.isNotEmpty ?? false,
+  ].contains(true);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return BlocListener<LibraryBloc, LibraryState>(
-      listener: (context, state) {
-        if (state.errorMessage != null) {
-          context.showErrorMessage(state.errorMessage!);
-        }
-        if (state.gameAddedOrUpdated) {
-          context.showSuccessMessage(
-            isEditing
-                ? context.l10n.libraryEntryUpdated
-                : context.l10n.gameAddedToLibrary,
-          );
-          Navigator.of(context).pop(true);
-        }
-      },
+      listener: _onLibraryState,
       child: DraggableScrollableSheet(
-        initialChildSize: 0.4, // Starts at 40% height
-        minChildSize: 0.2, // Cannot go lower than 20%
-        maxChildSize: 0.9, // Can be dragged up to 90%
+        initialChildSize: 0.62,
+        minChildSize: 0.3,
+        maxChildSize: 0.95,
         expand: false,
         builder: (context, scrollController) {
-          return Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            child: CustomScrollView(
-              controller: scrollController, // 1. Connects drag gestures
-              slivers: [
-                // Handle bar
-                SliverAppBar(
-                  pinned: true,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
-                  backgroundColor: theme.colorScheme.surface,
-                  automaticallyImplyLeading: false,
-                  toolbarHeight: 75, // Adjust based on your handle + row height
-                  flexibleSpace: Column(
+          return CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              _buildAppBar(context),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    PfSpace.lg,
+                    PfSpace.lg,
+                    PfSpace.lg,
+                    PfSpace.xl + bottomPadding,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Handle
-                      Container(
-                        margin: const EdgeInsets.only(top: 12, bottom: 8),
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurfaceVariant.withValues(
-                            alpha: 0.4,
-                          ),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                      Text(
+                        widget.gameName,
+                        style: theme.textTheme.headlineMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      // Header Row
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text(context.l10n.cancel),
-                            ),
-                            Text(
-                              isEditing
-                                  ? context.l10n.editEntry
-                                  : context.l10n.addToLibrary,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: _save,
-                              child: Text(
-                                context.l10n.save,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: PfSpace.lg),
+
+                      // Step 1: the essentials.
+                      _buildStatusSection(context),
+                      if (_platforms.isNotEmpty) ...[
+                        const SizedBox(height: PfSpace.md),
+                        _buildPlatformSection(context),
+                      ],
+                      const SizedBox(height: PfSpace.md),
+                      _buildRatingSection(context),
+                      if (_collections != null) ...[
+                        const SizedBox(height: PfSpace.md),
+                        _CollectionsSection(
+                          bloc: _collections!,
+                          selected: _collectionIds,
+                          onChanged: (ids) =>
+                              setState(() => _collectionIds = ids),
+                          onCreate: _createCollection,
                         ),
-                      ),
+                      ],
+                      const SizedBox(height: PfSpace.md),
+
+                      // Step 2: optional details, collapsed by default.
+                      ..._buildOptionalDetails(context),
+
+                      if (isEditing) ...[
+                        const SizedBox(height: PfSpace.xl),
+                        PfButton(
+                          label: l10n.removeFromLibrary,
+                          icon: Icons.delete_outline,
+                          variant: PfButtonVariant.destructive,
+                          onPressed: _delete,
+                          expand: true,
+                        ),
+                      ],
                     ],
                   ),
-                  bottom: const PreferredSize(
-                    preferredSize: Size.fromHeight(1),
-                    child: Divider(height: 1),
-                  ),
                 ),
-
-                // Content
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + bottomPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Game name
-                        Text(
-                          widget.gameName,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Status selection
-                        _buildSectionCard(
-                          theme: theme,
-                          title: context.l10n.statusLabel,
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: GameStatus.values.map((status) {
-                              final isSelected = _selectedStatus == status;
-                              return ChoiceChip(
-                                label: Text(status.localizedName(context)),
-                                selected: isSelected,
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    setState(() => _selectedStatus = status);
-                                  }
-                                },
-                                selectedColor:
-                                    theme.colorScheme.primaryContainer,
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? theme.colorScheme.onPrimaryContainer
-                                      : null,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : null,
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Platform selection
-                        if (widget.platforms.isNotEmpty)
-                          _buildSectionCard(
-                            theme: theme,
-                            title: context.l10n.platformLabel,
-                            child: DropdownButtonFormField<Platform>(
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                hintText: context.l10n.selectPlatformHint,
-                              ),
-                              items: [
-                                DropdownMenuItem<Platform>(
-                                  value: null,
-                                  child: Text(context.l10n.noneOption),
-                                ),
-                                ...widget.platforms.map((platform) {
-                                  return DropdownMenuItem(
-                                    value: platform,
-                                    child: Text(platform.name),
-                                  );
-                                }),
-                              ],
-                              onChanged: (value) {
-                                setState(() => _selectedPlatform = value);
-                              },
-                            ),
-                          ),
-
-                        const SizedBox(height: 16),
-
-                        // Score and Favorite row
-                        _buildSectionCard(
-                          theme: theme,
-                          title: context.l10n.rating,
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              context.l10n.score,
-                                              style: theme.textTheme.bodyMedium,
-                                            ),
-                                            Text(
-                                              _score != null
-                                                  ? '$_score/100'
-                                                  : '-',
-                                              style: theme.textTheme.bodyLarge
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: theme
-                                                        .colorScheme
-                                                        .primary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                        Slider(
-                                          value: (_score ?? 0).toDouble(),
-                                          min: 0,
-                                          max: 100,
-                                          divisions: 100,
-                                          label: _score?.toString(),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _score = value > 0
-                                                  ? value.toInt()
-                                                  : null;
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Column(
-                                    children: [
-                                      IconButton.filled(
-                                        onPressed: () {
-                                          setState(
-                                            () => _isFavorite = !_isFavorite,
-                                          );
-                                        },
-                                        tooltip: _isFavorite
-                                            ? context.l10n.favorited
-                                            : context.l10n.addToFavorites,
-                                        icon: Icon(
-                                          _isFavorite
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: _isFavorite
-                                              ? Colors.red
-                                              : theme
-                                                    .colorScheme
-                                                    .onSurfaceVariant,
-                                          semanticLabel: _isFavorite
-                                              ? context.l10n.favorited
-                                              : context.l10n.addToFavorites,
-                                        ),
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: _isFavorite
-                                              ? Colors.red.withValues(
-                                                  alpha: 0.1,
-                                                )
-                                              : theme
-                                                    .colorScheme
-                                                    .surfaceContainerHighest,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        context.l10n.favorite,
-                                        style: theme.textTheme.labelSmall,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Playtime
-                        _buildSectionCard(
-                          theme: theme,
-                          title: context.l10n.playtime,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _playtimeHoursController,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  decoration: InputDecoration(
-                                    border: const OutlineInputBorder(),
-                                    labelText: context.l10n.hours,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  onChanged: (value) {
-                                    _playtimeHours = value.isNotEmpty
-                                        ? int.tryParse(value)
-                                        : null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: TextField(
-                                  controller: _playtimeMinutesController,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(2),
-                                  ],
-                                  decoration: InputDecoration(
-                                    border: const OutlineInputBorder(),
-                                    labelText: context.l10n.minutes,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  onChanged: (value) {
-                                    _playtimeMinutes = value.isNotEmpty
-                                        ? int.tryParse(value)
-                                        : null;
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Dates
-                        _buildSectionCard(
-                          theme: theme,
-                          title: context.l10n.dates,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _DatePickerButton(
-                                  label: context.l10n.startDate,
-                                  date: _startDate,
-                                  onTap: () => _pickDate(true),
-                                  onClear: () =>
-                                      setState(() => _startDate = null),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _DatePickerButton(
-                                  label: context.l10n.endDate,
-                                  date: _endDate,
-                                  onTap: () => _pickDate(false),
-                                  onClear: () =>
-                                      setState(() => _endDate = null),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Difficulty
-                        _buildSectionCard(
-                          theme: theme,
-                          title: context.l10n.difficulty,
-                          child: TextField(
-                            controller: _difficultyController,
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              hintText: context.l10n.difficultyHint,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                            ),
-                            onChanged: (value) => _difficulty = value,
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Notes
-                        _buildSectionCard(
-                          theme: theme,
-                          title: context.l10n.notes,
-                          child: TextField(
-                            controller: _notesController,
-                            maxLines: 3,
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              hintText: context.l10n.notesHint,
-                              contentPadding: const EdgeInsets.all(12),
-                            ),
-                            onChanged: (value) => _notes = value,
-                          ),
-                        ),
-
-                        // Delete button (only when editing)
-                        if (isEditing) ...[
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: _delete,
-                              icon: const Icon(Icons.delete_outline),
-                              label: Text(context.l10n.removeFromLibrary),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.red,
-                                side: const BorderSide(color: Colors.red),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildSectionCard({
-    required ThemeData theme,
-    required String title,
-    required Widget child,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  void _onLibraryState(BuildContext context, LibraryState state) {
+    final requestId = _requestId;
+    if (requestId == null) return;
+    if (state.failure?.requestId == requestId) {
+      setState(() => _requestId = null);
+      widget.onSavePending?.call(false);
+      context.showErrorMessage(context.l10n.librarySaveFailed);
+    }
+    if (state.gameAddedOrUpdated &&
+        state.savedRequestId == requestId &&
+        !_finishing) {
+      setState(() => _finishing = true);
+      _finishSave(context.read<LibraryBloc>(), state);
+    }
+  }
+
+  /// Applies the collection changes of the saved entry, then closes.
+  Future<void> _finishSave(LibraryBloc library, LibraryState state) async {
+    final saved = isEditing
+        ? state.entries.where((e) => e.id == widget.existingEntry!.id)
+        : state.entries.where((e) => e.game.igdbId == widget.gameId);
+    final failure = saved.isEmpty
+        ? null
+        : await _applyCollections(library, saved.first);
+    if (!mounted) return;
+    if (failure != null) {
+      context.showErrorMessage(failure.message(context));
+    } else if (isEditing) {
+      // An add needs no toast; the card's library state already changes.
+      context.showSuccessMessage(context.l10n.libraryEntryUpdated);
+    }
+    Navigator.of(context).pop(true);
+  }
+
+  /// Pinned header with the grabber, close, title and save.
+  Widget _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return SliverAppBar(
+      pinned: true,
+      automaticallyImplyLeading: false,
+      backgroundColor: colors.surface1,
+      toolbarHeight: 72,
+      titleSpacing: 0,
+      flexibleSpace: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: PfSpace.sm + 2),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colors.hairlineStrong,
+              borderRadius: PfRadius.pillAll,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.xs,
+              PfSpace.xs,
+              PfSpace.lg,
+              0,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: l10n.cancel,
+                  color: colors.textMed,
+                  icon: const Icon(Icons.close),
+                ),
+                Expanded(
+                  child: Text(
+                    isEditing ? l10n.editEntry : l10n.addToLibrary,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+                PfButton(
+                  label: l10n.save,
+                  size: PfButtonSize.sm,
+                  // One save at a time.
+                  onPressed: _finishing || _requestId != null ? null : _save,
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(height: 1, color: colors.hairline),
+      ),
+    );
+  }
+
+  /// Status choice chips.
+  Widget _buildStatusSection(BuildContext context) {
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return _SheetSection(
+      title: l10n.statusLabel,
+      child: Wrap(
+        spacing: PfSpace.sm,
+        runSpacing: PfSpace.sm,
+        children: GameStatus.values.map((status) {
+          final isSelected = _selectedStatus == status;
+          return ChoiceChip(
+            avatar: Icon(
+              status.icon,
+              size: 16,
+              color: isSelected
+                  ? colors.toneForeground(status.tone)
+                  : colors.textMed,
+            ),
+            label: Text(status.localizedName(context)),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (selected) {
+                setState(() => _selectedStatus = status);
+              }
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// Optional platform dropdown.
+  Widget _buildPlatformSection(BuildContext context) {
+    final l10n = context.l10n;
+    return _SheetSection(
+      title: l10n.platformLabel,
+      child: DropdownButtonFormField<Platform>(
+        // Rebuilds the field when the full platform list arrives.
+        key: ValueKey(_platformsVersion),
+        initialValue: _selectedPlatform,
+        // Long platform names ellipsize instead of
+        // overflowing at large text sizes.
+        isExpanded: true,
+        decoration: InputDecoration(hintText: l10n.selectPlatformHint),
+        items: [
+          DropdownMenuItem<Platform>(value: null, child: Text(l10n.noneOption)),
+          ..._platforms.map((platform) {
+            return DropdownMenuItem(
+              value: platform,
+              child: Text(platform.name, overflow: TextOverflow.ellipsis),
+            );
+          }),
+        ],
+        onChanged: (value) {
+          setState(() => _selectedPlatform = value);
+        },
+      ),
+    );
+  }
+
+  /// Score ring, score slider and favorite toggle.
+  Widget _buildRatingSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return _SheetSection(
+      title: l10n.rating,
+      trailing: FavoriteButton(
+        isFavorite: _isFavorite,
+        addLabel: l10n.addToFavorites,
+        removeLabel: l10n.favorited,
+        onPressed: () => setState(() => _isFavorite = !_isFavorite),
+      ),
+      child: Row(
+        children: [
+          ScoreRing(
+            score: _score,
+            size: 52,
+            semanticLabel: _score == null
+                ? l10n.scoreNotSet
+                : '${l10n.score} $_score',
+          ),
+          const SizedBox(width: PfSpace.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: PfSpace.lg),
+                  child: Text(
+                    _score == null ? l10n.scoreNotSet : l10n.score,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+                Slider(
+                  value: (_score ?? 0).toDouble(),
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  label: _score?.toString(),
+                  onChanged: (value) {
+                    setState(() {
+                      _score = value > 0 ? value.toInt() : null;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Toggle and animated body for the collapsed optional details.
+  List<Widget> _buildOptionalDetails(BuildContext context) {
+    return [
+      _DetailsToggle(
+        expanded: _detailsExpanded,
+        onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
+      ),
+      AnimatedSize(
+        duration: PfMotion.of(context, PfMotion.standard),
+        curve: PfMotion.forge,
+        alignment: Alignment.topCenter,
+        child: !_detailsExpanded
+            ? const SizedBox(width: double.infinity)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: PfSpace.md),
+                  _buildDetails(context),
+                ],
+              ),
+      ),
+    ];
+  }
+
+  Widget _buildDetails(BuildContext context) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SheetSection(
+          title: l10n.playtime,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _playtimeHoursController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(labelText: l10n.hours),
+                  onChanged: (value) {
+                    _playtimeHours = value.isNotEmpty
+                        ? int.tryParse(value)
+                        : null;
+                  },
+                ),
+              ),
+              const SizedBox(width: PfSpace.md),
+              Expanded(
+                child: TextField(
+                  controller: _playtimeMinutesController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                  decoration: InputDecoration(labelText: l10n.minutes),
+                  onChanged: (value) {
+                    _playtimeMinutes = value.isNotEmpty
+                        ? int.tryParse(value)
+                        : null;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: PfSpace.md),
+        _SheetSection(
+          title: l10n.dates,
+          child: Row(
+            children: [
+              Expanded(
+                child: _DatePickerButton(
+                  label: l10n.startDate,
+                  date: _startDate,
+                  onTap: () => _pickDate(true),
+                  onClear: () => setState(() => _startDate = null),
+                ),
+              ),
+              const SizedBox(width: PfSpace.md),
+              Expanded(
+                child: _DatePickerButton(
+                  label: l10n.endDate,
+                  date: _endDate,
+                  onTap: () => _pickDate(false),
+                  onClear: () => setState(() => _endDate = null),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: PfSpace.md),
+        _SheetSection(
+          title: l10n.difficulty,
+          child: TextField(
+            controller: _difficultyController,
+            decoration: InputDecoration(hintText: l10n.difficultyHint),
+            onChanged: (value) => _difficulty = value,
+          ),
+        ),
+        const SizedBox(height: PfSpace.md),
+        _SheetSection(
+          title: l10n.notes,
+          child: TextField(
+            controller: _notesController,
+            maxLines: 3,
+            decoration: InputDecoration(hintText: l10n.notesHint),
+            onChanged: (value) => _notes = value,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Card grouping one field of the sheet, with a muted eyebrow title.
+class _SheetSection extends StatelessWidget {
+  const _SheetSection({
+    required this.title,
+    required this.child,
+    this.trailing,
+  });
+
+  final String title;
+  final Widget child;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.pfColors;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface2,
+        borderRadius: PfRadius.cardAll,
+        border: Border.all(color: colors.hairline),
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        PfSpace.lg,
+        PfSpace.md,
+        PfSpace.md,
+        PfSpace.lg,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
+          SizedBox(
+            height: trailing == null ? null : 40,
+            child: Row(
+              children: [
+                Expanded(child: Eyebrow(title, muted: true)),
+                ?trailing,
+              ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: trailing == null ? PfSpace.md : PfSpace.xs),
           child,
         ],
+      ),
+    );
+  }
+}
+
+/// Collection chips for the entry. The choice is saved with the entry.
+class _CollectionsSection extends StatelessWidget {
+  const _CollectionsSection({
+    required this.bloc,
+    required this.selected,
+    required this.onChanged,
+    required this.onCreate,
+  });
+
+  final UserCollectionsBloc bloc;
+  final Set<String> selected;
+  final ValueChanged<Set<String>> onChanged;
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return BlocBuilder<UserCollectionsBloc, UserCollectionsState>(
+      bloc: bloc,
+      builder: (context, state) {
+        return _SheetSection(
+          title: l10n.librarySegmentCollections,
+          child: Wrap(
+            spacing: PfSpace.sm,
+            runSpacing: PfSpace.sm,
+            children: [
+              for (final collection in state.collections)
+                FilterChip(
+                  key: ValueKey('sheet_collection_${collection.id}'),
+                  label: Text(collection.name),
+                  selected: selected.contains(collection.id),
+                  onSelected: (on) => onChanged(
+                    on
+                        ? {...selected, collection.id}
+                        : ({...selected}..remove(collection.id)),
+                  ),
+                ),
+              if (!state.atLimit)
+                ActionChip(
+                  key: const Key('sheet_new_collection'),
+                  avatar: const Icon(Icons.add, size: 16),
+                  label: Text(l10n.collectionNewTitle),
+                  onPressed: onCreate,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Row that expands the optional details group.
+class _DetailsToggle extends StatelessWidget {
+  const _DetailsToggle({required this.expanded, required this.onTap});
+
+  final bool expanded;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return Material(
+      color: colors.surface1,
+      shape: RoundedRectangleBorder(
+        borderRadius: PfRadius.cardAll,
+        side: BorderSide(color: colors.hairline),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const RoundedRectangleBorder(
+          borderRadius: PfRadius.cardAll,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: PfSpace.lg,
+            vertical: PfSpace.md,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.libraryDetailsSection,
+                      style: theme.textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.libraryDetailsHint,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedRotation(
+                turns: expanded ? 0.5 : 0,
+                duration: PfMotion.of(context, PfMotion.fast),
+                child: Icon(Icons.expand_more, color: colors.textMed),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -717,14 +1009,16 @@ class _DatePickerButton extends StatelessWidget {
     final theme = Theme.of(context);
     final hasDate = date != null;
 
+    final locale = Localizations.localeOf(context).toString();
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: PfRadius.mdAll,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.outline),
-          borderRadius: BorderRadius.circular(8),
+          color: context.pfColors.surface1,
+          border: Border.all(color: context.pfColors.hairline),
+          borderRadius: PfRadius.mdAll,
         ),
         child: Row(
           children: [
@@ -741,7 +1035,7 @@ class _DatePickerButton extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     hasDate
-                        ? DateFormat.yMMMd().format(date!)
+                        ? DateFormat.yMMMd(locale).format(date!)
                         : context.l10n.notSet,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: hasDate

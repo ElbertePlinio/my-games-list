@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Picklog mark">
+  <title>Picklog</title>
+  <rect width="128" height="128" rx="24" fill="#0A0A0B"/>
+  <!-- Pickforge family: three L brackets, the top-right corner is the ember -->
+  <g stroke="#F2F2F3" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+    <path d="M30 48 V32 H46"/>
+    <path d="M30 80 V96 H46"/>
+    <path d="M82 96 H98 V80"/>
+  </g>
+  <circle cx="90" cy="40" r="7" fill="#FF7A1A"/>
+  <g stroke="#F2F2F3" stroke-width="1" stroke-dasharray="2 3" opacity="0.35">
+    <line x1="30" y1="48" x2="30" y2="80"/>
+    <line x1="46" y1="32" x2="82" y2="32"/>
+    <line x1="46" y1="96" x2="82" y2="96"/>
+    <line x1="98" y1="48" x2="98" y2="80"/>
+  </g>
+  <!-- Log glyph: two entry lines and a check -->
+  <g stroke="#F2F2F3" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+    <path d="M47 51 H79"/>
+    <path d="M47 61 H71"/>
+    <path d="M48 73 L55 80 L69 66"/>
+  </g>
+</svg>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picklog/core/widgets/app_error_boundary.dart';
+import 'package:picklog/core/widgets/brand_mark.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 
 void main() {
@@ -18,7 +19,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byType(BrandMark), findsOneWidget);
       expect(find.text('Error'), findsOneWidget);
       expect(find.text('Oops! Something went wrong.'), findsOneWidget);
     });

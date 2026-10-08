@@ -1,3 +1,4 @@
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -5,8 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
+import 'package:picklog/features/auth/bloc/auth_state.dart';
+import 'package:picklog/features/auth/user_model.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../mocks/mock_blocs.dart';
 
 void main() {
   group('AppRouter', () {
@@ -92,6 +97,40 @@ void main() {
 
       // Cleanup
       authBloc.close();
+    });
+
+    testWidgets('a malformed game id shows the friendly not-found state', (
+      tester,
+    ) async {
+      final auth = MockAuthBloc();
+      whenListen(
+        auth,
+        const Stream<AuthState>.empty(),
+        initialState: const AuthAuthenticated(
+          User(id: 'u1', email: 'e@e.com', name: 'u'),
+        ),
+      );
+      sl
+        ..unregister<AuthBloc>()
+        ..registerSingleton<AuthBloc>(auth);
+      final router = AppRouter.createRouter();
+      await tester.pumpWidget(
+        BlocProvider<AuthBloc>.value(
+          value: auth,
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+
+      router.go('/games/abc');
+      await tester.pump();
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text("We couldn't find that."), findsOneWidget);
     });
 
     test('should have correct route constants', () {

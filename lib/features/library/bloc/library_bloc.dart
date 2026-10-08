@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
 import 'package:picklog/features/library/library_repository.dart';
@@ -11,14 +12,26 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<LibraryLoadRequested>(_onLoadRequested);
     on<LibraryRefreshRequested>(_onRefreshRequested);
     on<LibraryAddGameRequested>(_onAddGameRequested);
-    on<LibraryUpdateEntryRequested>(_onUpdateEntryRequested);
+    // One update at a time, so a quick second save never races the first.
+    // Same as bloc_concurrency's sequential().
+    on<LibraryUpdateEntryRequested>(
+      _onUpdateEntryRequested,
+      transformer: (events, mapper) => events.asyncExpand(mapper),
+    );
     on<LibraryDeleteEntryRequested>(_onDeleteEntryRequested);
     on<LibraryToggleFavoriteRequested>(_onToggleFavoriteRequested);
     on<LibraryFilterToggled>(_onFilterToggled);
     on<LibraryStatusFilterChanged>(_onStatusFilterChanged);
+    on<LibraryEntryCollectionsChanged>(_onEntryCollectionsChanged);
+    on<LibraryCollectionRemoved>(_onCollectionRemoved);
   }
 
   final LibraryRepository _libraryRepository;
+
+  static int _nextRequestId = 0;
+
+  /// A fresh id for an add or update whose result the sender waits for.
+  static int newRequestId() => ++_nextRequestId;
 
   Future<void> _onLoadRequested(
     LibraryLoadRequested event,
@@ -41,7 +54,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       emit(
         state.copyWith(
           status: LibraryStatus.failure,
-          errorMessage: e.toString(),
+          failure: LibraryFailure(LibraryAction.load, AppErrorKind.from(e)),
         ),
       );
     }
@@ -62,7 +75,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       );
     } catch (e) {
       // On refresh failure, keep existing entries but show error
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          failure: LibraryFailure(LibraryAction.refresh, AppErrorKind.from(e)),
+        ),
+      );
     }
   }
 
@@ -93,12 +110,22 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           entries: updatedEntries,
           isAddingGame: false,
           gameAddedOrUpdated: true,
+          savedRequestId: event.requestId,
         ),
       );
 
       emit(state.copyWith(gameAddedOrUpdated: false));
     } catch (e) {
-      emit(state.copyWith(isAddingGame: false, errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          isAddingGame: false,
+          failure: LibraryFailure(
+            LibraryAction.add,
+            AppErrorKind.from(e),
+            requestId: event.requestId,
+          ),
+        ),
+      );
     }
   }
 
@@ -110,16 +137,12 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
     try {
       final updatedEntry = await _libraryRepository.updateLibraryEntry(
-        entryId: event.entryId,
+        event.entry,
         igdbPlatformId: event.igdbPlatformId,
         status: event.status,
-        score: event.score,
         playtimeMinutes: event.playtimeMinutes,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        difficulty: event.difficulty,
         isFavorite: event.isFavorite,
-        notes: event.notes,
+        details: event.details,
       );
 
       // Update the entry in the list
@@ -132,12 +155,22 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           entries: updatedEntries,
           isUpdatingEntry: false,
           gameAddedOrUpdated: true,
+          savedRequestId: event.requestId,
         ),
       );
 
       emit(state.copyWith(gameAddedOrUpdated: false));
     } catch (e) {
-      emit(state.copyWith(isUpdatingEntry: false, errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          isUpdatingEntry: false,
+          failure: LibraryFailure(
+            LibraryAction.update,
+            AppErrorKind.from(e),
+            requestId: event.requestId,
+          ),
+        ),
+      );
     }
   }
 
@@ -151,14 +184,24 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         .where((entry) => entry.id != event.entryId)
         .toList();
 
-    emit(state.copyWith(entries: updatedEntries));
+    emit(
+      state.copyWith(
+        entries: updatedEntries,
+        pendingWrites: state.pendingWrites + 1,
+      ),
+    );
 
     try {
       await _libraryRepository.deleteLibraryEntry(event.entryId);
+      emit(state.copyWith(pendingWrites: state.pendingWrites - 1));
     } catch (e) {
       // Rollback on failure
       emit(
-        state.copyWith(entries: originalEntries, errorMessage: e.toString()),
+        state.copyWith(
+          entries: originalEntries,
+          pendingWrites: state.pendingWrites - 1,
+          failure: LibraryFailure(LibraryAction.delete, AppErrorKind.from(e)),
+        ),
       );
     }
   }
@@ -176,14 +219,27 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       return entry;
     }).toList();
 
-    emit(state.copyWith(entries: updatedEntries));
+    emit(
+      state.copyWith(
+        entries: updatedEntries,
+        pendingWrites: state.pendingWrites + 1,
+      ),
+    );
 
     try {
       await _libraryRepository.toggleFavorite(event.entryId);
+      emit(state.copyWith(pendingWrites: state.pendingWrites - 1));
     } catch (e) {
       // Rollback on failure
       emit(
-        state.copyWith(entries: originalEntries, errorMessage: e.toString()),
+        state.copyWith(
+          entries: originalEntries,
+          pendingWrites: state.pendingWrites - 1,
+          failure: LibraryFailure(
+            LibraryAction.toggleFavorite,
+            AppErrorKind.from(e),
+          ),
+        ),
       );
     }
   }
@@ -204,5 +260,41 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     } else {
       emit(state.copyWith(statusFilter: event.status));
     }
+  }
+
+  void _onEntryCollectionsChanged(
+    LibraryEntryCollectionsChanged event,
+    Emitter<LibraryState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        entries: [
+          for (final entry in state.entries)
+            entry.id == event.entryId
+                ? entry.copyWith(collectionIds: event.collectionIds)
+                : entry,
+        ],
+      ),
+    );
+  }
+
+  void _onCollectionRemoved(
+    LibraryCollectionRemoved event,
+    Emitter<LibraryState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        entries: [
+          for (final entry in state.entries)
+            entry.collectionIds.contains(event.collectionId)
+                ? entry.copyWith(
+                    collectionIds: entry.collectionIds
+                        .where((id) => id != event.collectionId)
+                        .toList(),
+                  )
+                : entry,
+        ],
+      ),
+    );
   }
 }

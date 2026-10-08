@@ -1,4 +1,4 @@
-My Games List is your personal game library tracker. Keep every game you play, plan, or dream about in one organized place, and discover what to play next.
+Picklog is your personal game library tracker. Keep every game you play, plan, or dream about in one organized place, and discover what to play next.
 
 DISCOVER GAMES
 Browse trending titles, the most anticipated upcoming releases, new releases, and curated collections. Explore by genre or search the full game database powered by IGDB. Open any game to see its rating, genres, platforms, screenshots, trailers, similar titles, and links to official sites.

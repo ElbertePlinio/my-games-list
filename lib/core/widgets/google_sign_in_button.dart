@@ -3,7 +3,7 @@ import 'package:picklog/core/widgets/google_logo.dart';
 
 /// A Google-branding-compliant sign-in button: the four-color "G" mark, a
 /// neutral surface (white in light mode, Google's dark `#131314` in dark mode)
-/// and a left-aligned label. The label text is passed in so it stays
+/// and a pill shape that matches the Pickforge buttons. The label text is passed in so it stays
 /// localized via `context.l10n`.
 ///
 /// Follows Google's "Sign in with Google" button guidelines (logo, contrast,
@@ -19,7 +19,7 @@ class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   // Google-specified neutral surfaces and foregrounds.
-  static const _lightSurface = Colors.white;
+  static const _lightSurface = Color(0xFFFFFFFF);
   static const _darkSurface = Color(0xFF131314);
   static const _lightForeground = Color(0xFF1F1F1F);
   static const _darkForeground = Color(0xFFE3E3E3);
@@ -34,7 +34,7 @@ class GoogleSignInButton extends StatelessWidget {
     final border = isDark ? _darkBorder : _lightBorder;
 
     return SizedBox(
-      height: 52,
+      height: 48,
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: const GoogleLogo(size: 20),
@@ -51,9 +51,7 @@ class GoogleSignInButton extends StatelessWidget {
           foregroundColor: foreground,
           disabledBackgroundColor: surface.withValues(alpha: 0.6),
           side: BorderSide(color: border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: const StadiumBorder(),
         ),
       ),
     );

@@ -7,7 +7,7 @@ import 'package:picklog/core/services/connectivity_cubit.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/widgets/app_error_boundary.dart';
 import 'package:picklog/core/widgets/offline_banner.dart';
-import 'package:picklog/features/browse/widgets/browse_status_views.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/l10n/app_localizations.dart';
 
 class _MockConnectivityCubit extends MockCubit<bool>
@@ -41,7 +41,7 @@ void main() {
       expect(find.text('Error'), findsNothing);
     });
 
-    testWidgets('BrowseErrorView uses the pt heading and retry label', (
+    testWidgets('ErrorState uses the pt heading and retry label', (
       tester,
     ) async {
       final connectivity = _MockConnectivityCubit();
@@ -52,7 +52,7 @@ void main() {
         BlocProvider<ConnectivityCubit>.value(
           value: connectivity,
           child: Scaffold(
-            body: BrowseErrorView(message: 'detalhe', onRetry: () {}),
+            body: ErrorState(message: 'detalhe', onRetry: () {}),
           ),
         ),
       );
@@ -62,7 +62,7 @@ void main() {
       expect(find.text('Try again'), findsNothing);
     });
 
-    testWidgets('BrowseErrorView uses the pt offline copy while offline', (
+    testWidgets('ErrorState uses the pt offline copy while offline', (
       tester,
     ) async {
       final connectivity = _MockConnectivityCubit();
@@ -73,7 +73,7 @@ void main() {
         BlocProvider<ConnectivityCubit>.value(
           value: connectivity,
           child: Scaffold(
-            body: BrowseErrorView(message: 'detalhe', onRetry: () {}),
+            body: ErrorState(message: 'detalhe', onRetry: () {}),
           ),
         ),
       );
@@ -86,18 +86,16 @@ void main() {
       expect(find.text("You're offline"), findsNothing);
     });
 
-    testWidgets('BrowseEmptyView renders the pt message from l10n', (
-      tester,
-    ) async {
+    testWidgets('EmptyState renders the pt message from l10n', (tester) async {
       // Resolve the message through context.l10n inside the pumped tree (as the
       // real screen does) so a missing/fallback pt string fails this test.
       await pumpPt(
         tester,
         Scaffold(
           body: Builder(
-            builder: (context) => BrowseEmptyView(
+            builder: (context) => EmptyState(
               icon: Icons.inbox,
-              message: context.l10n.browseGenresEmpty,
+              title: context.l10n.browseGenresEmpty,
             ),
           ),
         ),

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 
-/// Animates a light sweep across [child] to indicate loading. Wrap a
-/// solid-colored placeholder shape (a "skeleton") to give it a shimmer effect.
+/// Animates a soft light sweep across [child] to indicate loading. Wrap a
+/// solid placeholder shape (a "skeleton") to give it a shimmer.
+///
+/// Colours come from the surface tokens. Under reduced motion the sweep stops
+/// and the skeleton stays static.
 class ShimmerLoading extends StatefulWidget {
   const ShimmerLoading({super.key, required this.child});
 
@@ -15,8 +20,18 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  )..repeat();
+    duration: const Duration(milliseconds: 1600),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (PfMotion.reduced(context)) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
+  }
 
   @override
   void dispose() {
@@ -26,9 +41,9 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final base = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
-    final highlight = isDark ? Colors.grey.shade600 : Colors.grey.shade100;
+    final colors = context.pfColors;
+    final base = colors.surface2;
+    final highlight = colors.surface3;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -39,7 +54,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
             final dx = (_controller.value * 2 - 1) * bounds.width;
             return LinearGradient(
               colors: [base, highlight, base],
-              stops: const [0.25, 0.5, 0.75],
+              stops: const [0.3, 0.5, 0.7],
             ).createShader(Rect.fromLTWH(dx, 0, bounds.width, bounds.height));
           },
           child: child,

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/legal/legal_document.dart';
+import 'package:picklog/features/consent/widgets/consent_banner.dart';
 
 /// Renders a [LegalDocument] (Privacy Policy or Terms of Service) from a
 /// locale-specific placeholder asset.
@@ -26,19 +30,30 @@ class LegalDocumentScreen extends StatelessWidget {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_title(context)), centerTitle: true),
-      body: SafeArea(
-        child: FutureBuilder<String>(
-          future: rootBundle.loadString(document.assetFor(languageCode)),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError || !snapshot.hasData) {
-              return Center(child: Text(context.l10n.legalLoadError));
-            }
-            return _LegalDocumentBody(content: snapshot.data!);
-          },
+      appBar: AppBar(title: Text(_title(context))),
+      // Sign-up links here before the consent banner is answered.
+      body: ConsentBannerPadding(
+        child: SafeArea(
+          child: FutureBuilder<String>(
+            future: rootBundle.loadString(document.assetFor(languageCode)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                );
+              }
+              if (snapshot.hasError || !snapshot.hasData) {
+                return EmptyState(
+                  icon: Icons.description_outlined,
+                  title: context.l10n.legalLoadError,
+                );
+              }
+              return _LegalDocumentBody(content: snapshot.data!);
+            },
+          ),
         ),
       ),
     );
@@ -56,12 +71,17 @@ class _LegalDocumentBody extends StatelessWidget {
 
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
+        constraints: const BoxConstraints(maxWidth: PfBreakpoints.narrow),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(
+            PfSpace.lg,
+            PfSpace.sm,
+            PfSpace.lg,
+            PfSpace.xxl,
+          ),
           children: [
             _DraftBanner(),
-            const SizedBox(height: 16),
+            const SizedBox(height: PfSpace.xl),
             ..._renderBlocks(theme),
           ],
         ),
@@ -87,7 +107,7 @@ class _LegalDocumentBody extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8, bottom: 4),
             child: Text(
               trimmed.substring(3),
-              style: theme.textTheme.titleMedium,
+              style: theme.textTheme.headlineSmall,
             ),
           ),
         );
@@ -97,7 +117,7 @@ class _LegalDocumentBody extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               trimmed.substring(2),
-              style: theme.textTheme.headlineSmall,
+              style: theme.textTheme.displaySmall,
             ),
           ),
         );
@@ -120,7 +140,7 @@ class _LegalDocumentBody extends StatelessWidget {
           ),
         );
       } else {
-        widgets.add(Text(trimmed, style: theme.textTheme.bodyMedium));
+        widgets.add(Text(trimmed, style: theme.textTheme.bodyLarge));
       }
     }
 
@@ -132,22 +152,28 @@ class _LegalDocumentBody extends StatelessWidget {
 class _DraftBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = context.pfColors;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(PfSpace.md),
       decoration: BoxDecoration(
-        color: colors.secondaryContainer,
-        borderRadius: BorderRadius.circular(8),
+        color: colors.toneBackground(PfTone.warning),
+        borderRadius: PfRadius.mdAll,
+        border: Border.all(
+          color: colors.toneFill(PfTone.warning).withValues(alpha: 0.35),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.warning_amber_rounded, color: colors.onSecondaryContainer),
-          const SizedBox(width: 8),
+          Icon(
+            Icons.warning_amber_rounded,
+            color: colors.toneForeground(PfTone.warning),
+          ),
+          const SizedBox(width: PfSpace.sm),
           Expanded(
             child: Text(
               context.l10n.legalDraftBanner,
-              style: TextStyle(color: colors.onSecondaryContainer),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
         ],

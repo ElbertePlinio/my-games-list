@@ -72,11 +72,14 @@ void main() {
   testWidgets('game description is wrapped in a SelectionArea so web users '
       'can select and copy the storyline/summary', (tester) async {
     await tester.pumpWidget(createScreen());
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.byType(SelectionArea), findsOneWidget);
+    final storyline = find.text(
+      'Geralt of Rivia hunts for Ciri across a war-torn continent.',
+    );
+    expect(storyline, findsOneWidget);
     expect(
-      find.text('Geralt of Rivia hunts for Ciri across a war-torn continent.'),
+      find.ancestor(of: storyline, matching: find.byType(SelectionArea)),
       findsOneWidget,
     );
   });

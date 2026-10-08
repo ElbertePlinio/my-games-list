@@ -1,6 +1,6 @@
 # Store listing metadata
 
-App store listing copy for **My Games List**, in English (`en-US`) and Brazilian Portuguese (`pt-BR`).
+App store listing copy for **Picklog**, in English (`en-US`) and Brazilian Portuguese (`pt-BR`).
 
 The layout follows the [fastlane](https://docs.fastlane.tools) convention for `supply` (Google Play) and `deliver` (App Store). Because both platforms live side by side under `android/` and `ios/`, **`deliver` must be pointed at the iOS folder explicitly** with `metadata_path: 'fastlane/metadata/ios'` — see [Running the upload](#running-the-upload).
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/auth/auth_repository.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
@@ -9,11 +10,13 @@ import 'package:picklog/features/auth/bloc/auth_event.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
 import 'package:picklog/features/auth/user_model.dart';
 import 'package:picklog/core/services/consent/consent_category.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/features/consent/bloc/consent_cubit.dart';
 import 'package:picklog/features/consent/bloc/consent_state.dart';
 import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
 import 'package:picklog/features/settings/bloc/account_management_state.dart';
 import 'package:picklog/features/settings/bloc/settings_bloc.dart';
+import 'package:picklog/features/settings/bloc/settings_event.dart';
 import 'package:picklog/features/settings/bloc/settings_state.dart';
 import 'package:picklog/features/settings/services/account_export_saver.dart';
 import 'package:picklog/features/settings/settings_screen.dart';
@@ -96,7 +99,14 @@ void main() {
   // The AccountManagementBloc is created inside BlocProvider.create so it lives
   // in the test's async zone (a bloc built in setUp would schedule its async on
   // the wrong zone and never settle under the fake clock).
-  Widget buildScreen() {
+  const delegates = [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ];
+
+  Widget buildScreen({GoRouter? router}) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: mockAuthBloc),
@@ -112,23 +122,46 @@ void main() {
           },
         ),
       ],
-      child: const MaterialApp(
-        localizationsDelegates: [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: SettingsScreen(),
-      ),
+      child: router == null
+          ? const MaterialApp(
+              localizationsDelegates: delegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SettingsScreen(),
+            )
+          : MaterialApp.router(
+              localizationsDelegates: delegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
     );
   }
+
+  testWidgets('back from a deep link to settings goes home', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/settings',
+      routes: [
+        GoRoute(
+          path: AppRouter.homePath,
+          name: AppRouter.homeName,
+          builder: (_, _) => const Text('home page'),
+        ),
+        GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(buildScreen(router: router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('home page'), findsOneWidget);
+  });
 
   testWidgets('shows the privacy & data actions', (tester) async {
     await tester.pumpWidget(buildScreen());
 
-    expect(find.text('Privacy & data'), findsOneWidget);
+    expect(find.text('PRIVACY & DATA'), findsOneWidget);
     expect(find.text('Export my data'), findsOneWidget);
     expect(find.text('Delete my account'), findsOneWidget);
   });
@@ -220,5 +253,42 @@ void main() {
     verify(
       () => mockConsentCubit.setCategory(ConsentCategory.crash, granted: true),
     ).called(1);
+  });
+
+  testWidgets('the theme selector offers System, Light and Dark', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    expect(find.text('System'), findsOneWidget);
+    expect(find.text('Light'), findsOneWidget);
+    expect(find.text('Dark'), findsOneWidget);
+    final selector = tester.widget<SegmentedButton<ThemeMode>>(
+      find.byType(SegmentedButton<ThemeMode>),
+    );
+    expect(selector.selected, {ThemeMode.system});
+
+    await tester.tap(find.text('Dark'));
+    await tester.pump();
+
+    verify(
+      () => mockSettingsBloc.add(const SettingsThemeModeSet(ThemeMode.dark)),
+    ).called(1);
+  });
+
+  testWidgets('logout is a destructive outlined button', (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    final logout = find.widgetWithText(OutlinedButton, 'Logout');
+    await tester.ensureVisible(logout);
+    await tester.pumpAndSettle();
+    expect(logout, findsOneWidget);
+
+    await tester.tap(logout);
+    await tester.pump();
+
+    verify(() => mockAuthBloc.add(const AuthLogoutRequested())).called(1);
   });
 }

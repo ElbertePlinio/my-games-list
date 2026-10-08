@@ -4,7 +4,7 @@ Versão: 2026-06-22
 
 Data de vigência: 22 de junho de 2026
 
-Estes Termos de Uso ("Termos") regem o uso do aplicativo MyGamesList ("aplicativo", "serviço"). Ao criar uma conta ou utilizar o serviço, você concorda com estes Termos e com a Política de Privacidade. Caso não concorde, não utilize o serviço.
+Estes Termos de Uso ("Termos") regem o uso do aplicativo Picklog ("aplicativo", "serviço"). Ao criar uma conta ou utilizar o serviço, você concorda com estes Termos e com a Política de Privacidade. Caso não concorde, não utilize o serviço.
 
 ## 1. Quem oferece o serviço
 
@@ -12,7 +12,7 @@ O serviço é oferecido por **Elberte Plínio** (pessoa física), que mantém o 
 
 ## 2. Descrição do serviço
 
-O MyGamesList é um rastreador pessoal de biblioteca de jogos. Ele permite que você pesquise jogos a partir de um catálogo de terceiros, adicione jogos à sua biblioteca e registre informações como status, nota, tempo de jogo, datas, dificuldade, favoritos e anotações pessoais. Podemos alterar, adicionar ou descontinuar funcionalidades a qualquer momento.
+O Picklog é um rastreador pessoal de biblioteca de jogos. Ele permite que você pesquise jogos a partir de um catálogo de terceiros, adicione jogos à sua biblioteca e registre informações como status, nota, tempo de jogo, datas, dificuldade, favoritos e anotações pessoais. Podemos alterar, adicionar ou descontinuar funcionalidades a qualquer momento.
 
 ## 3. Cadastro, conta e elegibilidade
 

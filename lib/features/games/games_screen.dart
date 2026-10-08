@@ -1,447 +1,805 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/pf_typography.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/error_l10n.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
-import 'package:picklog/core/widgets/visibility_hero.dart';
+import 'package:picklog/core/widgets/animated_state_switcher.dart';
+import 'package:picklog/core/widgets/app_scaffold.dart';
+import 'package:picklog/core/widgets/game_card.dart';
+import 'package:picklog/core/widgets/responsive_grid.dart';
+import 'package:picklog/core/widgets/staggered_reveal.dart';
+import 'package:picklog/core/widgets/state_views.dart';
+import 'package:picklog/features/games/bloc/filter_options_cubit.dart';
+import 'package:picklog/features/games/widgets/catalog_filter_fields.dart';
 import 'package:picklog/features/games/widgets/skeletons/library_entry_skeleton.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
+import 'package:picklog/features/library/browse/library_browse_bloc.dart';
+import 'package:picklog/features/library/browse/library_browse_event.dart';
+import 'package:picklog/features/library/browse/library_browse_state.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_bloc.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_event.dart';
+import 'package:picklog/features/library/collections/bloc/user_collections_state.dart';
+import 'package:picklog/features/library/collections/widgets/collection_form_dialog.dart';
+import 'package:picklog/features/library/collections/widgets/collections_view.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_query.dart';
+import 'package:picklog/features/library/roulette/backlog_roulette_sheet.dart';
+import 'package:picklog/features/library/stats/stats_cubit.dart';
+import 'package:picklog/features/library/widgets/library_entry_views.dart';
+import 'package:picklog/features/library/widgets/library_failure_listener.dart';
+import 'package:picklog/features/library/widgets/library_filters_sheet.dart';
+import 'package:picklog/features/library/widgets/library_stats_header.dart';
+import 'package:picklog/features/library/widgets/library_status_pill.dart';
 
-/// Games screen - displays user's game library with filtering and management.
+/// Hero prefix for library covers (unique against the other shell tabs).
+const String kLibraryHeroPrefix = 'library-';
+
+/// The two parts of the Library tab.
+enum LibrarySegment { games, collections }
+
+/// Library tab: the user's games with server-side search, filters, sort and
+/// paging, plus their collections.
 ///
-/// Features:
-/// - View all games in library
-/// - Filter by favorites only
-/// - Filter by status (playing, finished, etc.)
-/// - Add new games via search
-/// - Toggle favorites with optimistic UI
-class GamesScreen extends StatelessWidget {
+/// The list comes from [LibraryBrowseBloc]. The shared [LibraryBloc] keeps
+/// the whole library for other screens; its changes are forwarded here so
+/// swipes, favorites and edits show at once.
+class GamesScreen extends StatefulWidget {
   const GamesScreen({super.key});
 
   @override
+  State<GamesScreen> createState() => _GamesScreenState();
+}
+
+class _GamesScreenState extends State<GamesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  LibrarySegment _segment = LibrarySegment.games;
+  Timer? _statsDebounce;
+  bool _librarySeen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    final library = context.read<LibraryBloc>().state;
+    if (library.status == LibraryStatus.success) {
+      _librarySeen = true;
+      context.read<LibraryBrowseBloc>().add(
+        LibraryBrowseSourceChanged(
+          library.entries,
+          settled: library.pendingWrites == 0,
+        ),
+      );
+    }
+    _searchController.text = context
+        .read<LibraryBrowseBloc>()
+        .state
+        .filters
+        .query;
+  }
+
+  @override
+  void dispose() {
+    _statsDebounce?.cancel();
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent * 0.85) {
+      context.read<LibraryBrowseBloc>().add(const LibraryBrowseLoadMore());
+    }
+  }
+
+  void _onLibraryChanged(BuildContext context, LibraryState state) {
+    context.read<LibraryBrowseBloc>().add(
+      LibraryBrowseSourceChanged(
+        state.entries,
+        settled: state.pendingWrites == 0,
+      ),
+    );
+    // The first load only seeds the list; the stats were loaded with the
+    // route. Later changes (favorites, status, adds) refresh them.
+    if (!_librarySeen) {
+      _librarySeen = true;
+      return;
+    }
+    _statsDebounce?.cancel();
+    _statsDebounce = Timer(const Duration(milliseconds: 600), () {
+      if (mounted) context.read<StatsCubit>().load();
+    });
+  }
+
+  Future<void> _createCollection() async {
+    final created = await showCollectionFormDialog(
+      context,
+      bloc: context.read<UserCollectionsBloc>(),
+    );
+    if (created != null && mounted) openCollection(context, created);
+  }
+
+  static bool _isFirstRun(LibraryBrowseState state) =>
+      state.status == LibraryBrowseStatus.success &&
+      !state.hasEntries &&
+      !state.filters.hasActiveFilters;
+
+  void _setSegment(LibrarySegment segment) {
+    if (segment == _segment) return;
+    setState(() => _segment = segment);
+    if (segment == LibrarySegment.collections) {
+      final bloc = context.read<UserCollectionsBloc>();
+      if (bloc.state.status != UserCollectionsStatus.loading) {
+        bloc.add(const UserCollectionsLoadRequested());
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.libraryTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => context.pushNamed(AppRouter.searchName),
-            tooltip: context.l10n.addGame,
+    final l10n = context.l10n;
+    final collections = _segment == LibrarySegment.collections;
+
+    return LibraryFailureListener(
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<LibraryBloc, LibraryState>(
+            // A finished optimistic save also counts, so the list reloads.
+            listenWhen: (p, c) =>
+                c.status == LibraryStatus.success &&
+                (p.entries != c.entries || p.pendingWrites != c.pendingWrites),
+            listener: _onLibraryChanged,
+          ),
+          // Clearing every filter also clears the search text.
+          BlocListener<LibraryBrowseBloc, LibraryBrowseState>(
+            listenWhen: (p, c) =>
+                p.filters.query != c.filters.query && c.filters.query.isEmpty,
+            listener: (context, state) {
+              if (_searchController.text.isNotEmpty) _searchController.clear();
+            },
+          ),
+        ],
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.libraryTitle),
+            actions: [
+              IconButton(
+                key: const Key('library_roulette_button'),
+                icon: const Icon(Icons.casino_outlined),
+                tooltip: l10n.rouletteTitle,
+                onPressed: () => BacklogRouletteSheet.show(context),
+              ),
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => context.pushNamed(AppRouter.searchName),
+                tooltip: l10n.addGame,
+              ),
+              const SizedBox(width: PfSpace.xs),
+            ],
+          ),
+          body: _buildBody(collections),
+          floatingActionButton: _buildFab(collections),
+        ),
+      ),
+    );
+  }
+
+  /// Segment switch above the games list or the collections grid.
+  Widget _buildBody(bool collections) {
+    return MaxWidthBox(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.lg,
+              PfSpace.xs,
+              PfSpace.lg,
+              PfSpace.sm,
+            ),
+            child: _LibrarySegmentControl(
+              segment: _segment,
+              onChanged: _setSegment,
+            ),
+          ),
+          Expanded(
+            child: AnimatedStateSwitcher(
+              stateKey: _segment,
+              child: collections
+                  ? CollectionsView(onCreate: _createCollection)
+                  : _LibraryGamesView(
+                      scrollController: _scrollController,
+                      searchController: _searchController,
+                    ),
+            ),
           ),
         ],
       ),
-      body: BlocBuilder<LibraryBloc, LibraryState>(
-        builder: (context, state) {
-          if (state.isLoading && !state.hasEntries) {
-            return const LibraryListSkeleton();
-          }
+    );
+  }
 
-          if (state.status == LibraryStatus.failure && !state.hasEntries) {
-            return _ErrorView(
-              message: context.l10n.failedToLoadLibrary,
-              onRetry: () {
-                if (state.userId != null) {
-                  context.read<LibraryBloc>().add(
-                    LibraryLoadRequested(userId: state.userId!),
-                  );
-                }
-              },
-            );
-          }
-
-          return Column(
-            children: [
-              // Filter chips
-              _FilterChips(state: state),
-              // Library entries list
-              Expanded(
-                child: state.filteredEntries.isEmpty
-                    ? _EmptyLibraryView(
-                        showFavoritesOnly: state.showFavoritesOnly,
-                        statusFilter: state.statusFilter,
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          if (state.userId != null) {
-                            context.read<LibraryBloc>().add(
-                              LibraryRefreshRequested(userId: state.userId!),
-                            );
-                          }
-                        },
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(8),
-                          itemCount: state.filteredEntries.length,
-                          itemBuilder: (context, index) {
-                            final entry = state.filteredEntries[index];
-                            return _LibraryEntryCard(entry: entry);
-                          },
-                        ),
-                      ),
-              ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushNamed(AppRouter.searchName),
+  /// New collection on the collections tab. Add game on the games tab,
+  /// except on the first-run empty library, which has its own action.
+  Widget _buildFab(bool collections) {
+    final l10n = context.l10n;
+    if (collections) {
+      return FloatingActionButton.extended(
+        key: const Key('library_new_collection_fab'),
+        onPressed: _createCollection,
         icon: const Icon(Icons.add),
-        label: Text(context.l10n.addGame),
-      ),
-    );
-  }
-}
-
-class _FilterChips extends StatelessWidget {
-  const _FilterChips({required this.state});
-
-  final LibraryState state;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            // Favorites filter
-            FilterChip(
-              selected: state.showFavoritesOnly,
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    state.showFavoritesOnly
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(context.l10n.favoritesWithCount(state.favoritesCount)),
-                ],
-              ),
-              onSelected: (selected) {
-                context.read<LibraryBloc>().add(
-                  LibraryFilterToggled(showFavoritesOnly: selected),
-                );
-              },
+        label: Text(l10n.collectionNewTitle),
+      );
+    }
+    return BlocBuilder<LibraryBrowseBloc, LibraryBrowseState>(
+      buildWhen: (p, c) => _isFirstRun(p) != _isFirstRun(c),
+      builder: (context, state) => _isFirstRun(state)
+          ? const SizedBox.shrink()
+          : FloatingActionButton.extended(
+              onPressed: () => context.pushNamed(AppRouter.searchName),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addGame),
             ),
-            const SizedBox(width: 8),
-            // Status filters
-            ...GameStatus.values.map((status) {
-              final count = state.statusCounts[status] ?? 0;
-              final isSelected = state.statusFilter == status;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  selected: isSelected,
-                  label: Text('${status.localizedName(context)} ($count)'),
-                  onSelected: (selected) {
-                    context.read<LibraryBloc>().add(
-                      LibraryStatusFilterChanged(
-                        status: selected ? status : null,
-                      ),
-                    );
-                  },
-                ),
-              );
-            }),
-          ],
-        ),
+    );
+  }
+}
+
+/// Full-width games and collections switch.
+class _LibrarySegmentControl extends StatelessWidget {
+  const _LibrarySegmentControl({
+    required this.segment,
+    required this.onChanged,
+  });
+
+  final LibrarySegment segment;
+  final ValueChanged<LibrarySegment> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<LibrarySegment>(
+        key: const Key('library_segment'),
+        showSelectedIcon: false,
+        segments: [
+          ButtonSegment(
+            value: LibrarySegment.games,
+            icon: const Icon(Icons.sports_esports_outlined),
+            label: Text(l10n.librarySegmentGames),
+          ),
+          ButtonSegment(
+            value: LibrarySegment.collections,
+            icon: const Icon(Icons.collections_bookmark_outlined),
+            label: Text(l10n.librarySegmentCollections),
+          ),
+        ],
+        selected: {segment},
+        onSelectionChanged: (s) => onChanged(s.first),
       ),
     );
   }
 }
 
-class _LibraryEntryCard extends StatelessWidget {
-  const _LibraryEntryCard({required this.entry});
+class _LibraryGamesView extends StatelessWidget {
+  const _LibraryGamesView({
+    required this.scrollController,
+    required this.searchController,
+  });
 
-  final LibraryEntry entry;
+  final ScrollController scrollController;
+  final TextEditingController searchController;
+
+  Future<void> _refresh(BuildContext context) async {
+    final browse = context.read<LibraryBrowseBloc>()
+      ..add(const LibraryBrowseRefreshRequested());
+    final library = context.read<LibraryBloc>();
+    final userId = library.state.userId ?? browse.state.userId;
+    if (userId != null) library.add(LibraryRefreshRequested(userId: userId));
+    unawaited(context.read<StatsCubit>().load());
+    await browse.stream
+        .firstWhere((s) => !s.isLoading)
+        .timeout(const Duration(seconds: 12), onTimeout: () => browse.state);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Semantics(
-        label: context.l10n.libraryEntryLabel(
-          entry.game.name,
-          entry.status.localizedName(context),
-        ),
-        button: true,
-        onTap: () => context.pushNamed(
-          AppRouter.gameDetailsName,
-          pathParameters: {'id': entry.game.igdbId.toString()},
-        ),
-        child: InkWell(
-          onTap: () => context.pushNamed(
-            AppRouter.gameDetailsName,
-            pathParameters: {'id': entry.game.igdbId.toString()},
+    return BlocBuilder<LibraryBrowseBloc, LibraryBrowseState>(
+      builder: (context, state) {
+        final slivers = <Widget>[
+          SliverToBoxAdapter(
+            child: BlocBuilder<StatsCubit, StatsState>(
+              builder: (context, stats) => LibraryStatsHeader(
+                stats: stats.stats,
+                loading: stats.isLoading || stats.status == StatsStatus.initial,
+              ),
+            ),
           ),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Game cover
-                VisibilityHero(
-                  tag: 'game-cover-${entry.game.igdbId}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: entry.game.coverUrl != null
-                        ? Image.network(
-                            entry.game.coverUrl!,
-                            width: 60,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            semanticLabel: context.l10n.gameCoverLabel(
-                              entry.game.name,
-                            ),
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  width: 60,
-                                  height: 80,
-                                  color:
-                                      theme.colorScheme.surfaceContainerHighest,
-                                  child: const Icon(Icons.videogame_asset),
-                                ),
-                          )
-                        : Container(
-                            width: 60,
-                            height: 80,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: const Icon(Icons.videogame_asset),
-                          ),
+          SliverToBoxAdapter(
+            child: _LibraryToolbar(state: state, controller: searchController),
+          ),
+          SliverToBoxAdapter(child: _QuickFilters(state: state)),
+          SliverToBoxAdapter(child: _AdvancedChips(state: state)),
+          ..._content(context, state),
+        ];
+
+        return RefreshIndicator(
+          onRefresh: () => _refresh(context),
+          child: CustomScrollView(
+            controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: slivers,
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> _content(BuildContext context, LibraryBrowseState state) {
+    final l10n = context.l10n;
+    final firstLoad =
+        (state.isLoading || state.status == LibraryBrowseStatus.initial) &&
+        !state.hasEntries;
+    if (firstLoad) {
+      return const [
+        SliverFillRemaining(hasScrollBody: true, child: LibraryListSkeleton()),
+      ];
+    }
+    if (state.status == LibraryBrowseStatus.failure) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: ErrorState(
+            message: l10n.failedToLoadLibrary,
+            onRetry: () => context.read<LibraryBrowseBloc>().add(
+              const LibraryBrowseRefreshRequested(),
+            ),
+          ),
+        ),
+      ];
+    }
+    if (!state.hasEntries) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _EmptyLibraryView(filters: state.filters),
+        ),
+      ];
+    }
+
+    final entries = state.entries;
+    final grid = state.viewMode == LibraryViewMode.grid;
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(
+          PfSpace.lg,
+          PfSpace.sm,
+          PfSpace.lg,
+          PfSpace.md,
+        ),
+        sliver: grid
+            ? SliverResponsiveGrid(
+                itemCount: entries.length,
+                childAspectRatio: kGameCardGridAspectRatio,
+                itemBuilder: (context, index) => StaggeredReveal(
+                  index: index % LibraryBrowseBloc.pageSize,
+                  child: LibraryEntryGridCard(
+                    key: ValueKey('grid-${entries[index].id}'),
+                    entry: entries[index],
+                    heroPrefix: kLibraryHeroPrefix,
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Game info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        entry.game.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      // Status chip
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(entry.status, theme),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          entry.status.localizedName(context),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white,
+              )
+            : SliverLayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.crossAxisExtent >= PfBreakpoints.twoPane) {
+                    return SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 560,
+                            mainAxisExtent: 100,
+                            crossAxisSpacing: PfSpace.md,
+                            mainAxisSpacing: PfSpace.sm,
+                          ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => StaggeredReveal(
+                          index: index % LibraryBrowseBloc.pageSize,
+                          child: LibraryEntryRow(
+                            key: ValueKey('row-${entries[index].id}'),
+                            entry: entries[index],
+                            heroPrefix: kLibraryHeroPrefix,
                           ),
                         ),
+                        childCount: entries.length,
                       ),
-                      const SizedBox(height: 4),
-                      // Platform and playtime
-                      Row(
-                        children: [
-                          if (entry.platform != null) ...[
-                            Text(
-                              entry.platform!.displayName,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const Text(' • '),
-                          ],
-                          Text(
-                            entry.playtimeFormatted,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
+                    );
+                  }
+                  return SliverList.separated(
+                    itemCount: entries.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: PfSpace.sm),
+                    itemBuilder: (context, index) => StaggeredReveal(
+                      index: index % LibraryBrowseBloc.pageSize,
+                      child: LibraryEntryRow(
+                        key: ValueKey('row-${entries[index].id}'),
+                        entry: entries[index],
+                        heroPrefix: kLibraryHeroPrefix,
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
+      SliverToBoxAdapter(child: _ListFooter(state: state)),
+    ];
+  }
+}
+
+/// Search field, sort menu, filter button and the list or grid toggle.
+class _LibraryToolbar extends StatelessWidget {
+  const _LibraryToolbar({required this.state, required this.controller});
+
+  final LibraryBrowseState state;
+  final TextEditingController controller;
+
+  Future<void> _openFilters(BuildContext context) async {
+    final bloc = context.read<LibraryBrowseBloc>();
+    final collections = context.read<UserCollectionsBloc>();
+    if (collections.state.status == UserCollectionsStatus.initial) {
+      collections.add(const UserCollectionsLoadRequested());
+    }
+    final result = await LibraryFiltersSheet.show(
+      context,
+      filters: bloc.state.filters,
+      options: context.read<FilterOptionsCubit>(),
+      collections: collections,
+    );
+    if (result != null) bloc.add(LibraryBrowseFiltersChanged(result));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.pfColors;
+    final bloc = context.read<LibraryBrowseBloc>();
+    final count = state.filters.activeChipCount;
+    final grid = state.viewMode == LibraryViewMode.grid;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(PfSpace.lg, 0, PfSpace.sm, PfSpace.xs),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 44,
+              child: TextField(
+                key: const Key('library_search_field'),
+                controller: controller,
+                textInputAction: TextInputAction.search,
+                onChanged: (q) => bloc.add(LibraryBrowseQueryChanged(q)),
+                decoration: InputDecoration(
+                  hintText: l10n.librarySearchHint,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                  suffixIcon: ValueListenableBuilder(
+                    valueListenable: controller,
+                    builder: (context, value, _) => value.text.isEmpty
+                        ? const SizedBox.shrink()
+                        : IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            tooltip: l10n.clearSearch,
+                            onPressed: () {
+                              controller.clear();
+                              bloc.add(const LibraryBrowseQueryChanged(''));
+                            },
                           ),
-                          if (entry.score != null) ...[
-                            const Text(' • '),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  size: 14,
-                                  color: Colors.amber.shade600,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '${entry.score}',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
+                  ),
+                  border: const OutlineInputBorder(
+                    borderRadius: PfRadius.pillAll,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: PfRadius.pillAll,
+                    borderSide: BorderSide(color: colors.hairline),
                   ),
                 ),
-                // Favorite button
-                IconButton(
-                  tooltip: entry.isFavorite
-                      ? context.l10n.favorited
-                      : context.l10n.addToFavorites,
-                  icon: Icon(
-                    entry.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: entry.isFavorite ? Colors.red : null,
-                    semanticLabel: entry.isFavorite
-                        ? context.l10n.favorited
-                        : context.l10n.addToFavorites,
+              ),
+            ),
+          ),
+          PopupMenuButton<LibrarySort>(
+            key: const Key('library_sort_menu'),
+            tooltip: l10n.librarySortTooltip,
+            icon: const Icon(Icons.sort),
+            initialValue: state.filters.sort,
+            onSelected: (sort) => bloc.add(LibraryBrowseSortChanged(sort)),
+            itemBuilder: (context) => [
+              for (final sort in LibrarySort.values)
+                CheckedPopupMenuItem(
+                  value: sort,
+                  checked: sort == state.filters.sort,
+                  child: Text(sort.localizedName(context)),
+                ),
+            ],
+          ),
+          Badge(
+            isLabelVisible: count > 0,
+            label: Text('$count'),
+            offset: const Offset(-4, 4),
+            child: IconButton(
+              key: const Key('library_filters_button'),
+              icon: const Icon(Icons.tune),
+              tooltip: l10n.libraryFiltersTitle,
+              onPressed: () => _openFilters(context),
+            ),
+          ),
+          IconButton(
+            key: const Key('library_view_toggle'),
+            icon: Icon(grid ? Icons.view_list_outlined : Icons.grid_view),
+            tooltip: grid ? l10n.libraryViewList : l10n.libraryViewGrid,
+            onPressed: () => bloc.add(
+              LibraryBrowseViewModeChanged(
+                grid ? LibraryViewMode.list : LibraryViewMode.grid,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One-tap favorites and status chips with counts from the stats.
+class _QuickFilters extends StatelessWidget {
+  const _QuickFilters({required this.state});
+
+  final LibraryBrowseState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final bloc = context.read<LibraryBrowseBloc>();
+    final stats = context.watch<StatsCubit>().state.stats;
+    final filters = state.filters;
+
+    String withCount(String label, int? count) =>
+        count == null ? label : '$label · $count';
+
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
+        children: [
+          Center(
+            child: FilterChip(
+              key: const Key('library_filter_favorites'),
+              selected: filters.favoritesOnly,
+              avatar: Icon(
+                filters.favoritesOnly ? Icons.favorite : Icons.favorite_border,
+                size: 16,
+              ),
+              label: Text(
+                withCount(l10n.libraryFavoritesFilter, stats?.favorites),
+              ),
+              onSelected: (selected) => bloc.add(
+                LibraryBrowseFiltersChanged(
+                  filters.copyWith(favoritesOnly: selected),
+                ),
+              ),
+            ),
+          ),
+          for (final status in GameStatus.values)
+            Padding(
+              padding: const EdgeInsets.only(left: PfSpace.sm),
+              child: Center(
+                child: FilterChip(
+                  key: Key('library_filter_${status.toApiString()}'),
+                  selected: filters.statuses.contains(status),
+                  avatar: Icon(status.icon, size: 16),
+                  label: Text(
+                    withCount(
+                      status.localizedName(context),
+                      stats?.countFor(status),
+                    ),
                   ),
-                  onPressed: () {
-                    context.read<LibraryBloc>().add(
-                      LibraryToggleFavoriteRequested(entryId: entry.id),
+                  onSelected: (selected) {
+                    final next = {...filters.statuses};
+                    selected ? next.add(status) : next.remove(status);
+                    bloc.add(
+                      LibraryBrowseFiltersChanged(
+                        filters.copyWith(statuses: next),
+                      ),
                     );
                   },
                 ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Removable chips for the sheet-only filters, plus clear all and the count.
+class _AdvancedChips extends StatelessWidget {
+  const _AdvancedChips({required this.state});
+
+  final LibraryBrowseState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = context.read<LibraryBrowseBloc>();
+    final filters = state.filters;
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    final advanced = LibraryFilters(
+      genreIds: filters.genreIds,
+      platformIds: filters.platformIds,
+      minScore: filters.minScore,
+      collectionId: filters.collectionId,
+    );
+    final chips = libraryFilterChips(
+      context,
+      filters: advanced,
+      options: context.watch<FilterOptionsCubit>().state,
+      collections: context.watch<UserCollectionsBloc>().state,
+      onChanged: (changed) => bloc.add(
+        LibraryBrowseFiltersChanged(
+          filters.copyWith(
+            genreIds: changed.genreIds,
+            platformIds: changed.platformIds,
+            minScore: changed.minScore,
+            clearMinScore: changed.minScore == null,
+            collectionId: changed.collectionId,
+            clearCollection: changed.collectionId == null,
+          ),
+        ),
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ActiveFilterChipsRow(
+          chips: chips,
+          onClearAll: () {
+            bloc.add(LibraryBrowseFiltersChanged(filters.cleared()));
+          },
+        ),
+        if (filters.hasActiveFilters &&
+            state.status == LibraryBrowseStatus.success)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.lg,
+              PfSpace.xs,
+              PfSpace.lg,
+              0,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.libraryMatchCount(state.totalCount),
+                    style: PfTypography.monoStyle(colors.textMed),
+                  ),
+                ),
+                if (chips.isEmpty)
+                  TextButton(
+                    key: const Key('library_clear_filters'),
+                    onPressed: () => bloc.add(
+                      LibraryBrowseFiltersChanged(filters.cleared()),
+                    ),
+                    child: Text(l10n.searchFiltersClearAll),
+                  ),
               ],
             ),
           ),
-        ),
-      ),
+      ],
     );
   }
+}
 
-  Color _getStatusColor(GameStatus status, ThemeData theme) {
-    switch (status) {
-      case GameStatus.playing:
-        return Colors.green;
-      case GameStatus.finished:
-        return Colors.blue;
-      case GameStatus.planned:
-        return Colors.orange;
-      case GameStatus.onHold:
-        return Colors.purple;
-      case GameStatus.dropped:
-        return Colors.red;
+class _ListFooter extends StatelessWidget {
+  const _ListFooter({required this.state});
+
+  final LibraryBrowseState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget child;
+    if (state.loadMoreFailed && !state.isLoadingMore) {
+      child = ErrorState(
+        compact: true,
+        message: (state.errorKind ?? AppErrorKind.unknown).message(context),
+        onRetry: () => context.read<LibraryBrowseBloc>().add(
+          state.hasMore
+              ? const LibraryBrowseLoadMore()
+              : const LibraryBrowseRefreshRequested(),
+        ),
+      );
+    } else if (state.isLoadingMore || state.hasMore) {
+      child = const Center(
+        child: SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      );
+    } else {
+      child = const SizedBox.shrink();
     }
+    return Padding(
+      padding: const EdgeInsets.only(top: PfSpace.sm, bottom: 96),
+      child: child,
+    );
   }
 }
 
 class _EmptyLibraryView extends StatelessWidget {
-  const _EmptyLibraryView({required this.showFavoritesOnly, this.statusFilter});
+  const _EmptyLibraryView({required this.filters});
 
-  final bool showFavoritesOnly;
-  final GameStatus? statusFilter;
+  final LibraryFilters filters;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    final l10n = context.l10n;
     // The default (unfiltered) empty library is the user's first impression,
-    // so it gets a warm headline + hint. Filtered views keep their concise,
-    // self-explanatory single message.
-    final bool isDefaultEmpty = !showFavoritesOnly && statusFilter == null;
-    final String title;
-    final String? hint;
-    if (showFavoritesOnly) {
-      title = context.l10n.emptyFavorites;
-      hint = null;
-    } else if (statusFilter != null) {
-      title = context.l10n.emptyStatusGames;
-      hint = null;
-    } else {
-      title = context.l10n.emptyLibraryTitle;
-      hint = context.l10n.emptyLibraryHint;
-    }
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.sports_esports_outlined,
-              size: 80,
-              color: theme.colorScheme.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: isDefaultEmpty
-                  ? theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    )
-                  : theme.textTheme.bodyLarge,
-            ),
-            if (hint != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                hint,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => context.pushNamed(AppRouter.searchName),
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.addFirstGame),
-            ),
-          ],
-        ),
+    // so it gets a headline, hint and a call to action. Filtered views offer
+    // to clear the filters.
+    if (filters.hasActiveFilters) return _FilteredEmptyView(filters: filters);
+    return EmptyState(
+      icon: Icons.sports_esports_outlined,
+      title: l10n.emptyLibraryTitle,
+      message: l10n.emptyLibraryHint,
+      action: FilledButton.icon(
+        onPressed: () => context.pushNamed(AppRouter.searchName),
+        icon: const Icon(Icons.add),
+        label: Text(l10n.addFirstGame),
       ),
     );
   }
 }
 
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
+/// Empty result for a filtered library, with a way to clear the filters.
+class _FilteredEmptyView extends StatelessWidget {
+  const _FilteredEmptyView({required this.filters});
 
-  final String message;
-  final VoidCallback onRetry;
+  final LibraryFilters filters;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.browseRetry),
-            ),
-          ],
+    final l10n = context.l10n;
+    // A single favorites or status chip gets a tailored message.
+    final singleChip =
+        filters.activeChipCount == 1 && filters.query.trim().isEmpty;
+    final onlyFavorites = singleChip && filters.favoritesOnly;
+    final onlyStatus = singleChip && filters.statuses.length == 1;
+    return EmptyState(
+      icon: onlyFavorites
+          ? Icons.favorite_border
+          : onlyStatus
+          ? filters.statuses.first.icon
+          : Icons.filter_alt_off,
+      title: onlyFavorites
+          ? l10n.emptyFavorites
+          : onlyStatus
+          ? l10n.emptyStatusGames
+          : l10n.libraryNoMatchesTitle,
+      message: onlyFavorites || onlyStatus ? null : l10n.libraryNoMatchesHint,
+      action: OutlinedButton.icon(
+        onPressed: () => context.read<LibraryBrowseBloc>().add(
+          LibraryBrowseFiltersChanged(filters.cleared()),
         ),
+        icon: const Icon(Icons.filter_alt_off),
+        label: Text(l10n.searchClearFilters),
       ),
     );
   }

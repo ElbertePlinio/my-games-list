@@ -90,13 +90,9 @@ void main() {
       expect(find.text('The Witcher 3'), findsOneWidget);
       expect(find.text('Stardew Valley'), findsOneWidget);
 
-      // Tap the first tile's own InkWell (the carousel header has a separate
-      // "See All" InkWell, so we scope the finder to the tile and target its
-      // transparent overlay InkWell rather than the text behind it).
+      // Tap the first tile (the header's "See all" is a separate button).
       final firstTile = find.byType(DiscoveryGameTile).first;
-      await tester.tap(
-        find.descendant(of: firstTile, matching: find.byType(InkWell)),
-      );
+      await tester.tap(firstTile);
       await tester.pumpAndSettle();
 
       expect(find.text('details 1942'), findsOneWidget);

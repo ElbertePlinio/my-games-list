@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/games/bloc/game_details_bloc.dart';
 import 'package:picklog/features/games/bloc/game_details_event.dart';
@@ -39,7 +40,7 @@ void main() {
     test('initial state is correct', () {
       expect(bloc.state.status, equals(GameDetailsStatus.initial));
       expect(bloc.state.game, isNull);
-      expect(bloc.state.errorMessage, isNull);
+      expect(bloc.state.errorKind, isNull);
     });
 
     blocTest<GameDetailsBloc, GameDetailsState>(
@@ -79,8 +80,7 @@ void main() {
         predicate<GameDetailsState>(
           (state) =>
               state.status == GameDetailsStatus.failure &&
-              state.errorMessage != null &&
-              state.errorMessage!.contains('Game not found'),
+              state.errorKind == AppErrorKind.unknown,
         ),
       ],
     );
@@ -127,7 +127,7 @@ void main() {
 
       expect(updatedState.status, equals(GameDetailsStatus.success));
       expect(updatedState.game, equals(mockGame));
-      expect(updatedState.errorMessage, isNull);
+      expect(updatedState.errorKind, isNull);
     });
 
     test('copyWith preserves existing values when not specified', () {
@@ -135,11 +135,13 @@ void main() {
         status: GameDetailsStatus.success,
         game: mockGame,
       );
-      final copiedState = stateWithGame.copyWith(errorMessage: 'Some error');
+      final copiedState = stateWithGame.copyWith(
+        errorKind: AppErrorKind.network,
+      );
 
       expect(copiedState.status, equals(GameDetailsStatus.success));
       expect(copiedState.game, equals(mockGame));
-      expect(copiedState.errorMessage, equals('Some error'));
+      expect(copiedState.errorKind, equals(AppErrorKind.network));
     });
 
     test('props equality works correctly', () {

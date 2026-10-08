@@ -1,8 +1,8 @@
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
-/// Wraps a [Hero] with visibility awareness so that only heroes actually
-/// visible in the viewport participate in flight animations.
+/// Wraps a [Hero] with visibility awareness so that only heroes fully
+/// visible inside every ancestor viewport participate in flight animations.
 ///
 /// Uses [HeroMode] (not conditional Hero removal) so the Hero widget always
 /// stays in the tree — only its `enabled` flag changes. This avoids the
@@ -133,9 +133,29 @@ class _VisibilityHeroState extends State<VisibilityHero>
     final view = WidgetsBinding.instance.platformDispatcher.implicitView;
     if (view == null) return;
     final screenSize = view.physicalSize / view.devicePixelRatio;
-    final screenRect = Offset.zero & screenSize;
+    var visibleRect = Offset.zero & screenSize;
 
-    final visible = screenRect.overlaps(itemRect);
+    // Clip to every ancestor scrollable's viewport. The viewport excludes the
+    // app bar and navigation bar, so a tile partly hidden under either never
+    // starts a flight that would paint over that chrome.
+    for (final position in _subscriptions) {
+      final viewportBox = position.context.notificationContext
+          ?.findRenderObject();
+      if (viewportBox is! RenderBox || !viewportBox.hasSize) continue;
+      try {
+        final viewportRect =
+            viewportBox.localToGlobal(Offset.zero) & viewportBox.size;
+        visibleRect = visibleRect.intersect(viewportRect);
+      } catch (_) {
+        return;
+      }
+    }
+
+    // Allow sub-pixel rounding at the edges.
+    final visible =
+        !visibleRect.isEmpty &&
+        visibleRect.inflate(1).contains(itemRect.topLeft) &&
+        visibleRect.inflate(1).contains(itemRect.bottomRight);
     if (visible != _isVisible) {
       setState(() => _isVisible = visible);
     }

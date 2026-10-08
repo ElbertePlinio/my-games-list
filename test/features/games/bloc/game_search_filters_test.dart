@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
 import 'package:picklog/features/games/search_game_model.dart';
 
 SearchGame _game({
@@ -19,7 +20,7 @@ SearchGame _game({
 }
 
 void main() {
-  group('GameSearchFilters.apply sort by date', () {
+  group('GameSearchFilters.sortGames by date', () {
     test('Newest first orders same-year games by full date, newest first', () {
       final jan = _game(
         id: 1,
@@ -34,7 +35,7 @@ void main() {
 
       // Loaded order is January then December; the sort must reorder them.
       const filters = GameSearchFilters(sort: GameSearchSort.yearDesc);
-      final result = filters.apply([jan, dec]);
+      final result = filters.sortGames([jan, dec]);
 
       expect(result.map((g) => g.id).toList(), [dec.id, jan.id]);
     });
@@ -53,7 +54,7 @@ void main() {
 
       // Loaded order is December then January; the sort must reorder them.
       const filters = GameSearchFilters(sort: GameSearchSort.yearAsc);
-      final result = filters.apply([dec, jan]);
+      final result = filters.sortGames([dec, jan]);
 
       expect(result.map((g) => g.id).toList(), [jan.id, dec.id]);
     });
@@ -68,32 +69,27 @@ void main() {
 
       final desc = const GameSearchFilters(
         sort: GameSearchSort.yearDesc,
-      ).apply([undated, dated]);
+      ).sortGames([undated, dated]);
       expect(desc.map((g) => g.id).toList(), [dated.id, undated.id]);
 
       final asc = const GameSearchFilters(
         sort: GameSearchSort.yearAsc,
-      ).apply([undated, dated]);
+      ).sortGames([undated, dated]);
       expect(asc.map((g) => g.id).toList(), [dated.id, undated.id]);
     });
   });
 
-  group('GameSearchFilters.apply year filter (UTC)', () {
-    test('a midnight-UTC Jan-1 release matches its UTC year, not the local '
-        'previous year', () {
-      // 2017-01-01T00:00:00Z. On devices west of UTC the local year is 2016,
-      // but the filter must match the UTC year (2017).
-      final game = _game(
-        id: 1,
-        name: 'New Year Release',
-        releaseDate: DateTime.utc(2017, 1, 1),
+  group('GameSearchFilters state', () {
+    test('relevance keeps the API order and counts only catalog filters', () {
+      final a = _game(id: 1, name: 'B');
+      final b = _game(id: 2, name: 'A');
+      const filters = GameSearchFilters(
+        catalog: CatalogFilters(genreIds: {1, 2}, minRating: 70),
       );
-
-      final matched = const GameSearchFilters(year: 2017).apply([game]);
-      expect(matched.map((g) => g.id).toList(), [1]);
-
-      final unmatched = const GameSearchFilters(year: 2016).apply([game]);
-      expect(unmatched, isEmpty);
+      expect(filters.sortGames([a, b]).map((g) => g.id), [1, 2]);
+      expect(filters.activeFilterCount, 3);
+      expect(filters.isEmpty, isFalse);
+      expect(const GameSearchFilters().isEmpty, isTrue);
     });
   });
 }

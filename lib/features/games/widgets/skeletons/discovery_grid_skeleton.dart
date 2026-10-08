@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/widgets/game_card.dart';
+import 'package:picklog/core/widgets/responsive_grid.dart';
 import 'package:picklog/core/widgets/skeleton_box.dart';
 import 'package:picklog/features/games/widgets/skeletons/discovery_tile_skeleton.dart';
 
-/// Skeleton for the full discovery grid screen. Mirrors the real grid
-/// (2 columns, `childAspectRatio: 0.65`, 12px spacing, 16px padding) so the
-/// first page of tiles drops in without shifting layout.
+/// Skeleton for the discovery grid screens. Mirrors the real responsive grid
+/// (same column count, cell ratio, spacing and padding) so the first page of
+/// cards drops in without shifting layout.
 class DiscoveryGridSkeleton extends StatelessWidget {
   const DiscoveryGridSkeleton({this.itemCount = 6, super.key});
 
@@ -12,23 +16,22 @@ class DiscoveryGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.65,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.builder(
+        padding: const EdgeInsets.all(PfSpace.lg),
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: ResponsiveGrid.coverDelegate(
+          constraints.maxWidth - PfSpace.lg * 2,
+          childAspectRatio: kGameCardGridAspectRatio,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) => const DiscoveryTileSkeleton(),
       ),
-      itemCount: itemCount,
-      itemBuilder: (context, index) => const DiscoveryTileSkeleton(),
     );
   }
 }
 
-/// Skeleton for the discovery list view. Mirrors [DiscoveryGameListTile]'s
-/// Card (16/4 margin, 12px padding, 60x80 cover, two text lines).
+/// Skeleton for list views of [GameTile] rows (same padding, cover and gaps).
 class DiscoveryListSkeleton extends StatelessWidget {
   const DiscoveryListSkeleton({this.itemCount = 8, super.key});
 
@@ -36,43 +39,51 @@ class DiscoveryListSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return ListView.separated(
+      padding: const EdgeInsets.all(PfSpace.lg),
       physics: const NeverScrollableScrollPhysics(),
       itemCount: itemCount,
-      itemBuilder: (context, index) => const _ListTileSkeleton(),
+      separatorBuilder: (_, _) => const SizedBox(height: PfSpace.sm),
+      itemBuilder: (context, index) => const GameTileSkeleton(),
     );
   }
 }
 
-class _ListTileSkeleton extends StatelessWidget {
-  const _ListTileSkeleton();
+/// One skeleton row matching [GameTile].
+class GameTileSkeleton extends StatelessWidget {
+  const GameTileSkeleton({this.coverWidth = 56, super.key});
+
+  final double coverWidth;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: const Padding(
-        padding: EdgeInsets.all(12),
-        child: Row(
-          children: [
-            SkeletonBox(width: 60, height: 80, borderRadius: 8),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SkeletonBox(height: 16, borderRadius: 6),
-                  SizedBox(height: 8),
-                  SkeletonBox(width: 80, height: 24, borderRadius: 12),
-                ],
-              ),
+    final colors = context.pfColors;
+    return Container(
+      padding: const EdgeInsets.all(PfSpace.md),
+      decoration: BoxDecoration(
+        color: colors.surface1,
+        borderRadius: PfRadius.cardAll,
+        border: Border.all(color: colors.hairline),
+      ),
+      child: Row(
+        children: [
+          SkeletonBox(
+            width: coverWidth,
+            height: coverWidth / kCoverAspectRatio,
+            borderRadius: PfRadius.sm + 2,
+          ),
+          const SizedBox(width: PfSpace.md),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonBox(height: 14, borderRadius: PfRadius.sm),
+                SizedBox(height: PfSpace.sm),
+                SkeletonBox(width: 96, height: 18, borderRadius: PfRadius.pill),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

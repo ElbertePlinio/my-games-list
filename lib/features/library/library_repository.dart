@@ -1,5 +1,7 @@
 import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_query.dart';
 
 /// Repository for managing user's game library
 class LibraryRepository {
@@ -36,13 +38,41 @@ class LibraryRepository {
     final response = await _httpClient.get<Map<String, dynamic>>(path);
 
     if (response.isError) {
-      throw Exception(response.error?.userMessage ?? 'Failed to fetch library');
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch library',
+      );
     }
 
     final libraryResponse = LibraryEntriesResponse.fromJson(
       response.dataOrThrow,
     );
     return libraryResponse.entries;
+  }
+
+  /// Fetches one page of the library with server-side [filters] and sort.
+  ///
+  /// Without [limit] the API returns every match. `total_count` in the
+  /// response is the match count before paging.
+  Future<LibraryEntriesResponse> queryLibrary(
+    String userId,
+    LibraryFilters filters, {
+    int? limit,
+    int? offset,
+  }) async {
+    final response = await _httpClient.get<Map<String, dynamic>>(
+      '/users/$userId/library',
+      queryParameters: filters.toQueryParameters(limit: limit, offset: offset),
+    );
+
+    if (response.isError) {
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch library',
+      );
+    }
+
+    return LibraryEntriesResponse.fromJson(response.dataOrThrow);
   }
 
   /// Adds a game to the user's library
@@ -89,8 +119,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to add game to library',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to add game to library',
       );
     }
 
@@ -104,50 +135,47 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to fetch library entry',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to fetch library entry',
       );
     }
 
     return LibraryEntry.fromJson(response.dataOrThrow);
   }
 
-  /// Updates a library entry
+  /// Updates [current] on the server and returns the saved entry.
   ///
-  /// [entryId] - The ID of the entry to update
-  /// All other parameters are optional and will only update if provided
-  Future<LibraryEntry> updateLibraryEntry({
-    required String entryId,
-    int? igdbPlatformId,
+  /// Null [status], [igdbPlatformId], [playtimeMinutes] and [isFavorite]
+  /// keep their current values on the server. The API replaces score, dates,
+  /// difficulty and notes, so they are always sent: from [details] when given,
+  /// otherwise from [current]. Pass [details] only from a full edit form,
+  /// where a null field means the user cleared it.
+  Future<LibraryEntry> updateLibraryEntry(
+    LibraryEntry current, {
     GameStatus? status,
-    int? score,
+    int? igdbPlatformId,
     int? playtimeMinutes,
-    String? startDate,
-    String? endDate,
-    String? difficulty,
     bool? isFavorite,
-    String? notes,
+    LibraryEntryDetails? details,
   }) async {
-    final data = <String, dynamic>{};
-
-    if (igdbPlatformId != null) data['igdb_platform_id'] = igdbPlatformId;
-    if (status != null) data['status'] = status.toApiString();
-    if (score != null) data['score'] = score;
-    if (playtimeMinutes != null) data['playtime_minutes'] = playtimeMinutes;
-    if (startDate != null) data['start_date'] = startDate;
-    if (endDate != null) data['end_date'] = endDate;
-    if (difficulty != null) data['difficulty'] = difficulty;
-    if (isFavorite != null) data['is_favorite'] = isFavorite;
-    if (notes != null) data['notes'] = notes;
+    final data = <String, dynamic>{
+      'status': ?status?.toApiString(),
+      'igdb_platform_id': ?igdbPlatformId,
+      'playtime_minutes': ?playtimeMinutes,
+      'is_favorite': ?isFavorite,
+      ...(details ?? LibraryEntryDetails.of(current)).toJson(),
+    };
 
     final response = await _httpClient.put<Map<String, dynamic>>(
-      '/library/$entryId',
+      '/library/${current.id}',
       data: data,
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to update library entry',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to update library entry',
       );
     }
 
@@ -161,8 +189,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to toggle favorite',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to toggle favorite',
       );
     }
 
@@ -176,8 +205,9 @@ class LibraryRepository {
     );
 
     if (response.isError) {
-      throw Exception(
-        response.error?.userMessage ?? 'Failed to delete library entry',
+      throw ApiException(
+        response.error,
+        fallbackMessage: 'Failed to delete library entry',
       );
     }
   }

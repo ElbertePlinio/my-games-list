@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/data/services/http/i_http_client.dart';
+import 'package:picklog/core/domain/models/api_response.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
@@ -8,6 +13,8 @@ import 'package:picklog/features/library/library_entry_model.dart';
 import 'package:picklog/features/library/library_repository.dart';
 
 class MockLibraryRepository extends Mock implements LibraryRepository {}
+
+class MockHttpClient extends Mock implements IHttpClient {}
 
 void main() {
   late MockLibraryRepository mockRepository;
@@ -117,7 +124,11 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.status == LibraryStatus.failure &&
-                state.errorMessage != null,
+                state.failure ==
+                    const LibraryFailure(
+                      LibraryAction.load,
+                      AppErrorKind.unknown,
+                    ),
           ),
         ],
       );
@@ -145,7 +156,14 @@ void main() {
             (state) =>
                 state.entries[0].isFavorite ==
                     false && // Optimistically toggled
-                state.entries[1].isFavorite == false, // Unchanged
+                state.entries[1].isFavorite == false && // Unchanged
+                state.pendingWrites == 1,
+          ),
+          // The save answered; the toggle stays and nothing is pending.
+          predicate<LibraryState>(
+            (state) =>
+                state.entries[0].isFavorite == false &&
+                state.pendingWrites == 0,
           ),
         ],
         verify: (_) {
@@ -177,7 +195,7 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.entries[0].isFavorite == true && // Rolled back
-                state.errorMessage != null,
+                state.failure?.action == LibraryAction.toggleFavorite,
           ),
         ],
       );
@@ -204,7 +222,11 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.entries.length == 1 &&
-                state.entries[0].id == 'entry-uuid-2',
+                state.entries[0].id == 'entry-uuid-2' &&
+                state.pendingWrites == 1,
+          ),
+          predicate<LibraryState>(
+            (state) => state.entries.length == 1 && state.pendingWrites == 0,
           ),
         ],
         verify: (_) {
@@ -237,7 +259,7 @@ void main() {
           predicate<LibraryState>(
             (state) =>
                 state.entries.length == 2 && // Rolled back
-                state.errorMessage != null,
+                state.failure?.action == LibraryAction.delete,
           ),
         ],
       );
@@ -293,6 +315,153 @@ void main() {
           predicate<LibraryState>((state) => state.statusFilter == null),
         ],
       );
+    });
+
+    group('LibraryUpdateEntryRequested', () {
+      // A real repository over a fake HTTP client, so the test checks the
+      // body that reaches PUT /library/{id}.
+      late MockHttpClient http;
+
+      setUp(() {
+        http = MockHttpClient();
+        when(
+          () => http.put<Map<String, dynamic>>(any(), data: any(named: 'data')),
+        ).thenAnswer(
+          (_) async => ApiResponse.success(
+            mockEntries[0].copyWith(status: GameStatus.playing).toJson(),
+          ),
+        );
+      });
+
+      blocTest<LibraryBloc, LibraryState>(
+        'a status change and its undo keep score, dates, difficulty and notes',
+        build: () =>
+            LibraryBloc(libraryRepository: LibraryRepository(httpClient: http)),
+        seed: () =>
+            LibraryState(status: LibraryStatus.success, entries: mockEntries),
+        act: (bloc) async {
+          // The same events the swipe, the row menu and the undo send.
+          bloc.add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.playing,
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+          bloc.add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.finished,
+            ),
+          );
+        },
+        verify: (bloc) {
+          final bodies = verify(
+            () => http.put<Map<String, dynamic>>(
+              '/library/entry-uuid-1',
+              data: captureAny(named: 'data'),
+            ),
+          ).captured;
+          const kept = {
+            'score': 95,
+            'start_date': '2024-01-01',
+            'end_date': '2024-02-15',
+            'difficulty': 'Normal',
+            'notes': 'Amazing game!',
+          };
+          expect(bodies, [
+            {'status': 'playing', ...kept},
+            {'status': 'finished', ...kept},
+          ]);
+          expect(bloc.state.entries.first.score, 95);
+        },
+      );
+
+      test('an update echoes its request id on success and failure', () async {
+        final bloc = LibraryBloc(
+          libraryRepository: LibraryRepository(httpClient: http),
+        );
+        addTearDown(bloc.close);
+        final states = <LibraryState>[];
+        final sub = bloc.stream.listen(states.add);
+        addTearDown(sub.cancel);
+
+        bloc.add(
+          LibraryUpdateEntryRequested(
+            entry: mockEntries[0],
+            status: GameStatus.playing,
+            requestId: 7,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(
+          states.where((s) => s.gameAddedOrUpdated).single.savedRequestId,
+          7,
+        );
+
+        when(
+          () => http.put<Map<String, dynamic>>(any(), data: any(named: 'data')),
+        ).thenThrow(Exception('offline'));
+        bloc.add(
+          LibraryUpdateEntryRequested(
+            entry: mockEntries[0],
+            status: GameStatus.dropped,
+            requestId: 8,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(states.last.failure?.requestId, 8);
+      });
+
+      test('a second update for the same entry waits for the first', () async {
+        registerFallbackValue(mockEntries[0]);
+        final first = Completer<LibraryEntry>();
+        final calls = <GameStatus?>[];
+        when(
+          () => mockRepository.updateLibraryEntry(
+            any(),
+            igdbPlatformId: any(named: 'igdbPlatformId'),
+            status: any(named: 'status'),
+            playtimeMinutes: any(named: 'playtimeMinutes'),
+            isFavorite: any(named: 'isFavorite'),
+            details: any(named: 'details'),
+          ),
+        ).thenAnswer((invocation) {
+          final status = invocation.namedArguments[#status] as GameStatus?;
+          calls.add(status);
+          return calls.length == 1
+              ? first.future
+              : Future.value(mockEntries[0].copyWith(notes: 'Saved notes'));
+        });
+        final bloc = LibraryBloc(libraryRepository: mockRepository)
+          ..emit(
+            LibraryState(status: LibraryStatus.success, entries: mockEntries),
+          );
+        addTearDown(bloc.close);
+
+        // A row-menu status change, then a quick save from the edit sheet.
+        bloc
+          ..add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.playing,
+            ),
+          )
+          ..add(
+            LibraryUpdateEntryRequested(
+              entry: mockEntries[0],
+              status: GameStatus.finished,
+            ),
+          );
+        await Future<void>.delayed(Duration.zero);
+        expect(calls, [GameStatus.playing]);
+
+        first.complete(mockEntries[0].copyWith(status: GameStatus.playing));
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+        expect(calls, [GameStatus.playing, GameStatus.finished]);
+        expect(bloc.state.entries.first.notes, 'Saved notes');
+      });
     });
 
     group('LibraryAddGameRequested', () {
@@ -377,4 +546,62 @@ void main() {
       });
     });
   });
+
+  group('collection membership', () {
+    LibraryState seeded() => LibraryState(
+      status: LibraryStatus.success,
+      entries: [
+        _overhaulEntry('a', ['c-1', 'c-2']),
+        _overhaulEntry('b', ['c-2']),
+      ],
+    );
+
+    blocTest<LibraryBloc, LibraryState>(
+      'LibraryEntryCollectionsChanged patches one entry',
+      build: () => LibraryBloc(libraryRepository: _NoopRepository()),
+      seed: seeded,
+      act: (b) => b.add(
+        const LibraryEntryCollectionsChanged(
+          entryId: 'b',
+          collectionIds: ['c-3'],
+        ),
+      ),
+      verify: (b) {
+        expect(b.state.entries[0].collectionIds, ['c-1', 'c-2']);
+        expect(b.state.entries[1].collectionIds, ['c-3']);
+      },
+    );
+
+    blocTest<LibraryBloc, LibraryState>(
+      'LibraryCollectionRemoved drops the id everywhere',
+      build: () => LibraryBloc(libraryRepository: _NoopRepository()),
+      seed: seeded,
+      act: (b) => b.add(const LibraryCollectionRemoved(collectionId: 'c-2')),
+      verify: (b) {
+        expect(b.state.entries[0].collectionIds, ['c-1']);
+        expect(b.state.entries[1].collectionIds, isEmpty);
+      },
+    );
+  });
+}
+
+class _NoopRepository extends Mock implements LibraryRepository {}
+
+LibraryEntry _overhaulEntry(String id, List<String> collections) {
+  final now = DateTime(2026);
+  return LibraryEntry(
+    id: id,
+    userId: 'u',
+    game: CachedGame(
+      id: 'g$id',
+      igdbId: id.hashCode,
+      name: id,
+      lastSyncedAt: now,
+    ),
+    status: GameStatus.planned,
+    isFavorite: false,
+    createdAt: now,
+    updatedAt: now,
+    collectionIds: collections,
+  );
 }

@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/utils/error_l10n.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/core/widgets/app_scaffold.dart';
+import 'package:picklog/core/widgets/staggered_reveal.dart';
+import 'package:picklog/core/widgets/state_views.dart';
+import 'package:picklog/features/games/bloc/filter_options_cubit.dart';
 import 'package:picklog/features/games/bloc/game_search_bloc.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
 import 'package:picklog/features/games/bloc/game_search_state.dart';
 import 'package:picklog/features/games/search_game_model.dart';
+import 'package:picklog/features/games/widgets/catalog_filter_fields.dart';
 import 'package:picklog/features/games/widgets/game_search_card.dart';
 import 'package:picklog/features/games/widgets/search_filters_sheet.dart';
 import 'package:picklog/features/games/widgets/skeletons/search_card_skeleton.dart';
@@ -50,59 +61,72 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.searchGamesTitle)),
+      appBar: AppBar(
+        title: Text(context.l10n.searchGamesTitle),
+        actions: [
+          IconButton(
+            key: const Key('search_explore_button'),
+            icon: const Icon(Icons.explore_outlined),
+            tooltip: context.l10n.exploreTitle,
+            onPressed: () => context.pushNamed(AppRouter.exploreName),
+          ),
+          const SizedBox(width: PfSpace.xs),
+        ],
+      ),
       body: SafeArea(
         top: false,
-        child: Column(
-          children: [
-            _SearchBar(controller: _searchController),
-            BlocBuilder<GameSearchBloc, GameSearchState>(
-              buildWhen: (previous, current) =>
-                  previous.games != current.games ||
-                  previous.filters != current.filters,
-              builder: (context, state) {
-                if (state.games.isEmpty) return const SizedBox.shrink();
-                return _ActiveFiltersRow(state: state);
-              },
-            ),
-            Expanded(
-              child: BlocBuilder<GameSearchBloc, GameSearchState>(
-                builder: (context, state) {
-                  if (state.status == GameSearchStatus.initial) {
-                    return _InitialState();
-                  }
-
-                  if (state.isLoading) {
-                    return _LoadingState();
-                  }
-
-                  if (state.status == GameSearchStatus.failure) {
-                    return _ErrorState(
-                      message:
-                          state.errorMessage ??
-                          context.l10n.searchGamesErrorMessage,
-                    );
-                  }
-
-                  if (state.isEmptyByFilters) {
-                    return _FilteredEmptyState(canLoadMore: state.canLoadMore);
-                  }
-
-                  if (state.isEmpty) {
-                    return _EmptyState(query: state.query);
-                  }
-
-                  return _SearchResults(
-                    games: state.visibleGames,
-                    hasMore: state.canLoadMore,
-                    isLoadingMore: state.isLoadingMore,
-                    offsetLimitReached: state.offsetLimitReached,
-                    scrollController: _scrollController,
-                  );
-                },
+        child: MaxWidthBox(
+          maxWidth: PfBreakpoints.content,
+          child: Column(
+            children: [
+              _SearchBar(controller: _searchController),
+              BlocBuilder<GameSearchBloc, GameSearchState>(
+                buildWhen: (previous, current) =>
+                    previous.filters != current.filters,
+                builder: (context, state) => _ActiveFiltersRow(state: state),
               ),
-            ),
-          ],
+              Expanded(
+                child: BlocBuilder<GameSearchBloc, GameSearchState>(
+                  builder: (context, state) {
+                    if (state.status == GameSearchStatus.initial) {
+                      return _InitialState();
+                    }
+
+                    if (state.isLoading) {
+                      return _LoadingState();
+                    }
+
+                    if (state.status == GameSearchStatus.failure) {
+                      return ErrorState(
+                        message: (state.errorKind ?? AppErrorKind.unknown)
+                            .message(context),
+                        onRetry: () => context.read<GameSearchBloc>().add(
+                          const GameSearchRetryRequested(),
+                        ),
+                      );
+                    }
+
+                    if (state.isEmptyByFilters) {
+                      return const _FilteredEmptyState();
+                    }
+
+                    if (state.isEmpty) {
+                      return _EmptyState(query: state.query);
+                    }
+
+                    return _SearchResults(
+                      games: state.visibleGames,
+                      hasMore: state.canLoadMore,
+                      isLoadingMore: state.isLoadingMore,
+                      offsetLimitReached: state.offsetLimitReached,
+                      loadMoreFailed: state.loadMoreFailed,
+                      scrollController: _scrollController,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -116,9 +140,7 @@ Future<void> _openFilters(BuildContext context, GameSearchState state) async {
   final result = await SearchFiltersSheet.show(
     context: context,
     filters: state.filters,
-    genres: state.availableGenres,
-    platforms: state.availablePlatforms,
-    years: state.availableYears,
+    optionsCubit: context.read<FilterOptionsCubit>(),
   );
   if (result != null) {
     bloc.add(GameSearchFiltersChanged(result));
@@ -133,12 +155,19 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(
+        PfSpace.lg,
+        PfSpace.sm,
+        PfSpace.lg,
+        PfSpace.md,
+      ),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: context.l10n.searchGamesHint,
                 prefixIcon: const Icon(Icons.search),
@@ -150,10 +179,20 @@ class _SearchBar extends StatelessWidget {
                     context.read<GameSearchBloc>().add(const GameSearchClear());
                   },
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                border: const OutlineInputBorder(
+                  borderRadius: PfRadius.pillAll,
                 ),
-                filled: true,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: PfRadius.pillAll,
+                  borderSide: BorderSide(color: context.pfColors.hairline),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: PfRadius.pillAll,
+                  borderSide: BorderSide(
+                    color: context.pfColors.ember,
+                    width: 1.5,
+                  ),
+                ),
               ),
               onChanged: (query) {
                 context.read<GameSearchBloc>().add(
@@ -164,15 +203,11 @@ class _SearchBar extends StatelessWidget {
           ),
           BlocBuilder<GameSearchBloc, GameSearchState>(
             buildWhen: (previous, current) =>
-                previous.games != current.games ||
                 previous.filters != current.filters,
-            builder: (context, state) {
-              if (state.games.isEmpty) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: _FilterButton(state: state),
-              );
-            },
+            builder: (context, state) => Padding(
+              padding: const EdgeInsets.only(left: PfSpace.sm),
+              child: _FilterButton(state: state),
+            ),
           ),
         ],
       ),
@@ -192,7 +227,7 @@ class _FilterButton extends StatelessWidget {
     return Badge(
       isLabelVisible: count > 0,
       label: Text('$count'),
-      child: IconButton.filledTonal(
+      child: IconButton.outlined(
         icon: const Icon(Icons.tune),
         tooltip: context.l10n.searchFiltersTooltip,
         onPressed: () => _openFilters(context, state),
@@ -201,8 +236,7 @@ class _FilterButton extends StatelessWidget {
   }
 }
 
-/// Horizontally scrolling row of removable chips for the active sort and
-/// filters, with a quick "clear all" affordance.
+/// Removable chips for the active sort and filters, with "clear all".
 class _ActiveFiltersRow extends StatelessWidget {
   const _ActiveFiltersRow({required this.state});
 
@@ -212,12 +246,12 @@ class _ActiveFiltersRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<GameSearchBloc>();
     final filters = state.filters;
+    if (filters.isEmpty) return const SizedBox.shrink();
 
-    final chips = <Widget>[];
-
-    if (filters.sort != GameSearchSort.relevance) {
-      chips.add(
-        _ActiveFilterChip(
+    final options = context.watch<FilterOptionsCubit>().state;
+    final chips = <ActiveFilterChipData>[
+      if (filters.sort != GameSearchSort.relevance)
+        ActiveFilterChipData(
           label: context.l10n.searchFilterChipSort(
             sortLabel(context, filters.sort),
           ),
@@ -227,102 +261,38 @@ class _ActiveFiltersRow extends StatelessWidget {
             ),
           ),
         ),
-      );
-    }
-
-    for (final genre in state.availableGenres) {
-      if (!filters.genreIds.contains(genre.id)) continue;
-      chips.add(
-        _ActiveFilterChip(
-          label: genre.name,
-          onRemoved: () => bloc.add(
-            GameSearchFiltersChanged(
-              filters.copyWith(
-                genreIds: {...filters.genreIds}..remove(genre.id),
-              ),
-            ),
-          ),
+      ...catalogFilterChips(
+        context,
+        filters.catalog,
+        options,
+        (catalog) => bloc.add(
+          GameSearchFiltersChanged(filters.copyWith(catalog: catalog)),
         ),
-      );
-    }
-
-    for (final platform in state.availablePlatforms) {
-      if (!filters.platformIds.contains(platform.id)) continue;
-      chips.add(
-        _ActiveFilterChip(
-          label: platform.name,
-          onRemoved: () => bloc.add(
-            GameSearchFiltersChanged(
-              filters.copyWith(
-                platformIds: {...filters.platformIds}..remove(platform.id),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (filters.year != null) {
-      chips.add(
-        _ActiveFilterChip(
-          label: context.l10n.searchFilterChipYear(filters.year!),
-          onRemoved: () => bloc.add(
-            GameSearchFiltersChanged(filters.copyWith(clearYear: true)),
-          ),
-        ),
-      );
-    }
-
-    if (chips.isEmpty) return const SizedBox.shrink();
-
-    final theme = Theme.of(context);
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 48,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: chips.length + 1,
-            separatorBuilder: (context, index) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              if (index == chips.length) {
-                return Center(
-                  child: TextButton(
-                    onPressed: () => bloc.add(const GameSearchFiltersCleared()),
-                    child: Text(context.l10n.searchFiltersClearAll),
-                  ),
-                );
-              }
-              return Center(child: chips[index]);
-            },
-          ),
+        ActiveFilterChipsRow(
+          chips: chips,
+          onClearAll: () => bloc.add(const GameSearchFiltersCleared()),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            context.l10n.searchFiltersLoadedScopeCaption,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+        if (filters.sort != GameSearchSort.relevance)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.lg,
+              0,
+              PfSpace.lg,
+              PfSpace.sm,
+            ),
+            child: Text(
+              context.l10n.searchSortLoadedScopeCaption,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ),
       ],
     );
-  }
-}
-
-class _ActiveFilterChip extends StatelessWidget {
-  const _ActiveFilterChip({required this.label, required this.onRemoved});
-
-  final String label;
-  final VoidCallback onRemoved;
-
-  @override
-  Widget build(BuildContext context) {
-    return InputChip(label: Text(label), onDeleted: onRemoved);
   }
 }
 
@@ -333,12 +303,14 @@ class _SearchResults extends StatefulWidget {
     required this.isLoadingMore,
     required this.offsetLimitReached,
     required this.scrollController,
+    this.loadMoreFailed = false,
   });
 
   final List<SearchGame> games;
   final bool hasMore;
   final bool isLoadingMore;
   final bool offsetLimitReached;
+  final bool loadMoreFailed;
   final ScrollController scrollController;
 
   @override
@@ -381,23 +353,67 @@ class _SearchResultsState extends State<_SearchResults> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    final games = widget.games;
+    final showFooter =
+        widget.hasMore ||
+        widget.isLoadingMore ||
+        widget.offsetLimitReached ||
+        widget.loadMoreFailed;
+    final wide = MediaQuery.sizeOf(context).width >= PfBreakpoints.twoPane;
+
+    Widget item(BuildContext context, int index) => StaggeredReveal(
+      index: index % 20,
+      child: GameSearchCard(game: games[index]),
+    );
+
+    return CustomScrollView(
       controller: widget.scrollController,
-      padding: const EdgeInsets.all(8.0),
-      itemCount:
-          widget.games.length +
-          (widget.hasMore || widget.isLoadingMore || widget.offsetLimitReached
-              ? 1
-              : 0),
-      itemBuilder: (context, index) {
-        if (index == widget.games.length) {
-          if (widget.offsetLimitReached) {
-            return _OffsetLimitReachedMessage();
-          }
-          return _LoadingMoreIndicator();
-        }
-        return GameSearchCard(game: widget.games[index]);
-      },
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            PfSpace.lg,
+            PfSpace.xs,
+            PfSpace.lg,
+            PfSpace.lg,
+          ),
+          sliver: wide
+              ? SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 560,
+                    mainAxisExtent: 124,
+                    crossAxisSpacing: PfSpace.md,
+                    mainAxisSpacing: PfSpace.sm,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    item,
+                    childCount: games.length,
+                  ),
+                )
+              : SliverList.separated(
+                  itemCount: games.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: PfSpace.sm),
+                  itemBuilder: item,
+                ),
+        ),
+        if (showFooter)
+          SliverToBoxAdapter(
+            child: widget.offsetLimitReached
+                ? _OffsetLimitReachedMessage()
+                : widget.loadMoreFailed && !widget.isLoadingMore
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: PfSpace.xl),
+                    child: ErrorState(
+                      compact: true,
+                      message: context.l10n.searchLoadMoreFailed,
+                      onRetry: () => context.read<GameSearchBloc>().add(
+                        const GameSearchRetryRequested(),
+                      ),
+                    ),
+                  )
+                : _LoadingMoreIndicator(),
+          ),
+      ],
     );
   }
 }
@@ -409,6 +425,11 @@ class _InitialState extends StatelessWidget {
       icon: Icons.search,
       title: context.l10n.searchGamesInitialTitle,
       hint: context.l10n.searchGamesInitialHint,
+      action: OutlinedButton.icon(
+        onPressed: () => context.pushNamed(AppRouter.exploreName),
+        icon: const Icon(Icons.explore_outlined),
+        label: Text(context.l10n.searchExploreCatalog),
+      ),
     );
   }
 }
@@ -420,30 +441,6 @@ class _LoadingState extends StatelessWidget {
       label: context.l10n.loadingLabel,
       liveRegion: true,
       child: const SearchResultsSkeleton(),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyLarge,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 }
@@ -463,42 +460,9 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// Shown when the active filters hide every loaded result. It keeps the
-/// "no matches / clear filters" guidance visible, but when more catalog pages
-/// exist it auto-fetches them: filtering must never halt paging, otherwise a
-/// later page holding matching games would never be loaded.
-class _FilteredEmptyState extends StatefulWidget {
-  const _FilteredEmptyState({required this.canLoadMore});
-
-  final bool canLoadMore;
-
-  @override
-  State<_FilteredEmptyState> createState() => _FilteredEmptyStateState();
-}
-
-class _FilteredEmptyStateState extends State<_FilteredEmptyState> {
-  @override
-  void initState() {
-    super.initState();
-    _maybeLoadMore();
-  }
-
-  @override
-  void didUpdateWidget(covariant _FilteredEmptyState oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _maybeLoadMore();
-  }
-
-  /// The filtered-empty view never overflows the viewport, so the scroll-driven
-  /// load-more can't fire. While more pages exist, fetch the next one so paging
-  /// continues until a matching game shows up or the catalog is exhausted.
-  void _maybeLoadMore() {
-    if (!widget.canLoadMore) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !widget.canLoadMore) return;
-      context.read<GameSearchBloc>().add(const GameSearchLoadMore());
-    });
-  }
+/// Shown when the active filters match nothing for the query.
+class _FilteredEmptyState extends StatelessWidget {
+  const _FilteredEmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -506,7 +470,7 @@ class _FilteredEmptyStateState extends State<_FilteredEmptyState> {
       icon: Icons.filter_alt_off,
       title: context.l10n.searchNoResultsForFiltersTitle,
       hint: context.l10n.searchNoResultsForFiltersHint,
-      action: FilledButton.tonalIcon(
+      action: OutlinedButton.icon(
         onPressed: () => context.read<GameSearchBloc>().add(
           const GameSearchFiltersCleared(),
         ),
@@ -518,7 +482,7 @@ class _FilteredEmptyStateState extends State<_FilteredEmptyState> {
 }
 
 /// Shared friendly placeholder for the search screen's initial and no-results
-/// states: a soft icon, a warm headline and a short supporting hint.
+/// states, built on the app-wide [EmptyState].
 class _SearchMessageView extends StatelessWidget {
   const _SearchMessageView({
     required this.icon,
@@ -534,40 +498,7 @@ class _SearchMessageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 72,
-              color: theme.colorScheme.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              hint,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (action != null) ...[const SizedBox(height: 20), action!],
-          ],
-        ),
-      ),
-    );
+    return EmptyState(icon: icon, title: title, message: hint, action: action);
   }
 }
 
@@ -575,8 +506,13 @@ class _LoadingMoreIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.all(16.0),
-      child: Center(child: CircularProgressIndicator()),
+      padding: EdgeInsets.all(PfSpace.xl),
+      child: Center(
+        child: SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      ),
     );
   }
 }
@@ -591,7 +527,7 @@ class _OffsetLimitReachedMessage extends StatelessWidget {
           context.l10n.searchGamesOffsetLimitReached,
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.orange[700]),
+          ).textTheme.bodyMedium?.copyWith(color: context.pfColors.warningFg),
           textAlign: TextAlign.center,
         ),
       ),

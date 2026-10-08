@@ -1,6 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
+import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/widgets/game_cover.dart';
+import 'package:picklog/core/widgets/pf_network_image.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
 
 /// A card displaying a YouTube video thumbnail with a play button overlay.
 class VideoThumbnailCard extends StatelessWidget {
@@ -23,105 +28,52 @@ class VideoThumbnailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.grey[900],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Thumbnail image
-          CachedNetworkImage(
-            imageUrl: thumbnailUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey[800],
-              child: const Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey[800],
-              child: const Icon(
-                Icons.video_library,
-                size: 48,
-                color: Colors.white38,
-              ),
-            ),
-          ),
-          // Play button overlay
-          Center(
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.9),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.play_arrow,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
-          ),
-          // Gradient overlay at bottom for title
-          if (title != null)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-                child: Text(
-                  title!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
+    final colors = context.pfColors;
+    const dark = PicklogColors.dark;
 
-          // Tap target with web hover/focus affordance, overlaid so the
-          // ripple covers the whole card without altering the layout.
-          Positioned.fill(
-            child: Material(
-              type: MaterialType.transparency,
-              child: Semantics(
-                label: title,
-                button: true,
-                child: InkWell(
-                  onTap: () {
-                    context.pushNamed(
-                      'videoPlayer',
-                      pathParameters: {'videoId': videoId},
-                      queryParameters: title != null ? {'title': title!} : {},
-                    );
-                  },
-                  mouseCursor: SystemMouseCursors.click,
-                ),
+    return PressScale(
+      semanticLabel: title,
+      onTap: () => context.pushNamed(
+        AppRouter.videoPlayerName,
+        pathParameters: {'videoId': videoId},
+        queryParameters: title != null ? {'title': title!} : {},
+      ),
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: PfRadius.mdAll,
+          border: Border.all(color: colors.hairline),
+          color: colors.surface2,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PfNetworkImage(
+              url: thumbnailUrl,
+              placeholder: const CoverPlaceholder(showIcon: false),
+              error: const CoverPlaceholder(),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: PicklogColors.imageScrim.withValues(alpha: 0.25),
               ),
             ),
-          ),
-        ],
+            Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: PicklogColors.imageScrim.withValues(alpha: 0.72),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: dark.hairlineStrong),
+                ),
+                child: Icon(Icons.play_arrow_rounded, color: dark.textHi),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

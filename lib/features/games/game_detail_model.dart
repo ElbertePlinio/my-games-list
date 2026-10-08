@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/features/games/release_date.dart';
 
 /// Represents the cover image for a game.
 class GameDetailCover extends Equatable {
@@ -227,11 +228,7 @@ class GameDetail extends Equatable {
               ?.map((p) => Platform.fromJson(p as Map<String, dynamic>))
               .toList() ??
           [],
-      firstReleaseDate: json['first_release_date'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (json['first_release_date'] as int) * 1000,
-            )
-          : null,
+      firstReleaseDate: parseReleaseDate(json['first_release_date']),
       totalRating: (json['total_rating'] as num?)?.toDouble(),
       involvedCompanies:
           (json['involved_companies'] as List<dynamic>?)

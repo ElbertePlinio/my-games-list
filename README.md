@@ -1,10 +1,10 @@
-# My Games List
+# Picklog
 
 A Flutter application for managing your personal games collection, discovering new games, and tracking your gaming journey.
 
 ## Overview
 
-My Games List is a cross-platform mobile application built with Flutter that allows users to:
+Picklog is a cross-platform mobile application built with Flutter that allows users to:
 
 - Discover upcoming and anticipated games via IGDB integration
 - Track games in a personal library with status, scores, and playtime
@@ -186,7 +186,7 @@ fvm doctor
 
    ```bash
    git clone <repository-url>
-   cd my_games_list/app
+   cd MyGamesList/app
    ```
 
 2. **Set up Flutter SDK version**
@@ -220,7 +220,7 @@ Create a `.env` file in the app root:
 
 ```
 API_BASE_URL=http://localhost:8080/api/v1
-WEB_BASE_URL=https://mygameslist.com
+WEB_BASE_URL=https://picklog.app
 ```
 
 ## Development

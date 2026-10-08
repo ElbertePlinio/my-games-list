@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:picklog/core/widgets/score_badge.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
@@ -63,7 +67,12 @@ void main() {
 
     tearDown(() => libraryBloc.close());
 
-    Widget buildSubject({LibraryEntry? existingEntry}) {
+    Widget buildSubject({
+      LibraryEntry? existingEntry,
+      GameStatus? initialStatus,
+      List<Platform> sheetPlatforms = platforms,
+      Future<List<Platform>> Function()? loadPlatforms,
+    }) {
       return MaterialApp(
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -79,8 +88,10 @@ void main() {
             child: AddToLibraryBottomSheet(
               gameId: 42,
               gameName: 'Hollow Knight',
-              platforms: platforms,
+              platforms: sheetPlatforms,
               existingEntry: existingEntry,
+              initialStatus: initialStatus,
+              loadPlatforms: loadPlatforms,
             ),
           ),
         ),
@@ -92,25 +103,47 @@ void main() {
     ) async {
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Add to Library'), findsOneWidget);
+      expect(find.text('Add to library'), findsOneWidget);
       expect(find.text('Hollow Knight'), findsOneWidget);
       // Add mode does not show the delete affordance.
-      expect(find.text('Remove from Library'), findsNothing);
+      expect(find.text('Remove from library'), findsNothing);
     });
 
-    testWidgets('renders all section titles and a status chip per status', (
+    testWidgets('groups essentials first and keeps details collapsed', (
       tester,
     ) async {
+      // A tall window so the whole first step fits in the sheet.
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       await tester.pumpWidget(buildSubject());
 
-      expect(find.text('Status'), findsOneWidget);
-      expect(find.text('Platform'), findsOneWidget);
-      expect(find.text('Rating'), findsOneWidget);
-      expect(find.text('Playtime'), findsOneWidget);
-      expect(find.text('Dates'), findsOneWidget);
-      expect(find.text('Difficulty'), findsOneWidget);
-      expect(find.text('Notes'), findsOneWidget);
+      expect(find.text('STATUS'), findsOneWidget);
+      expect(find.text('PLATFORM'), findsOneWidget);
+      expect(find.text('RATING'), findsOneWidget);
       expect(find.byType(ChoiceChip), findsNWidgets(GameStatus.values.length));
+      expect(find.byType(ScoreRing), findsOneWidget);
+      // Optional details stay folded away in add mode.
+      expect(find.text('More details'), findsOneWidget);
+      expect(find.text('PLAYTIME'), findsNothing);
+
+      await tester.tap(find.text('More details'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PLAYTIME'), findsOneWidget);
+      expect(find.text('DATES'), findsOneWidget);
+      expect(find.text('DIFFICULTY'), findsOneWidget);
+      expect(find.text('NOTES'), findsOneWidget);
+    });
+
+    testWidgets('the score preview follows the slider in the 0-100 format', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+
+      final ring = tester.widget<ScoreRing>(find.byType(ScoreRing));
+      expect(ring.score, 80);
+      expect(find.text('80'), findsWidgets);
     });
 
     testWidgets('Save in add mode dispatches LibraryAddGameRequested with the '
@@ -171,9 +204,10 @@ void main() {
       (tester) async {
         await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
 
-        expect(find.text('Edit Entry'), findsOneWidget);
-        expect(find.text('Remove from Library'), findsOneWidget);
-        // Notes and difficulty controllers are pre-populated.
+        expect(find.text('Edit entry'), findsOneWidget);
+        expect(find.text('Remove from library'), findsOneWidget);
+        // Details that already have values start expanded, and the notes and
+        // difficulty controllers are pre-populated.
         expect(find.text('Great game'), findsOneWidget);
         expect(find.text('Hard'), findsOneWidget);
       },
@@ -193,9 +227,39 @@ void main() {
       final event = captured as LibraryUpdateEntryRequested;
       expect(event.entryId, 'entry-1');
       expect(event.status, GameStatus.playing);
-      expect(event.score, 80);
       expect(event.isFavorite, isTrue);
-      expect(event.notes, 'Great game');
+      expect(
+        event.details,
+        const LibraryEntryDetails(
+          score: 80,
+          difficulty: 'Hard',
+          notes: 'Great game',
+        ),
+      );
+    });
+
+    testWidgets('edit mode can deliberately clear the score and notes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+
+      // Moving the score slider to 0 means no score.
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+      await tester.pump();
+      expect(find.text('Not rated'), findsOneWidget);
+      final notes = find.widgetWithText(TextField, 'Great game');
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, '');
+      await tester.pump();
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      final event =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      // Null details are sent as null, so the API clears them.
+      expect(event.details, const LibraryEntryDetails(difficulty: 'Hard'));
     });
 
     testWidgets('delete confirmation dispatches LibraryDeleteEntryRequested', (
@@ -204,9 +268,9 @@ void main() {
       await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
 
       // The delete button sits at the bottom of the draggable sheet.
-      await tester.ensureVisible(find.text('Remove from Library'));
+      await tester.ensureVisible(find.text('Remove from library'));
       await tester.pump();
-      await tester.tap(find.text('Remove from Library'));
+      await tester.tap(find.text('Remove from library'));
       await tester.pumpAndSettle();
 
       // The confirmation dialog is shown.
@@ -222,37 +286,233 @@ void main() {
       expect((captured as LibraryDeleteEntryRequested).entryId, 'entry-1');
     });
 
-    testWidgets('shows a success message when the bloc reports the game was '
-        'added', (tester) async {
-      whenListen(
-        libraryBloc,
-        Stream<LibraryState>.fromIterable([
-          const LibraryState(gameAddedOrUpdated: true),
-        ]),
-        initialState: const LibraryState(),
-      );
-
-      await tester.pumpWidget(buildSubject());
-      await tester.pump();
-
-      expect(find.text('Game added to library successfully.'), findsOneWidget);
-    });
-
-    testWidgets('shows an error message when the bloc reports an error', (
+    testWidgets('adding a game shows no toast; the card state shows it', (
       tester,
     ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
       whenListen(
         libraryBloc,
-        Stream<LibraryState>.fromIterable([
-          const LibraryState(errorMessage: 'Network down'),
-        ]),
+        states.stream,
         initialState: const LibraryState(),
       );
 
       await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Save'));
+      final add =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryAddGameRequested;
+      states.add(
+        LibraryState(gameAddedOrUpdated: true, savedRequestId: add.requestId),
+      );
       await tester.pump();
 
-      expect(find.text('Network down'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('shows a localized message when saving fails', (tester) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        libraryBloc,
+        states.stream,
+        initialState: const LibraryState(),
+      );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Save'));
+      final add =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryAddGameRequested;
+      states.add(
+        LibraryState(
+          failure: LibraryFailure(
+            LibraryAction.add,
+            AppErrorKind.network,
+            requestId: add.requestId,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.text("Couldn't save your changes. Try again."),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a Finished initial status keeps a set end date', (
+      tester,
+    ) async {
+      final entry = _buildEntry().copyWith(endDate: DateTime(2024, 3, 9));
+      await tester.pumpWidget(
+        buildSubject(existingEntry: entry, initialStatus: GameStatus.finished),
+      );
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      final event =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      expect(event.status, GameStatus.finished);
+      expect(event.details?.endDate, DateTime(2024, 3, 9));
+    });
+
+    testWidgets('loaded platforms replace the single current platform', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildSubject(
+          existingEntry: _buildEntry(),
+          sheetPlatforms: const [Platform(id: 6, name: 'PC')],
+          loadPlatforms: () async => platforms,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byType(DropdownButtonFormField<Platform>),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<Platform>));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PlayStation 4'), findsWidgets);
+    });
+
+    testWidgets('a save that this sheet did not send leaves it open', (
+      tester,
+    ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        libraryBloc,
+        states.stream,
+        initialState: const LibraryState(),
+      );
+
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+      states
+        ..add(const LibraryState(gameAddedOrUpdated: true))
+        ..add(
+          const LibraryState(
+            failure: LibraryFailure(LibraryAction.update, AppErrorKind.network),
+          ),
+        );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit entry'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+      verifyNever(() => libraryBloc.add(any()));
+    });
+
+    testWidgets('loading platforms keeps the current platform selected', (
+      tester,
+    ) async {
+      final entry = _buildEntry().copyWith(
+        platform: const CachedPlatform(
+          id: 'p-48',
+          igdbPlatformId: 48,
+          name: 'PS4',
+        ),
+      );
+      await tester.pumpWidget(
+        buildSubject(
+          existingEntry: entry,
+          sheetPlatforms: const [Platform(id: 48, name: 'PS4')],
+          loadPlatforms: () async => platforms,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('PlayStation 4'), findsOneWidget);
+      expect(find.text('PS4'), findsNothing);
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      final event =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      expect(event.igdbPlatformId, 48);
+    });
+
+    testWidgets('during its save, only its own result closes the sheet', (
+      tester,
+    ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        libraryBloc,
+        states.stream,
+        initialState: const LibraryState(),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showModalBottomSheet<bool>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => BlocProvider<LibraryBloc>.value(
+                    value: libraryBloc,
+                    child: AddToLibraryBottomSheet(
+                      gameId: 42,
+                      gameName: 'Hollow Knight',
+                      platforms: platforms,
+                      existingEntry: _buildEntry(),
+                    ),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save'));
+      final own =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      final other = own.requestId! + 1000;
+      states
+        ..add(LibraryState(gameAddedOrUpdated: true, savedRequestId: other))
+        ..add(
+          LibraryState(
+            failure: LibraryFailure(
+              LibraryAction.update,
+              AppErrorKind.network,
+              requestId: other,
+            ),
+          ),
+        );
+      await tester.pumpAndSettle();
+      expect(find.text('Edit entry'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+
+      states.add(
+        LibraryState(gameAddedOrUpdated: true, savedRequestId: own.requestId),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Edit entry'), findsNothing);
+    });
+
+    testWidgets('Save is disabled while its save runs', (tester) async {
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      verify(() => libraryBloc.add(any())).called(1);
     });
   });
 }

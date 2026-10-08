@@ -2,20 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "My Games List",
+      "name": "Picklog",
       "request": "launch",
       "type": "dart",
       "args": ["--dart-define-from-file=.env"]
     },
     {
-      "name": "My Games List (profile mode)",
+      "name": "Picklog (profile mode)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "profile",
       "args": ["--dart-define-from-file=.env"]
     },
     {
-      "name": "My Games List (release mode)",
+      "name": "Picklog (release mode)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "release",

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:picklog/core/services/connectivity_cubit.dart';
 import 'package:picklog/core/utils/app_router.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
 import 'package:picklog/core/widgets/visibility_hero.dart';
 import 'package:picklog/features/browse/bloc/browse_genre_games_bloc.dart';
 import 'package:picklog/features/browse/bloc/browse_genre_games_event.dart';
@@ -140,25 +141,22 @@ void main() {
     expect(heroes, hasLength(1), reason: 'expected one source Hero for $tag');
   }
 
-  /// Taps the tile whose source cover Hero carries [tag]. The tile's
-  /// whole-surface tap target is the InkWell stacked over that VisibilityHero,
-  /// so navigate via the InkWell nearest the matching Hero. Scrolls it into
-  /// view first since lower rows (e.g. Coming Soon) start below the fold.
+  /// Taps the card whose source cover Hero carries [tag]. The card's
+  /// whole-surface tap target is the [PressScale] wrapping that
+  /// VisibilityHero. Scrolls it into view first since lower rows (e.g. Coming
+  /// Soon) start below the fold.
   Future<void> tapTileWithHero(WidgetTester tester, String tag) async {
-    final inkWell = find
-        .descendant(
-          of: find.ancestor(
-            of: find.byWidgetPredicate(
-              (w) => w is VisibilityHero && w.tag == tag,
-            ),
-            matching: find.byType(Stack),
+    final card = find
+        .ancestor(
+          of: find.byWidgetPredicate(
+            (w) => w is VisibilityHero && w.tag == tag,
           ),
-          matching: find.byType(InkWell),
+          matching: find.byType(PressScale),
         )
         .first;
-    await tester.ensureVisible(inkWell);
+    await tester.ensureVisible(card);
     await tester.pumpAndSettle();
-    await tester.tap(inkWell);
+    await tester.tap(card);
     await tester.pumpAndSettle();
   }
 

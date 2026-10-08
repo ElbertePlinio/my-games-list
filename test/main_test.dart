@@ -97,7 +97,7 @@ void main() {
       final settingsBloc = context.read<SettingsBloc>();
 
       // Toggle to dark mode
-      settingsBloc.add(const SettingsDarkModeSet(true));
+      settingsBloc.add(const SettingsThemeModeSet(ThemeMode.dark));
       await tester.pumpAndSettle();
 
       // Assert - Should still have TextFormFields (still on sign-in page, not reset)
@@ -105,7 +105,7 @@ void main() {
       expect(find.byType(Scaffold), findsOneWidget);
 
       // Toggle back to light mode
-      settingsBloc.add(const SettingsDarkModeSet(false));
+      settingsBloc.add(const SettingsThemeModeSet(ThemeMode.light));
       await tester.pumpAndSettle();
 
       // Assert - Should still be on sign-in page
@@ -120,10 +120,10 @@ void main() {
       await tester.pumpWidget(const PicklogApp());
       await tester.pumpAndSettle();
 
-      // Initially light: themeMode follows the (light) setting, and the static
+      // Initially System: themeMode follows the device, and the static
       // light/dark themes carry the correct brightnesses.
       var materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
-      expect(materialApp.themeMode, equals(ThemeMode.light));
+      expect(materialApp.themeMode, equals(ThemeMode.system));
       expect(
         materialApp.theme?.colorScheme.brightness,
         equals(Brightness.light),
@@ -136,7 +136,7 @@ void main() {
       // Act - Enable dark mode
       final context = tester.element(find.byType(MaterialApp));
       final settingsBloc = context.read<SettingsBloc>();
-      settingsBloc.add(const SettingsDarkModeSet(true));
+      settingsBloc.add(const SettingsThemeModeSet(ThemeMode.dark));
       await tester.pumpAndSettle();
 
       // Assert - themeMode switches to dark (the themes themselves are reused).

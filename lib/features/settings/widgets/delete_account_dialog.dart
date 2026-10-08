@@ -48,7 +48,6 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
             onChanged: (value) => _onChanged(value, confirmWord),
             decoration: InputDecoration(
               labelText: context.l10n.deleteAccountConfirmLabel(confirmWord),
-              border: const OutlineInputBorder(),
             ),
           ),
         ],

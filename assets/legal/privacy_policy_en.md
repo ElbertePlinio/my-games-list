@@ -6,11 +6,11 @@ Version: 2026-06-22
 
 Effective date: June 22, 2026
 
-This Privacy Policy describes how MyGamesList ("the app", "the service", "we", "us") collects, uses, shares, and protects your personal data, in accordance with Brazilian Law No. 13.709/2018 (the General Data Protection Law, "LGPD"). By creating an account and using the service, you acknowledge the practices described here.
+This Privacy Policy describes how Picklog ("the app", "the service", "we", "us") collects, uses, shares, and protects your personal data, in accordance with Brazilian Law No. 13.709/2018 (the General Data Protection Law, "LGPD"). By creating an account and using the service, you acknowledge the practices described here.
 
 ## 1. Who is the data controller
 
-The controller of the personal data processed in MyGamesList is **Elberte Plínio**, an individual. MyGamesList is maintained by a natural person, not by a company; the LGPD (Art. 5, VI) expressly allows the controller to be an individual.
+The controller of the personal data processed in Picklog is **Elberte Plínio**, an individual. Picklog is maintained by a natural person, not by a company; the LGPD (Art. 5, VI) expressly allows the controller to be an individual.
 
 The controller is the party responsible for the decisions regarding the processing of your personal data.
 
@@ -73,6 +73,29 @@ We do not sell your personal data. We share data only with processors that handl
 - Google and Firebase: used for authentication (social login with Google and Apple) and for sending push notifications (Firebase Cloud Messaging). When you use social login, we receive from the provider the identifier, email, and name associated with the account.
 - IGDB (Internet Game Database): used as the source of the game catalogue (names, covers, release dates, and platforms). Queries to IGDB concern catalogue games; we do not send your personal data or your library data to IGDB.
 - Firebase Crashlytics (Google): used, only with your explicit consent, to record app crashes and errors in order to diagnose service stability. These reports may contain technical context about the failure.
+
+## 5.1 Optional features: AI suggestions and linked gaming accounts
+
+DRAFT FOR REVIEW: This subsection covers two optional features. The controller must review and approve it before it is published.
+
+AI suggestions (optional and off until you agree):
+
+- What the feature does: it suggests games from your backlog ("Play next") and new games you do not have yet ("Discover with AI").
+- Processor: OpenAI generates the suggestions on our behalf.
+- What we send to OpenAI: the names, statuses, scores, genres, and playtime of games in your library, and the optional note or request you type. We never send your email, your username, or your account identifier.
+- What we keep: the date and time you turned the feature on and a daily count of your AI requests, which we use to apply the daily limit. Picklog does not log the text it sends to OpenAI or the suggestions it receives.
+- Legal basis: consent (Art. 7, I). Nothing is sent to OpenAI until you accept the opt-in in the app. You can withdraw consent at any time in Settings, under AI suggestions. After you withdraw it, Picklog sends no new requests.
+
+Linked gaming accounts (optional):
+
+- What the feature does: it imports your achievements, trophies, and playtime, and, if you choose, adds games you own or played to your library.
+- What you give us: a public identifier only, such as a Steam profile URL or SteamID, an Xbox gamertag, a RetroAchievements username, or a PlayStation online ID. We never ask for your passwords or session tokens for these services.
+- Where the data comes from: Steam (Steam Web API), Xbox (through the OpenXBL service), RetroAchievements, and PlayStation (experimental, public trophy lists only). We read only data that the service makes public for your profile.
+- What we store: the identifier, display name, avatar and profile links, sync status and time, per-game progress and playtime, and achievement data (names, descriptions, icons, unlock dates, and rarity).
+- Legal basis: performance of a contract (Art. 7, V), because you ask us to link the account and import the data.
+- How long we keep it: until you unlink the account or delete your Picklog account. Unlinking deletes the imported progress and achievements. Games that the import added to your library stay until you remove them.
+
+The data export in Settings includes the data of both features. OpenAI and the gaming services above may process data outside Brazil, under Art. 33 of the LGPD.
 
 ## 6. International data transfer
 

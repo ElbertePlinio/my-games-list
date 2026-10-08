@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
@@ -47,10 +48,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         return Scaffold(
           appBar: AppBar(
             title: Text(widget.title ?? context.l10n.videoPlayerTitle),
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
+            backgroundColor: PicklogColors.imageScrim,
+            foregroundColor: PicklogColors.onImage,
           ),
-          backgroundColor: Colors.black,
+          backgroundColor: PicklogColors.imageScrim,
           body: Center(child: player),
         );
       },

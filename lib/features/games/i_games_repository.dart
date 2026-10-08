@@ -1,4 +1,5 @@
 import 'package:picklog/features/games/anticipated_game_model.dart';
+import 'package:picklog/features/games/catalog_filters.dart';
 import 'package:picklog/features/games/collection_model.dart';
 import 'package:picklog/features/games/discovery_game_model.dart';
 import 'package:picklog/features/games/featured_banner_model.dart';
@@ -38,13 +39,25 @@ abstract class IGamesRepository {
     int offset = 0,
   });
 
-  /// Searches for games matching the [query] with pagination.
+  /// Searches for games matching the [query] with pagination. The API
+  /// applies [filters] as IGDB where clauses.
   Future<SearchGamesResponse> searchGames(
     String query, {
     int limit = 20,
     int offset = 0,
+    CatalogFilters filters = const CatalogFilters(),
   });
 
   /// Fetches detailed information about a specific game by [id].
   Future<GameDetail> getGameDetails(int id);
+
+  /// Fetches the curated platform list for filters.
+  Future<List<PlatformOption>> getPlatforms();
+
+  /// Browses the catalog with server-side [filters] and sort.
+  Future<DiscoveryGamesResponse> exploreGames(
+    ExploreFilters filters, {
+    int limit = 20,
+    int offset = 0,
+  });
 }

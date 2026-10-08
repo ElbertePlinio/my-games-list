@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
+import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/release_date.dart';
 
 /// Enum representing the status of a game in the user's library
 enum GameStatus {
@@ -44,22 +46,6 @@ enum GameStatus {
     }
   }
 
-  /// Returns a user-friendly display name
-  String get displayName {
-    switch (this) {
-      case GameStatus.planned:
-        return 'Planned';
-      case GameStatus.playing:
-        return 'Playing';
-      case GameStatus.finished:
-        return 'Finished';
-      case GameStatus.dropped:
-        return 'Dropped';
-      case GameStatus.onHold:
-        return 'On Hold';
-    }
-  }
-
   /// Returns the localized display name for the current locale.
   String localizedName(BuildContext context) {
     switch (this) {
@@ -86,6 +72,9 @@ class CachedGame extends Equatable {
     this.coverUrl,
     this.firstReleaseDate,
     required this.lastSyncedAt,
+    this.totalRating,
+    this.slug,
+    this.genres = const [],
   });
 
   factory CachedGame.fromJson(Map<String, dynamic> json) {
@@ -94,10 +83,15 @@ class CachedGame extends Equatable {
       igdbId: json['igdb_id'] as int,
       name: json['name'] as String,
       coverUrl: json['cover_url'] as String?,
-      firstReleaseDate: json['first_release_date'] != null
-          ? DateTime.parse(json['first_release_date'] as String)
-          : null,
+      firstReleaseDate: parseReleaseDate(json['first_release_date']),
       lastSyncedAt: DateTime.parse(json['last_synced_at'] as String),
+      totalRating: (json['total_rating'] as num?)?.toDouble(),
+      slug: json['slug'] as String?,
+      genres:
+          (json['genres'] as List<dynamic>?)
+              ?.map((g) => Genre.fromJson(g as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
@@ -108,6 +102,11 @@ class CachedGame extends Equatable {
   final DateTime? firstReleaseDate;
   final DateTime lastSyncedAt;
 
+  /// IGDB community rating, 0-100.
+  final double? totalRating;
+  final String? slug;
+  final List<Genre> genres;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -116,6 +115,11 @@ class CachedGame extends Equatable {
       'cover_url': coverUrl,
       'first_release_date': firstReleaseDate?.toIso8601String(),
       'last_synced_at': lastSyncedAt.toIso8601String(),
+      'total_rating': totalRating,
+      'slug': slug,
+      'genres': [
+        for (final g in genres) {'id': g.id, 'name': g.name},
+      ],
     };
   }
 
@@ -127,6 +131,9 @@ class CachedGame extends Equatable {
     coverUrl,
     firstReleaseDate,
     lastSyncedAt,
+    totalRating,
+    slug,
+    genres,
   ];
 }
 
@@ -190,6 +197,7 @@ class LibraryEntry extends Equatable {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.collectionIds = const [],
   });
 
   factory LibraryEntry.fromJson(Map<String, dynamic> json) {
@@ -214,6 +222,11 @@ class LibraryEntry extends Equatable {
       notes: json['notes'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      collectionIds:
+          (json['collection_ids'] as List<dynamic>?)
+              ?.map((id) => id as String)
+              .toList() ??
+          const [],
     );
   }
 
@@ -232,17 +245,8 @@ class LibraryEntry extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  /// Returns the playtime formatted as hours (e.g., "10.5 hrs")
-  String get playtimeFormatted {
-    if (playtimeMinutes == null || playtimeMinutes == 0) {
-      return '0 hrs';
-    }
-    final hours = playtimeMinutes! / 60;
-    if (hours < 1) {
-      return '$playtimeMinutes min';
-    }
-    return '${hours.toStringAsFixed(1)} hrs';
-  }
+  /// Ids of the caller's collections that hold this entry.
+  final List<String> collectionIds;
 
   /// Returns a copy of this entry with updated fields
   LibraryEntry copyWith({
@@ -260,6 +264,7 @@ class LibraryEntry extends Equatable {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<String>? collectionIds,
   }) {
     return LibraryEntry(
       id: id ?? this.id,
@@ -276,6 +281,7 @@ class LibraryEntry extends Equatable {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      collectionIds: collectionIds ?? this.collectionIds,
     );
   }
 
@@ -295,6 +301,7 @@ class LibraryEntry extends Equatable {
       'notes': notes,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'collection_ids': collectionIds,
     };
   }
 
@@ -314,7 +321,53 @@ class LibraryEntry extends Equatable {
     notes,
     createdAt,
     updatedAt,
+    collectionIds,
   ];
+}
+
+/// The entry fields that PUT /library/{id} replaces on every call.
+///
+/// The API sets these columns straight from the request, so an omitted field
+/// becomes null. Every update sends all of them: [LibraryEntryDetails.of]
+/// keeps the current values, and a null field here clears that value.
+class LibraryEntryDetails extends Equatable {
+  const LibraryEntryDetails({
+    this.score,
+    this.startDate,
+    this.endDate,
+    this.difficulty,
+    this.notes,
+  });
+
+  /// The current values of [entry], to send back unchanged.
+  factory LibraryEntryDetails.of(LibraryEntry entry) => LibraryEntryDetails(
+    score: entry.score,
+    startDate: entry.startDate,
+    endDate: entry.endDate,
+    difficulty: entry.difficulty,
+    notes: entry.notes,
+  );
+
+  final int? score;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String? difficulty;
+  final String? notes;
+
+  /// Request fields. Null values are kept so the payload is always complete.
+  Map<String, dynamic> toJson() => {
+    'score': score,
+    'start_date': _apiDate(startDate),
+    'end_date': _apiDate(endDate),
+    'difficulty': difficulty,
+    'notes': notes,
+  };
+
+  static String? _apiDate(DateTime? date) =>
+      date?.toIso8601String().split('T').first;
+
+  @override
+  List<Object?> get props => [score, startDate, endDate, difficulty, notes];
 }
 
 /// Response model for library entries list

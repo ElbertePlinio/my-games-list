@@ -1,15 +1,33 @@
 import 'package:equatable/equatable.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
 
 /// Enum representing the status of library loading
 enum LibraryStatus { initial, loading, success, failure }
+
+/// Which library action failed. The UI picks a localized message from it.
+enum LibraryAction { load, refresh, add, update, delete, toggleFavorite }
+
+/// One-shot failure report: the action that failed and why.
+class LibraryFailure extends Equatable {
+  const LibraryFailure(this.action, this.kind, {this.requestId});
+
+  final LibraryAction action;
+  final AppErrorKind kind;
+
+  /// The request id of the add or update that failed, if it had one.
+  final int? requestId;
+
+  @override
+  List<Object?> get props => [action, kind, requestId];
+}
 
 /// State class for library
 class LibraryState extends Equatable {
   const LibraryState({
     this.status = LibraryStatus.initial,
     this.entries = const [],
-    this.errorMessage,
+    this.failure,
     this.userId,
     this.showFavoritesOnly = false,
     this.statusFilter,
@@ -17,11 +35,15 @@ class LibraryState extends Equatable {
     this.isAddingGame = false,
     this.isUpdatingEntry = false,
     this.gameAddedOrUpdated = false,
+    this.savedRequestId,
+    this.pendingWrites = 0,
   });
 
   final LibraryStatus status;
   final List<LibraryEntry> entries;
-  final String? errorMessage;
+
+  /// Set on the emission right after a failure, cleared on the next change.
+  final LibraryFailure? failure;
   final String? userId;
   final bool showFavoritesOnly;
   final GameStatus? statusFilter;
@@ -29,6 +51,13 @@ class LibraryState extends Equatable {
   final bool isAddingGame;
   final bool isUpdatingEntry;
   final bool gameAddedOrUpdated;
+
+  /// The request id of the add or update that just saved. Set only with
+  /// [gameAddedOrUpdated], so a sheet can match its own save.
+  final int? savedRequestId;
+
+  /// Optimistic changes whose request has not answered yet.
+  final int pendingWrites;
 
   /// Returns true if the state is in loading status
   bool get isLoading => status == LibraryStatus.loading;
@@ -66,7 +95,7 @@ class LibraryState extends Equatable {
   LibraryState copyWith({
     LibraryStatus? status,
     List<LibraryEntry>? entries,
-    String? errorMessage,
+    LibraryFailure? failure,
     String? userId,
     bool? showFavoritesOnly,
     GameStatus? statusFilter,
@@ -75,11 +104,13 @@ class LibraryState extends Equatable {
     bool? isAddingGame,
     bool? isUpdatingEntry,
     bool? gameAddedOrUpdated,
+    int? savedRequestId,
+    int? pendingWrites,
   }) {
     return LibraryState(
       status: status ?? this.status,
       entries: entries ?? this.entries,
-      errorMessage: errorMessage,
+      failure: failure,
       userId: userId ?? this.userId,
       showFavoritesOnly: showFavoritesOnly ?? this.showFavoritesOnly,
       statusFilter: clearStatusFilter
@@ -89,6 +120,8 @@ class LibraryState extends Equatable {
       isAddingGame: isAddingGame ?? this.isAddingGame,
       isUpdatingEntry: isUpdatingEntry ?? this.isUpdatingEntry,
       gameAddedOrUpdated: gameAddedOrUpdated ?? this.gameAddedOrUpdated,
+      savedRequestId: savedRequestId,
+      pendingWrites: pendingWrites ?? this.pendingWrites,
     );
   }
 
@@ -96,7 +129,7 @@ class LibraryState extends Equatable {
   List<Object?> get props => [
     status,
     entries,
-    errorMessage,
+    failure,
     userId,
     showFavoritesOnly,
     statusFilter,
@@ -104,5 +137,7 @@ class LibraryState extends Equatable {
     isAddingGame,
     isUpdatingEntry,
     gameAddedOrUpdated,
+    savedRequestId,
+    pendingWrites,
   ];
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/features/games/search_game_model.dart';
 import 'package:picklog/features/games/widgets/game_search_card.dart';
 import 'package:picklog/l10n/app_localizations.dart';
@@ -35,7 +36,7 @@ void main() {
     );
 
     /// Pumps the card inside a GoRouter exposing a `gameDetails` route, so the
-    /// card's `pushNamed('gameDetails')` tap target resolves during tests.
+    /// card's game details tap target resolves during tests.
     Future<void> pumpCard(WidgetTester tester, SearchGame game) async {
       var pushedId = '';
       final router = GoRouter(
@@ -48,7 +49,7 @@ void main() {
           ),
           GoRoute(
             path: '/game/:id',
-            name: 'gameDetails',
+            name: AppRouter.gameDetailsName,
             builder: (context, state) {
               pushedId = state.pathParameters['id'] ?? '';
               return Scaffold(body: Text('details $pushedId'));
@@ -106,7 +107,7 @@ void main() {
       await pumpCard(tester, gameMinimal);
 
       expect(find.byType(CachedNetworkImage), findsNothing);
-      expect(find.byIcon(Icons.videogame_asset), findsOneWidget);
+      expect(find.byIcon(Icons.videogame_asset_outlined), findsOneWidget);
     });
 
     testWidgets('omits genre and platform rows when both are empty', (
@@ -114,9 +115,9 @@ void main() {
     ) async {
       await pumpCard(tester, gameMinimal);
 
-      expect(find.byIcon(Icons.category), findsNothing);
-      expect(find.byIcon(Icons.devices), findsNothing);
-      expect(find.byIcon(Icons.calendar_today), findsNothing);
+      expect(find.byIcon(Icons.category_outlined), findsNothing);
+      expect(find.byIcon(Icons.devices_outlined), findsNothing);
+      expect(find.byIcon(Icons.calendar_today_outlined), findsNothing);
     });
 
     testWidgets('shows the release date row when a date is present', (
@@ -124,13 +125,13 @@ void main() {
     ) async {
       await pumpCard(tester, gameWithEverything);
 
-      expect(find.byIcon(Icons.calendar_today), findsOneWidget);
+      expect(find.byIcon(Icons.calendar_today_outlined), findsOneWidget);
     });
 
     testWidgets('tapping navigates to the game details route', (tester) async {
       await pumpCard(tester, gameWithEverything);
 
-      await tester.tap(find.byType(InkWell));
+      await tester.tap(find.byType(GameSearchCard));
       await tester.pumpAndSettle();
 
       expect(find.text('details 1942'), findsOneWidget);

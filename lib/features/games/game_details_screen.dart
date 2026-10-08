@@ -1,32 +1,55 @@
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/env.dart';
+import 'package:picklog/core/utils/error_l10n.dart';
 import 'package:picklog/core/utils/image_utils.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/messages_extensions.dart';
-import 'package:picklog/core/widgets/visibility_hero.dart';
 import 'package:picklog/core/utils/website_category.dart';
+import 'package:picklog/core/widgets/animated_state_switcher.dart';
+import 'package:picklog/core/widgets/favorite_button.dart';
+import 'package:picklog/core/widgets/game_card.dart';
+import 'package:picklog/core/widgets/game_cover.dart';
+import 'package:picklog/core/widgets/pf_button.dart';
+import 'package:picklog/core/widgets/pf_network_image.dart';
+import 'package:picklog/core/widgets/press_scale.dart';
+import 'package:picklog/core/widgets/score_badge.dart';
+import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/core/widgets/state_views.dart';
 import 'package:picklog/features/games/bloc/game_details_bloc.dart';
+import 'package:picklog/features/games/bloc/game_details_event.dart';
 import 'package:picklog/features/games/bloc/game_details_state.dart';
 import 'package:picklog/features/games/game_detail_model.dart';
+import 'package:picklog/features/games/widgets/discovery_game_tile.dart';
+import 'package:picklog/features/games/widgets/game_rail.dart';
+import 'package:picklog/features/games/widgets/screenshot_lightbox.dart';
 import 'package:picklog/features/games/widgets/skeletons/game_details_skeleton.dart';
 import 'package:picklog/features/games/widgets/video_thumbnail_card.dart';
+import 'package:picklog/features/integrations/widgets/game_achievements_section.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
 import 'package:picklog/features/library/bloc/library_event.dart';
 import 'package:picklog/features/library/bloc/library_state.dart';
 import 'package:picklog/features/library/library_entry_model.dart';
+import 'package:picklog/features/library/library_formatters.dart';
 import 'package:picklog/features/library/widgets/add_to_library_bottom_sheet.dart';
-import 'package:picklog/l10n/app_localizations.dart';
+import 'package:picklog/features/library/widgets/library_failure_listener.dart';
+import 'package:picklog/features/library/widgets/library_status_pill.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+/// Height of the screenshot header when expanded.
+const double kDetailsHeaderHeight = 280;
+
+/// Hero prefix for covers in the similar games rail.
+const String _similarHeroPrefix = 'similar-';
 
 /// Screen displaying detailed game information.
 class GameDetailsScreen extends StatelessWidget {
@@ -41,73 +64,43 @@ class GameDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A shared-element Hero flight into/out of this screen renders in the root
-    // navigator overlay and visibly paints over the app bar and bottom
-    // navigation bar during the transition. Disable Hero participation for the
-    // whole details screen so it simply slides in. The cover Hero tags are
-    // kept intact, so a non-overlaying transition can be reintroduced later.
-    return HeroMode(
-      enabled: false,
-      child: BlocBuilder<GameDetailsBloc, GameDetailsState>(
-        builder: (context, state) {
-          if (state.status == GameDetailsStatus.loading) {
-            return const GameDetailsSkeleton();
-          }
-
-          if (state.status == GameDetailsStatus.failure) {
-            return _ErrorScreen(message: state.errorMessage);
-          }
-
-          if (state.game == null) {
-            return const GameDetailsSkeleton();
-          }
-
-          return _GameDetailsContent(
+    return BlocBuilder<GameDetailsBloc, GameDetailsState>(
+      builder: (context, state) {
+        final Widget child;
+        if (state.status == GameDetailsStatus.failure) {
+          child = _DetailsError(
+            message: (state.errorKind ?? AppErrorKind.unknown).message(context),
+            onRetry: () => context.read<GameDetailsBloc>().add(
+              GameDetailsLoadRequested(gameId),
+            ),
+          );
+        } else if (state.status == GameDetailsStatus.loading ||
+            state.game == null) {
+          child = const GameDetailsSkeleton();
+        } else {
+          child = _GameDetailsContent(
             game: state.game!,
             gameId: gameId,
             heroTagPrefix: heroTagPrefix,
           );
-        },
-      ),
+        }
+        return AnimatedStateSwitcher(stateKey: state.status, child: child);
+      },
     );
   }
 }
 
-class _ErrorScreen extends StatelessWidget {
-  const _ErrorScreen({this.message});
+class _DetailsError extends StatelessWidget {
+  const _DetailsError({required this.message, required this.onRetry});
 
-  final String? message;
+  final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                l10n.errorLoadingData,
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              if (message != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  message!,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+      body: ErrorState(message: message, onRetry: onRetry),
     );
   }
 }
@@ -128,16 +121,47 @@ class _GameDetailsContent extends StatefulWidget {
 }
 
 class _GameDetailsContentState extends State<_GameDetailsContent> {
-  bool _isDescriptionExpanded = false;
+  final ScrollController _scrollController = ScrollController();
+
+  /// The cover only joins a Hero flight while it is fully below the pinned
+  /// app bar, so a flight never starts under (and paints over) the bar.
+  bool _heroEnabled = true;
+
+  /// True once the header has collapsed into the plain app bar, so the
+  /// action icons switch from the on-image tone to the theme tone.
+  bool _collapsed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final offset = _scrollController.offset;
+    final enabled = offset < kDetailsHeaderHeight - kToolbarHeight;
+    final collapsed = offset > kDetailsHeaderHeight - kToolbarHeight - 24;
+    if (enabled != _heroEnabled || collapsed != _collapsed) {
+      setState(() {
+        _heroEnabled = enabled;
+        _collapsed = collapsed;
+      });
+    }
+  }
 
   LibraryEntry? _findLibraryEntry(LibraryState libraryState) {
-    try {
-      return libraryState.entries.firstWhere(
-        (entry) => entry.game.igdbId == widget.gameId,
-      );
-    } catch (_) {
-      return null;
+    for (final entry in libraryState.entries) {
+      if (entry.game.igdbId == widget.gameId) return entry;
     }
+    return null;
   }
 
   Future<void> _shareGame() async {
@@ -175,7 +199,7 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      anchorPoint: Offset.zero,
+      showDragHandle: false,
       builder: (sheetContext) => BlocProvider.value(
         value: libraryBloc,
         child: AddToLibraryBottomSheet(
@@ -190,403 +214,522 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final game = widget.game;
+    final l10n = context.l10n;
 
-    // On web Flutter ignores decode caps (the browser decodes), so request a
-    // smaller server size for the header instead of the full 1080p.
-    const headerSize = kIsWeb ? ImageSize.hd720 : ImageSize.hd1080;
-    final headerImageUrl = game.screenshots.isNotEmpty
-        ? getHighResUrl(game.screenshots.first.url, headerSize)
-        : (game.cover != null
-              ? getHighResUrl(game.cover!.url, ImageSize.coverBig)
-              : null);
+    return LibraryFailureListener(
+      child: BlocBuilder<LibraryBloc, LibraryState>(
+        builder: (context, libraryState) {
+          final entry = _findLibraryEntry(libraryState);
+          final width = MediaQuery.sizeOf(context).width;
+          final twoPane = width >= PfBreakpoints.twoPane;
 
-    return BlocBuilder<LibraryBloc, LibraryState>(
-      builder: (context, libraryState) {
-        final libraryEntry = _findLibraryEntry(libraryState);
-        final isInLibrary = libraryEntry != null;
-        final isFavorite = libraryEntry?.isFavorite ?? false;
+          final cover = HeroMode(
+            enabled: _heroEnabled,
+            child: GameCover(
+              url: game.hasCover ? game.cover!.url : null,
+              heroTag: gameCoverHeroTag(widget.heroTagPrefix, widget.gameId),
+              isHeroDestination: true,
+              semanticLabel: l10n.gameCoverLabel(game.name),
+              borderRadius: PfRadius.md,
+            ),
+          );
 
-        return Scaffold(
-          body: CustomScrollView(
-            slivers: [
-              // Collapsible App Bar with Screenshot Background
-              SliverAppBar(
-                expandedHeight: 300,
-                pinned: true,
-                // The header sits over a screenshot in both themes, so keep the
-                // title and action icons white and rely on the scrim below for
-                // contrast (the theme default would render a dark, unreadable
-                // title over the image in light mode).
-                foregroundColor: Colors.white,
-                actions: [
-                  // Favorite button (only if in library)
-                  if (isInLibrary)
+          final action = _LibraryAction(
+            entry: entry,
+            onOpenSheet: () => _openLibrarySheet(entry),
+          );
+
+          return Scaffold(
+            body: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                _DetailsHeader(
+                  game: game,
+                  collapsed: _collapsed,
+                  actions: [
+                    if (entry != null)
+                      FavoriteButton(
+                        isFavorite: entry.isFavorite,
+                        onImage: !_collapsed,
+                        addLabel: l10n.addToFavorites,
+                        removeLabel: l10n.removeFromFavorites,
+                        onPressed: () => _toggleFavorite(entry),
+                      ),
                     IconButton(
-                      onPressed: () => _toggleFavorite(libraryEntry),
-                      icon: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.white,
-                      ),
-                      tooltip: isFavorite
-                          ? context.l10n.removeFromFavorites
-                          : context.l10n.addToFavorites,
+                      onPressed: _shareGame,
+                      icon: const Icon(Icons.share_outlined),
+                      tooltip: l10n.share,
                     ),
-                  // Share button
-                  IconButton(
-                    onPressed: _shareGame,
-                    icon: const Icon(Icons.share, color: Colors.white),
-                    tooltip: context.l10n.share,
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  // Reserve room on the trailing edge so the collapsed title
-                  // never slides under the action icons.
-                  titlePadding: const EdgeInsetsDirectional.only(
-                    start: 16,
-                    bottom: 16,
-                    end: 72,
-                  ),
-                  title: Text(
-                    game.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 6,
-                          color: Colors.black87,
-                        ),
-                        // Tight second shadow keeps the title crisp over bright
-                        // screenshot regions when the bar is collapsed.
-                        Shadow(blurRadius: 2, color: Colors.black),
-                      ],
-                    ),
-                  ),
-                  background: headerImageUrl != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Semantics(
-                              image: true,
-                              label: context.l10n.gameCoverLabel(game.name),
-                              child: CachedNetworkImage(
-                                imageUrl: headerImageUrl,
-                                fit: BoxFit.cover,
-                                // Decode at the width BoxFit.cover actually paints
-                                // for this 16:9 (1080p) header: the larger of the
-                                // screen width and the height-driven width, so it
-                                // neither upscales (portrait) nor under-decodes
-                                // (wide screens), while bounding source memory.
-                                memCacheWidth:
-                                    (math.max(
-                                              MediaQuery.sizeOf(context).width,
-                                              (300 +
-                                                      MediaQuery.paddingOf(
-                                                        context,
-                                                      ).top) *
-                                                  16 /
-                                                  9,
-                                            ) *
-                                            MediaQuery.devicePixelRatioOf(
-                                              context,
-                                            ))
-                                        .round(),
-                                placeholder: (context, url) =>
-                                    Container(color: Colors.grey[900]),
-                                errorWidget: (context, url, error) =>
-                                    Container(color: Colors.grey[900]),
-                              ),
-                            ),
-                            // Scrim for legibility: darken the top (status-bar
-                            // icons + collapsed title) and the bottom (expanded
-                            // title) so the white text stays readable over any
-                            // screenshot, in both light and dark themes.
-                            const DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  stops: [0.0, 0.35, 0.6, 1.0],
-                                  colors: [
-                                    Color(0xB3000000),
-                                    Colors.transparent,
-                                    Colors.transparent,
-                                    Color(0xCC000000),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Container(color: Colors.grey[900]),
+                    const SizedBox(width: PfSpace.xs),
+                  ],
                 ),
-              ),
-
-              // Content
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Info Row: Cover, Developer, Rating
-                      _InfoRow(
-                        game: game,
-                        gameId: widget.gameId,
-                        heroTagPrefix: widget.heroTagPrefix,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Genres & Platforms Tags
-                      if (game.genres.isNotEmpty || game.platforms.isNotEmpty)
-                        _TagsSection(game: game),
-
-                      const SizedBox(height: 24),
-
-                      // Description (Storyline + Summary)
-                      if (game.storyline != null || game.summary != null)
-                        _DescriptionSection(
-                          game: game,
-                          isExpanded: _isDescriptionExpanded,
-                          onToggle: () {
-                            setState(() {
-                              _isDescriptionExpanded = !_isDescriptionExpanded;
-                            });
-                          },
-                          l10n: l10n,
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Screenshots
-                      if (game.screenshots.isNotEmpty)
-                        _ScreenshotsSection(
-                          screenshots: game.screenshots,
-                          gameName: game.name,
-                          l10n: l10n,
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Videos
-                      if (game.videos.isNotEmpty)
-                        _VideosSection(
-                          videos: game.videos,
-                          gameName: game.name,
-                          l10n: l10n,
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Similar Games
-                      if (game.similarGames.isNotEmpty)
-                        _SimilarGamesSection(
-                          similarGames: game.similarGames,
-                          l10n: l10n,
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Where to Buy / Websites
-                      if (game.websites.isNotEmpty)
-                        _WebsitesSection(websites: game.websites, l10n: l10n),
-
-                      // Extra space so the last content and the FAB clear the
-                      // Android system navigation bar under edge-to-edge.
-                      SizedBox(
-                        height: 80 + MediaQuery.viewPaddingOf(context).bottom,
-                      ),
-                    ],
+                SliverToBoxAdapter(
+                  child: _DetailsBody(
+                    game: game,
+                    cover: cover,
+                    action: action,
+                    twoPane: twoPane,
                   ),
                 ),
-              ),
-            ],
-          ),
-          floatingActionButton: _LibraryFab(
-            isInLibrary: isInLibrary,
-            status: libraryEntry?.status,
-            onPressed: () => _openLibrarySheet(libraryEntry),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _LibraryFab extends StatelessWidget {
-  const _LibraryFab({
-    required this.isInLibrary,
-    required this.status,
-    required this.onPressed,
-  });
-
-  final bool isInLibrary;
-  final GameStatus? status;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return FloatingActionButton.extended(
-      onPressed: onPressed,
-      backgroundColor: isInLibrary
-          ? theme.colorScheme.secondaryContainer
-          : theme.colorScheme.primaryContainer,
-      foregroundColor: isInLibrary
-          ? theme.colorScheme.onSecondaryContainer
-          : theme.colorScheme.onPrimaryContainer,
-      elevation: 4,
-      icon: Icon(isInLibrary ? Icons.edit : Icons.add),
-      label: Text(
-        isInLibrary
-            ? status!.localizedName(context)
-            : context.l10n.addToLibraryShort,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
+/// Centered page body: side pane and sections on wide screens, one column
+/// on compact screens.
+class _DetailsBody extends StatelessWidget {
+  const _DetailsBody({
     required this.game,
-    required this.gameId,
-    this.heroTagPrefix = '',
+    required this.cover,
+    required this.action,
+    required this.twoPane,
   });
 
   final GameDetail game;
-  final int gameId;
-  final String heroTagPrefix;
+  final Widget cover;
+  final Widget action;
+  final bool twoPane;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final sections = _DetailSections(game: game);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: PfBreakpoints.content),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            PfSpace.lg,
+            PfSpace.xl,
+            PfSpace.lg,
+            PfSpace.xxxl + MediaQuery.viewPaddingOf(context).bottom,
+          ),
+          child: twoPane
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 288,
+                      child: _SidePane(
+                        game: game,
+                        cover: cover,
+                        action: action,
+                      ),
+                    ),
+                    const SizedBox(width: PfSpace.xxl),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _TitleBlock(game: game),
+                          ...sections.main(context),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _CompactHeader(game: game, cover: cover),
+                    const SizedBox(height: PfSpace.xl),
+                    action,
+                    ...sections.tags(context),
+                    ...sections.main(context),
+                    ...sections.links(context),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
 
+/// Collapsible screenshot header with the game name in the collapsed bar.
+class _DetailsHeader extends StatelessWidget {
+  const _DetailsHeader({
+    required this.game,
+    required this.actions,
+    required this.collapsed,
+  });
+
+  final GameDetail game;
+  final List<Widget> actions;
+  final bool collapsed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.pfColors;
+    final iconColor = collapsed ? colors.textHi : PicklogColors.onImage;
+    // On web Flutter ignores decode caps (the browser decodes), so request a
+    // smaller server size for the header instead of the full 1080p.
+    const headerSize = kIsWeb ? ImageSize.hd720 : ImageSize.hd1080;
+    final headerUrl = game.screenshots.isNotEmpty
+        ? getHighResUrl(game.screenshots.first.url, headerSize)
+        : (game.hasCover
+              ? getHighResUrl(game.cover!.url, ImageSize.coverBig)
+              : null);
+    final media = MediaQuery.of(context);
+    final decodeWidth =
+        (math.max(
+                  media.size.width,
+                  (kDetailsHeaderHeight + media.padding.top) * 16 / 9,
+                ) *
+                media.devicePixelRatio)
+            .round();
+
+    return SliverAppBar(
+      expandedHeight: kDetailsHeaderHeight,
+      pinned: true,
+      stretch: true,
+      backgroundColor: colors.surface,
+      // Over the screenshot the icons stay light (the scrim keeps them
+      // legible); once collapsed onto the surface they use the theme tone.
+      foregroundColor: iconColor,
+      iconTheme: IconThemeData(color: iconColor),
+      actionsIconTheme: IconThemeData(color: iconColor),
+      actions: actions,
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final collapsedHeight = kToolbarHeight + media.padding.top;
+          final collapsed = constraints.maxHeight <= collapsedHeight + 8;
+          return FlexibleSpaceBar(
+            collapseMode: CollapseMode.parallax,
+            titlePadding: const EdgeInsetsDirectional.only(
+              start: 56,
+              bottom: 16,
+              end: 112,
+            ),
+            title: AnimatedOpacity(
+              opacity: collapsed ? 1 : 0,
+              duration: PfMotion.of(context, PfMotion.fast),
+              child: Text(
+                game.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge!.copyWith(color: colors.textHi),
+              ),
+            ),
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (headerUrl != null)
+                  Semantics(
+                    image: true,
+                    label: context.l10n.gameCoverLabel(game.name),
+                    child: PfNetworkImage(
+                      url: headerUrl,
+                      memCacheWidth: decodeWidth,
+                      placeholder: const CoverPlaceholder(showIcon: false),
+                      error: const CoverPlaceholder(showIcon: false),
+                    ),
+                  )
+                else
+                  const CoverPlaceholder(showIcon: false),
+                // Scrim: darken the top for the status bar and icons, and
+                // fade into the page surface at the bottom.
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.0, 0.35, 0.7, 1.0],
+                      colors: [
+                        PicklogColors.imageScrim.withValues(alpha: 0.7),
+                        PicklogColors.imageScrim.withValues(alpha: 0.0),
+                        colors.surface.withValues(alpha: 0.0),
+                        colors.surface,
+                      ],
+                    ),
+                  ),
+                ),
+                if (collapsed) ColoredBox(color: colors.surface),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Phone header: cover beside the title block.
+class _CompactHeader extends StatelessWidget {
+  const _CompactHeader({required this.game, required this.cover});
+
+  final GameDetail game;
+  final Widget cover;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Cover Image with Hero animation
-        if (game.hasCover)
-          Hero(
-            tag: '${heroTagPrefix}game-cover-$gameId',
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Semantics(
-                image: true,
-                label: l10n.gameCoverLabel(game.name),
-                child: CachedNetworkImage(
-                  imageUrl: getHighResUrl(game.cover!.url, ImageSize.coverBig),
-                  width: 100,
-                  height: 140,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: 100,
-                    height: 140,
-                    color: Colors.grey[800],
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    width: 100,
-                    height: 140,
-                    color: Colors.grey[800],
-                    child: const Icon(
-                      Icons.videogame_asset,
-                      color: Colors.white38,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          )
-        else
-          Container(
-            width: 100,
-            height: 140,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.videogame_asset,
-              size: 48,
-              color: Colors.white38,
-            ),
+        SizedBox(width: 112, height: 112 / kCoverAspectRatio, child: cover),
+        const SizedBox(width: PfSpace.lg),
+        Expanded(child: _TitleBlock(game: game, compact: true)),
+      ],
+    );
+  }
+}
+
+/// Eyebrow (genre · year), title, developer, release date and score.
+class _TitleBlock extends StatelessWidget {
+  const _TitleBlock({required this.game, this.compact = false});
+
+  final GameDetail game;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toString();
+    final score = normalizeScore(game.totalRating);
+
+    final eyebrowParts = [
+      if (game.genres.isNotEmpty) game.genres.first.name,
+      if (game.firstReleaseDate != null) '${game.firstReleaseDate!.year}',
+    ];
+
+    return SelectionArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (eyebrowParts.isNotEmpty) ...[
+            Eyebrow(eyebrowParts.join(' · ')),
+            const SizedBox(height: PfSpace.sm),
+          ],
+          Text(
+            game.name,
+            style: compact
+                ? theme.textTheme.headlineLarge
+                : theme.textTheme.displayMedium,
           ),
-
-        const SizedBox(width: 16),
-
-        // Developer & Rating
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: PfSpace.md),
+          Wrap(
+            spacing: PfSpace.xl,
+            runSpacing: PfSpace.md,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              // Developer
-              if (game.developer != null) ...[
-                Text(
-                  l10n.developer,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+              if (game.developer != null)
+                _Fact(label: l10n.developer, value: game.developer!.name),
+              if (game.firstReleaseDate != null)
+                _Fact(
+                  label: l10n.releaseDate,
+                  value: DateFormat.yMMMd(
+                    locale,
+                  ).format(game.firstReleaseDate!),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  game.developer!.name,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Release Date
-              if (game.firstReleaseDate != null) ...[
-                Text(
-                  DateFormat.yMMMd().format(game.firstReleaseDate!),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Rating
-              if (game.totalRating != null) ...[
-                Text(
-                  l10n.rating,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(color: Colors.grey),
-                ),
-                const SizedBox(height: 4),
+              if (score != null)
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    RatingBarIndicator(
-                      rating: game.fiveStarRating,
-                      itemBuilder: (context, _) =>
-                          const Icon(Icons.star, color: Colors.amber),
-                      itemCount: 5,
-                      itemSize: 20,
-                      unratedColor: Colors.grey[700],
+                    ScoreRing(
+                      score: score,
+                      size: 44,
+                      semanticLabel: l10n.gameWithScoreLabel(game.name, score),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      game.fiveStarRating.toStringAsFixed(1),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    const SizedBox(width: PfSpace.sm),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 120),
+                      child: Text(
+                        l10n.igdbScore,
+                        style: theme.textTheme.bodySmall!.copyWith(
+                          color: colors.textMed,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ],
             ],
           ),
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Fact extends StatelessWidget {
+  const _Fact({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Eyebrow(label, muted: true),
+        const SizedBox(height: 2),
+        Text(value, style: Theme.of(context).textTheme.titleMedium),
       ],
+    );
+  }
+}
+
+/// Wide layout left column: large cover, library action, tags and links.
+class _SidePane extends StatelessWidget {
+  const _SidePane({
+    required this.game,
+    required this.cover,
+    required this.action,
+  });
+
+  final GameDetail game;
+  final Widget cover;
+  final Widget action;
+
+  @override
+  Widget build(BuildContext context) {
+    final sections = _DetailSections(game: game);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AspectRatio(aspectRatio: kCoverAspectRatio, child: cover),
+        const SizedBox(height: PfSpace.xl),
+        action,
+        ...sections.tags(context),
+        ...sections.links(context),
+      ],
+    );
+  }
+}
+
+/// Add button, or the "In your library" card when the game is tracked.
+class _LibraryAction extends StatelessWidget {
+  const _LibraryAction({required this.entry, required this.onOpenSheet});
+
+  final LibraryEntry? entry;
+  final VoidCallback onOpenSheet;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final entry = this.entry;
+    if (entry == null) {
+      return PfButton(
+        label: l10n.addToLibrary,
+        icon: Icons.add,
+        onPressed: onOpenSheet,
+        size: PfButtonSize.lg,
+        expand: true,
+      );
+    }
+
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    return Container(
+      padding: const EdgeInsets.all(PfSpace.lg),
+      decoration: BoxDecoration(
+        color: colors.surface1,
+        borderRadius: PfRadius.cardAll,
+        border: Border.all(color: colors.hairline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Eyebrow(l10n.inYourLibrary, muted: true),
+          const SizedBox(height: PfSpace.md),
+          Wrap(
+            spacing: PfSpace.sm,
+            runSpacing: PfSpace.sm,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              LibraryStatusPill(status: entry.status),
+              if (entry.score != null)
+                ScoreBadge(
+                  score: entry.score,
+                  large: true,
+                  semanticLabel: '${l10n.yourScore} ${entry.score}',
+                ),
+              Text(
+                [
+                  if (entry.platform != null) entry.platform!.displayName,
+                  formatPlaytime(context, entry.playtimeMinutes),
+                ].join(' · '),
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: PfSpace.lg),
+          PfButton(
+            label: l10n.editEntry,
+            icon: Icons.edit_outlined,
+            variant: PfButtonVariant.secondary,
+            onPressed: onOpenSheet,
+            expand: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Builds the optional sections with spacing only between present ones, so
+/// absent data never leaves a gap.
+class _DetailSections {
+  const _DetailSections({required this.game});
+
+  final GameDetail game;
+
+  static const Widget _gap = SizedBox(height: PfSpace.xl);
+
+  List<Widget> tags(BuildContext context) {
+    if (game.genres.isEmpty && game.platforms.isEmpty) return const [];
+    return [_gap, _TagsSection(game: game)];
+  }
+
+  List<Widget> main(BuildContext context) => [
+    if (game.storyline != null || game.summary != null) ...[
+      _gap,
+      _DescriptionSection(game: game),
+    ],
+    const GameAchievementsSection(),
+    if (game.screenshots.isNotEmpty) ...[
+      _gap,
+      _ScreenshotsSection(screenshots: game.screenshots, gameName: game.name),
+    ],
+    if (game.videos.isNotEmpty) ...[
+      _gap,
+      _VideosSection(videos: game.videos, gameName: game.name),
+    ],
+    if (game.similarGames.isNotEmpty) ...[
+      _gap,
+      _SimilarGamesSection(similarGames: game.similarGames),
+    ],
+  ];
+
+  List<Widget> links(BuildContext context) {
+    if (game.websites.isEmpty) return const [];
+    return [_gap, _WebsitesSection(websites: game.websites)];
+  }
+}
+
+/// Section title inside the details body (no outer padding).
+class _BodyTitle extends StatelessWidget {
+  const _BodyTitle(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: PfSpace.md),
+      child: Semantics(
+        header: true,
+        child: Text(title, style: Theme.of(context).textTheme.headlineSmall),
+      ),
     );
   }
 }
@@ -598,115 +741,126 @@ class _TagsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
+    Widget group(String label, List<String> values) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Eyebrow(label, muted: true),
+        const SizedBox(height: PfSpace.sm),
+        Wrap(
+          spacing: PfSpace.sm,
+          runSpacing: PfSpace.sm,
+          children: [for (final v in values) Chip(label: Text(v))],
+        ),
+      ],
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Genres
-        if (game.genres.isNotEmpty) ...[
-          Text(l10n.genres, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: game.genres.map((genre) {
-              return Chip(
-                label: Text(genre.name),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                labelStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-        ],
-
-        // Platforms
-        if (game.platforms.isNotEmpty) ...[
-          Text(l10n.platforms, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: game.platforms.map((platform) {
-              return Chip(
-                label: Text(platform.name),
-                backgroundColor: Theme.of(
-                  context,
-                ).colorScheme.secondaryContainer,
-                labelStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+        if (game.genres.isNotEmpty)
+          group(l10n.genres, [for (final g in game.genres) g.name]),
+        if (game.genres.isNotEmpty && game.platforms.isNotEmpty)
+          const SizedBox(height: PfSpace.lg),
+        if (game.platforms.isNotEmpty)
+          group(l10n.platforms, [for (final p in game.platforms) p.name]),
       ],
     );
   }
 }
 
-class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({
-    required this.game,
-    required this.isExpanded,
-    required this.onToggle,
-    required this.l10n,
-  });
+class _DescriptionSection extends StatefulWidget {
+  const _DescriptionSection({required this.game});
 
   final GameDetail game;
-  final bool isExpanded;
-  final VoidCallback onToggle;
-  final AppLocalizations l10n;
+
+  @override
+  State<_DescriptionSection> createState() => _DescriptionSectionState();
+}
+
+class _DescriptionSectionState extends State<_DescriptionSection> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    final game = widget.game;
     final fullText = [
       if (game.storyline != null) game.storyline!,
       if (game.summary != null) game.summary!,
     ].join('\n\n');
 
-    const maxLines = 4;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _BodyTitle(l10n.detailsAbout),
+        // Selectable so web users can copy descriptions; the toggle stays a
+        // normal button outside the selection area.
+        SelectionArea(
+          child: AnimatedSize(
+            duration: PfMotion.of(context, PfMotion.standard),
+            curve: PfMotion.forge,
+            alignment: Alignment.topCenter,
+            child: _DescriptionTexts(game: game, expanded: _expanded),
+          ),
+        ),
+        if (fullText.length > 200)
+          Padding(
+            padding: const EdgeInsets.only(top: PfSpace.xs),
+            child: TextButton(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                foregroundColor: colors.emberFg,
+              ),
+              child: Text(_expanded ? l10n.readLess : l10n.readMore),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
-    // Make the long-form storyline/summary selectable so web users can copy
-    // descriptions. Wrapping only the content text keeps the toggle button and
-    // the rest of the screen behaving normally.
-    return SelectionArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (game.storyline != null) ...[
-            Text(l10n.storyline, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Text(
-              game.storyline!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              maxLines: isExpanded ? null : 3,
-              overflow: isExpanded ? null : TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (game.summary != null) ...[
-            Text(l10n.summary, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Text(
-              game.summary!,
-              style: Theme.of(context).textTheme.bodyMedium,
-              maxLines: isExpanded ? null : maxLines,
-              overflow: isExpanded ? null : TextOverflow.ellipsis,
-            ),
-          ],
-          if (fullText.length > 200)
-            TextButton(
-              onPressed: onToggle,
-              child: Text(isExpanded ? l10n.readLess : l10n.readMore),
-            ),
+/// Storyline and summary, clamped until expanded.
+class _DescriptionTexts extends StatelessWidget {
+  const _DescriptionTexts({required this.game, required this.expanded});
+
+  final GameDetail game;
+  final bool expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    final overflow = expanded ? null : TextOverflow.ellipsis;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (game.storyline != null) ...[
+          Eyebrow(l10n.storyline, muted: true),
+          const SizedBox(height: PfSpace.xs + 2),
+          Text(
+            game.storyline!,
+            style: theme.textTheme.bodyLarge,
+            maxLines: expanded ? null : 3,
+            overflow: overflow,
+          ),
+          if (game.summary != null) const SizedBox(height: PfSpace.lg),
         ],
-      ),
+        if (game.summary != null) ...[
+          Eyebrow(l10n.summary, muted: true),
+          const SizedBox(height: PfSpace.xs + 2),
+          Text(
+            game.summary!,
+            style: theme.textTheme.bodyLarge!.copyWith(color: colors.textMed),
+            maxLines: expanded ? null : 4,
+            overflow: overflow,
+          ),
+        ],
+      ],
     );
   }
 }
@@ -715,62 +869,56 @@ class _ScreenshotsSection extends StatelessWidget {
   const _ScreenshotsSection({
     required this.screenshots,
     required this.gameName,
-    required this.l10n,
   });
 
   final List<Screenshot> screenshots;
   final String gameName;
-  final AppLocalizations l10n;
+
+  static const double _height = 150;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.pfColors;
+    final urls = [for (final s in screenshots) s.url];
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.screenshots, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 12),
+        _BodyTitle(l10n.screenshots),
         SizedBox(
-          height: 150,
+          height: _height,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: screenshots.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: PfSpace.md),
             itemBuilder: (context, index) {
-              final screenshot = screenshots[index];
-              final imageUrl = getHighResUrl(
-                screenshot.url,
-                ImageSize.screenshotMed,
-              );
-
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Semantics(
-                  image: true,
-                  label: l10n.screenshotLabel(gameName),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    height: 150,
-                    fit: BoxFit.cover,
+              return PressScale(
+                semanticLabel: l10n.screenshotLabel(gameName),
+                onTap: () => ScreenshotLightbox.show(
+                  context,
+                  urls: urls,
+                  initialIndex: index,
+                  semanticLabel: l10n.screenshotLabel(gameName),
+                ),
+                child: Container(
+                  width: _height * 16 / 9,
+                  decoration: BoxDecoration(
+                    borderRadius: PfRadius.mdAll,
+                    border: Border.all(color: colors.hairline),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: PfNetworkImage(
+                    url: getHighResUrl(
+                      screenshots[index].url,
+                      ImageSize.screenshotMed,
+                    ),
                     // Decode at the thumbnail height, not the full source.
                     memCacheHeight:
-                        (150 * MediaQuery.devicePixelRatioOf(context)).round(),
-                    placeholder: (context, url) => Container(
-                      width: 267,
-                      height: 150,
-                      color: Colors.grey[800],
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 267,
-                      height: 150,
-                      color: Colors.grey[800],
-                      child: const Icon(
-                        Icons.videogame_asset,
-                        color: Colors.white38,
-                      ),
-                    ),
+                        (_height * MediaQuery.devicePixelRatioOf(context))
+                            .round(),
+                    placeholder: const CoverPlaceholder(showIcon: false),
+                    error: const CoverPlaceholder(),
                   ),
                 ),
               );
@@ -783,36 +931,27 @@ class _ScreenshotsSection extends StatelessWidget {
 }
 
 class _VideosSection extends StatelessWidget {
-  const _VideosSection({
-    required this.videos,
-    required this.gameName,
-    required this.l10n,
-  });
+  const _VideosSection({required this.videos, required this.gameName});
 
   final List<Video> videos;
   final String gameName;
-  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.videos, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 12),
+        _BodyTitle(context.l10n.videos),
         SizedBox(
           height: 112,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: videos.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final video = videos[index];
-              return VideoThumbnailCard(
-                videoId: video.videoId,
-                title: gameName,
-              );
-            },
+            separatorBuilder: (_, _) => const SizedBox(width: PfSpace.md),
+            itemBuilder: (context, index) => VideoThumbnailCard(
+              videoId: videos[index].videoId,
+              title: gameName,
+            ),
           ),
         ),
       ],
@@ -821,103 +960,35 @@ class _VideosSection extends StatelessWidget {
 }
 
 class _SimilarGamesSection extends StatelessWidget {
-  const _SimilarGamesSection({required this.similarGames, required this.l10n});
+  const _SimilarGamesSection({required this.similarGames});
 
   final List<SimilarGame> similarGames;
-  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.similarGames, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 12),
+        _BodyTitle(context.l10n.similarGames),
         SizedBox(
-          height: 180,
+          height: railHeight(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: similarGames.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: PfSpace.md),
             itemBuilder: (context, index) {
               final game = similarGames[index];
-              final coverUrl = game.cover != null
-                  ? getHighResUrl(game.cover!.url, ImageSize.coverBig)
-                  : null;
-
               return SizedBox(
-                width: 100,
-                child: Stack(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        VisibilityHero(
-                          tag: 'game-cover-${game.id}',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: coverUrl != null
-                                ? CachedNetworkImage(
-                                    imageUrl: coverUrl,
-                                    width: 100,
-                                    height: 140,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Container(
-                                      width: 100,
-                                      height: 140,
-                                      color: Colors.grey[800],
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        Container(
-                                          width: 100,
-                                          height: 140,
-                                          color: Colors.grey[800],
-                                          child: const Icon(
-                                            Icons.videogame_asset,
-                                            color: Colors.white38,
-                                          ),
-                                        ),
-                                  )
-                                : Container(
-                                    width: 100,
-                                    height: 140,
-                                    color: Colors.grey[800],
-                                    child: const Icon(
-                                      Icons.videogame_asset,
-                                      color: Colors.white38,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          game.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    Positioned.fill(
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: Semantics(
-                          label: game.name,
-                          button: true,
-                          child: InkWell(
-                            onTap: () {
-                              context.pushNamed(
-                                'gameDetails',
-                                pathParameters: {'id': game.id.toString()},
-                              );
-                            },
-                            mouseCursor: SystemMouseCursors.click,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                width: kRailCardWidth,
+                child: GameCard(
+                  title: game.name,
+                  coverUrl: game.cover?.url,
+                  heroTag: gameCoverHeroTag(_similarHeroPrefix, game.id),
+                  onTap: () => openGameDetails(
+                    context,
+                    game.id,
+                    heroPrefix: _similarHeroPrefix,
+                  ),
                 ),
               );
             },
@@ -929,14 +1000,13 @@ class _SimilarGamesSection extends StatelessWidget {
 }
 
 class _WebsitesSection extends StatelessWidget {
-  const _WebsitesSection({required this.websites, required this.l10n});
+  const _WebsitesSection({required this.websites});
 
   final List<Website> websites;
-  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
-    // Separate stores from other websites
+    final l10n = context.l10n;
     final stores = websites
         .where((w) => isStoreCategory(w.category, w.url))
         .toList();
@@ -944,38 +1014,26 @@ class _WebsitesSection extends StatelessWidget {
         .where((w) => !isStoreCategory(w.category, w.url))
         .toList();
 
+    Widget group(String label, List<Website> sites) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Eyebrow(label, muted: true),
+        const SizedBox(height: PfSpace.sm),
+        Wrap(
+          spacing: PfSpace.sm,
+          runSpacing: PfSpace.sm,
+          children: [for (final w in sites) _WebsiteButton(website: w)],
+        ),
+      ],
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Where to Buy section
-        if (stores.isNotEmpty) ...[
-          Text(l10n.whereToBuy, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: stores.map((website) {
-              return _WebsiteButton(website: website);
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-        ],
-
-        // Other links
-        if (otherSites.isNotEmpty) ...[
-          Text(
-            context.l10n.links,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: otherSites.map((website) {
-              return _WebsiteButton(website: website);
-            }).toList(),
-          ),
-        ],
+        if (stores.isNotEmpty) group(l10n.whereToBuy, stores),
+        if (stores.isNotEmpty && otherSites.isNotEmpty)
+          const SizedBox(height: PfSpace.lg),
+        if (otherSites.isNotEmpty) group(l10n.links, otherSites),
       ],
     );
   }
@@ -989,7 +1047,7 @@ class _WebsiteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ActionChip(
-      avatar: Icon(getWebsiteIcon(website.category, website.url), size: 18),
+      avatar: Icon(getWebsiteIcon(website.category, website.url), size: 16),
       label: Text(getWebsiteName(website.category, website.url)),
       onPressed: () async {
         final uri = Uri.parse(website.url);

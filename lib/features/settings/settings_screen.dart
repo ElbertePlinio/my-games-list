@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picklog/core/theme/pf_tokens.dart';
+import 'package:picklog/core/theme/picklog_colors.dart';
 import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/messages_extensions.dart';
+import 'package:picklog/core/widgets/app_scaffold.dart';
+import 'package:picklog/core/widgets/pf_button.dart';
+import 'package:picklog/core/widgets/pf_dialog.dart';
+import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/features/ai/widgets/ai_settings_section.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
 import 'package:picklog/features/auth/bloc/auth_event.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
 import 'package:picklog/features/consent/widgets/consent_settings_section.dart';
+import 'package:picklog/features/integrations/connected_accounts_screen.dart';
 import 'package:picklog/features/settings/bloc/account_management_bloc.dart';
 import 'package:picklog/features/settings/bloc/account_management_event.dart';
 import 'package:picklog/features/settings/bloc/account_management_state.dart';
@@ -34,81 +42,141 @@ class SettingsScreen extends StatelessWidget {
         title: Text(context.l10n.settingsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          // A deep link opens settings with nothing below it.
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.goNamed(AppRouter.homeName),
         ),
       ),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // User Info Section
-              const _UserInfoSection(),
-              const SizedBox(height: 24),
+          padding: const EdgeInsets.fromLTRB(
+            PfSpace.lg,
+            PfSpace.xs,
+            PfSpace.lg,
+            PfSpace.xxl,
+          ),
+          child: MaxWidthBox(
+            maxWidth: PfBreakpoints.narrow,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Eyebrow(context.l10n.settingsEyebrow),
+                const SizedBox(height: PfSpace.lg),
+                const _UserInfoSection(),
+                const SizedBox(height: PfSpace.xl),
+                const _AppearanceSection(),
+                const SizedBox(height: PfSpace.xl),
+                const _LanguageSection(),
+                const SizedBox(height: PfSpace.xl),
+                const ConnectedAccountsSettingsSection(),
+                const SizedBox(height: PfSpace.xl),
+                const AiSettingsSection(),
+                const SizedBox(height: PfSpace.xl),
 
-              // Theme Settings Section
-              Text(
-                context.l10n.appearanceTitle,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                // Privacy & data (LGPD: export + delete), with the
+                // per-category consent toggles grouped directly under it so
+                // the two read as one privacy area.
+                const _PrivacyDataSection(),
+                const SizedBox(height: PfSpace.sm),
+                const ConsentSettingsSection(),
+                const SizedBox(height: PfSpace.xl),
+
+                const _LegalSection(),
+                const SizedBox(height: PfSpace.xxl),
+
+                // Logout teardown (token + per-user in-memory state) is
+                // handled centrally by AuthBloc via SessionResetService.
+                PfButton(
+                  label: context.l10n.logoutButton,
+                  icon: Icons.logout,
+                  variant: PfButtonVariant.destructive,
+                  expand: true,
+                  onPressed: () =>
+                      context.read<AuthBloc>().add(const AuthLogoutRequested()),
                 ),
-              ),
-              const SizedBox(height: 8),
-              BlocBuilder<SettingsBloc, SettingsState>(
-                builder: (context, state) {
-                  return Card(
-                    child: SwitchListTile(
-                      title: Text(context.l10n.darkModeTitle),
-                      subtitle: Text(context.l10n.darkModeSubtitle),
-                      value: state.isDarkMode,
-                      onChanged: (value) => context.read<SettingsBloc>().add(
-                        SettingsDarkModeSet(value),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Language Settings Section
-              const _LanguageSection(),
-              const SizedBox(height: 24),
-
-              // Privacy & data Section (LGPD: export + delete), with the
-              // per-category consent toggles grouped directly under it so the two
-              // read as one privacy area rather than two competing sections.
-              const _PrivacyDataSection(),
-              const SizedBox(height: 8),
-              const ConsentSettingsSection(),
-              const SizedBox(height: 24),
-
-              // Legal Section — Privacy Policy & Terms documents
-              const _LegalSection(),
-              const SizedBox(height: 24),
-
-              // Logout Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Logout teardown (token + per-user in-memory state) is
-                    // handled centrally by AuthBloc via SessionResetService.
-                    context.read<AuthBloc>().add(const AuthLogoutRequested());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(context.l10n.logoutButton),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Muted group label used above each settings card.
+class _GroupLabel extends StatelessWidget {
+  const _GroupLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: PfSpace.xs, bottom: PfSpace.sm),
+      child: Semantics(header: true, child: Eyebrow(text, muted: true)),
+    );
+  }
+}
+
+/// Theme mode selector: System, Light or Dark.
+class _AppearanceSection extends StatelessWidget {
+  const _AppearanceSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _GroupLabel(l10n.appearanceTitle),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(PfSpace.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.themeTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: PfSpace.md),
+                BlocBuilder<SettingsBloc, SettingsState>(
+                  buildWhen: (p, c) => p.themeMode != c.themeMode,
+                  builder: (context, state) {
+                    return SegmentedButton<ThemeMode>(
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          icon: const Icon(Icons.brightness_auto_outlined),
+                          label: Text(l10n.themeSystem),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          icon: const Icon(Icons.light_mode_outlined),
+                          label: Text(l10n.themeLight),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          icon: const Icon(Icons.dark_mode_outlined),
+                          label: Text(l10n.themeDark),
+                        ),
+                      ],
+                      selected: {state.themeMode},
+                      onSelectionChanged: (selection) => context
+                          .read<SettingsBloc>()
+                          .add(SettingsThemeModeSet(selection.first)),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -128,14 +196,7 @@ class _PrivacyDataSection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                context.l10n.privacyDataTitle,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
+              _GroupLabel(context.l10n.privacyDataTitle),
               Card(
                 child: Column(
                   children: [
@@ -227,7 +288,7 @@ class _PrivacyDataSection extends StatelessWidget {
 
   Future<void> _confirmDelete(BuildContext context) async {
     final bloc = context.read<AccountManagementBloc>();
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPfDialog<bool>(
       context: context,
       builder: (_) => const DeleteAccountDialog(),
     );
@@ -246,11 +307,7 @@ class _LegalSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.legalTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
+        _GroupLabel(context.l10n.legalTitle),
         Card(
           child: Column(
             children: [
@@ -285,11 +342,7 @@ class _UserInfoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.userInformationTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
+        _GroupLabel(context.l10n.userInformationTitle),
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             final user = state is AuthAuthenticated ? state.user : null;
@@ -304,17 +357,7 @@ class _UserInfoSection extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: theme.colorScheme.primaryContainer,
-                      child: Text(
-                        initial,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    _Avatar(initial: initial, size: 56),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -322,9 +365,7 @@ class _UserInfoSection extends StatelessWidget {
                         children: [
                           Text(
                             name,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: theme.textTheme.titleLarge,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -380,9 +421,7 @@ class _LanguageSection extends StatelessWidget {
                   alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     context.l10n.languageTitle,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: theme.textTheme.headlineSmall,
                   ),
                 ),
               ),
@@ -415,11 +454,7 @@ class _LanguageSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.languageTitle,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
+        _GroupLabel(context.l10n.languageTitle),
         BlocBuilder<SettingsBloc, SettingsState>(
           builder: (context, state) {
             return Card(
@@ -451,21 +486,41 @@ class _LanguageOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.pfColors;
     return ListTile(
-      title: Text(
-        label,
-        style: selected
-            ? TextStyle(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              )
-            : null,
-      ),
-      trailing: selected
-          ? Icon(Icons.check, color: theme.colorScheme.primary)
-          : null,
+      title: Text(label),
+      selected: selected,
+      trailing: selected ? Icon(Icons.check, color: colors.emberFg) : null,
       onTap: onTap,
+    );
+  }
+}
+
+/// Initial-letter avatar on an ember tint.
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.initial, required this.size});
+
+  final String initial;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.pfColors;
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: colors.ember.withValues(alpha: colors.isDark ? 0.16 : 0.14),
+        border: Border.all(color: colors.ember.withValues(alpha: 0.35)),
+      ),
+      child: Text(
+        initial,
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall!.copyWith(color: colors.emberFg),
+      ),
     );
   }
 }

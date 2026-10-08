@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picklog/core/domain/models/app_failure.dart';
 import 'package:picklog/features/games/i_games_repository.dart';
 import 'package:picklog/features/games/bloc/game_search_event.dart';
 import 'package:picklog/features/games/bloc/game_search_filters.dart';
@@ -20,6 +21,7 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       transformer: debounce(_debounceDuration),
     );
     on<GameSearchLoadMore>(_onLoadMore);
+    on<GameSearchRetryRequested>(_onRetryRequested);
     on<GameSearchClear>(_onClear);
     on<GameSearchFiltersChanged>(_onFiltersChanged);
     on<GameSearchFiltersCleared>(_onFiltersCleared);
@@ -38,7 +40,8 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
     final query = event.query.trim();
 
     if (query.isEmpty) {
-      emit(const GameSearchState());
+      _generation++;
+      emit(GameSearchState(filters: state.filters));
       return;
     }
 
@@ -47,8 +50,16 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       return;
     }
 
-    // Start fresh search. Filters are reset because the available facets are
-    // derived from results, which a new query replaces.
+    await _search(query, emit);
+  }
+
+  /// Bumped on every first-page search so an older response never replaces
+  /// a newer query or filter set.
+  int _generation = 0;
+
+  Future<void> _search(String query, Emitter<GameSearchState> emit) async {
+    // Start a fresh search. Filters stay: the API applies them to any query.
+    final generation = ++_generation;
     emit(
       state.copyWith(
         status: GameSearchStatus.loading,
@@ -56,7 +67,6 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
         games: [],
         currentOffset: 0,
         offsetLimitReached: false,
-        filters: const GameSearchFilters(),
       ),
     );
 
@@ -65,7 +75,9 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
         query,
         limit: _pageSize,
         offset: 0,
+        filters: state.filters.catalog,
       );
+      if (generation != _generation) return;
 
       emit(
         state.copyWith(
@@ -76,10 +88,11 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
         ),
       );
     } catch (e) {
+      if (generation != _generation) return;
       emit(
         state.copyWith(
           status: GameSearchStatus.failure,
-          errorMessage: e.toString(),
+          errorKind: AppErrorKind.from(e),
         ),
       );
     }
@@ -101,6 +114,7 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
       return;
     }
 
+    final generation = _generation;
     emit(state.copyWith(status: GameSearchStatus.loadingMore));
 
     try {
@@ -108,7 +122,9 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
         state.query,
         limit: _pageSize,
         offset: nextOffset,
+        filters: state.filters.catalog,
       );
+      if (generation != _generation) return;
 
       emit(
         state.copyWith(
@@ -119,31 +135,55 @@ class GameSearchBloc extends Bloc<GameSearchEvent, GameSearchState> {
         ),
       );
     } catch (e) {
+      if (generation != _generation) return;
       // Keep existing games, just show error
       emit(
         state.copyWith(
           status: GameSearchStatus.success,
-          errorMessage: 'Failed to load more results',
+          errorKind: AppErrorKind.from(e),
         ),
       );
     }
   }
 
-  void _onClear(GameSearchClear event, Emitter<GameSearchState> emit) {
-    emit(const GameSearchState());
+  Future<void> _onRetryRequested(
+    GameSearchRetryRequested event,
+    Emitter<GameSearchState> emit,
+  ) async {
+    if (state.query.isEmpty) return;
+    if (state.status == GameSearchStatus.failure) {
+      await _search(state.query, emit);
+    } else if (state.loadMoreFailed) {
+      await _onLoadMore(const GameSearchLoadMore(), emit);
+    }
   }
 
-  void _onFiltersChanged(
+  void _onClear(GameSearchClear event, Emitter<GameSearchState> emit) {
+    // Clearing the text keeps the chosen filters for the next query.
+    _generation++;
+    emit(GameSearchState(filters: state.filters));
+  }
+
+  Future<void> _onFiltersChanged(
     GameSearchFiltersChanged event,
     Emitter<GameSearchState> emit,
-  ) {
-    emit(state.copyWith(filters: event.filters));
-  }
+  ) => _applyFilters(event.filters, emit);
 
-  void _onFiltersCleared(
+  Future<void> _onFiltersCleared(
     GameSearchFiltersCleared event,
     Emitter<GameSearchState> emit,
-  ) {
-    emit(state.copyWith(filters: const GameSearchFilters()));
+  ) => _applyFilters(const GameSearchFilters(), emit);
+
+  /// A sort change reorders the loaded results. A catalog filter change runs
+  /// the query again because the API applies those filters.
+  Future<void> _applyFilters(
+    GameSearchFilters filters,
+    Emitter<GameSearchState> emit,
+  ) async {
+    final catalogChanged = filters.catalog != state.filters.catalog;
+    emit(state.copyWith(filters: filters));
+    if (catalogChanged && state.query.isNotEmpty) {
+      await _search(state.query, emit);
+    }
   }
 }

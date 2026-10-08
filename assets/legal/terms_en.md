@@ -6,7 +6,7 @@ Version: 2026-06-22
 
 Effective date: June 22, 2026
 
-These Terms of Use ("Terms") govern your use of the MyGamesList app ("the app", "the service"). By creating an account or using the service, you agree to these Terms and to the Privacy Policy. If you do not agree, do not use the service.
+These Terms of Use ("Terms") govern your use of the Picklog app ("the app", "the service"). By creating an account or using the service, you agree to these Terms and to the Privacy Policy. If you do not agree, do not use the service.
 
 ## 1. Who provides the service
 
@@ -14,7 +14,7 @@ The service is provided by **Elberte Plínio**, an individual, who maintains the
 
 ## 2. Service description
 
-MyGamesList is a personal game library tracker. It lets you search for games from a third-party catalogue, add games to your library, and record information such as status, score, playtime, dates, difficulty, favorites, and personal notes. We may change, add, or discontinue features at any time.
+Picklog is a personal game library tracker. It lets you search for games from a third-party catalogue, add games to your library, and record information such as status, score, playtime, dates, difficulty, favorites, and personal notes. We may change, add, or discontinue features at any time.
 
 ## 3. Registration, account, and eligibility
 

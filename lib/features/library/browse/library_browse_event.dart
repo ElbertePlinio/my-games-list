@@ -69,7 +69,7 @@ class LibraryBrowseViewModeChanged extends LibraryBrowseEvent {
 }
 
 /// The shared library changed (favorite, status, delete, add). Patches the
-/// loaded page in place and reloads when an entry was added.
+/// loaded page in place and reloads when an entry was added or edited.
 class LibraryBrowseSourceChanged extends LibraryBrowseEvent {
   const LibraryBrowseSourceChanged(this.entries);
 

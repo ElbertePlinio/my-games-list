@@ -52,7 +52,10 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
   /// Bumped on every first-page request so a slow older response never
   /// replaces a newer one.
   int _generation = 0;
-  Set<String>? _sourceIds;
+
+  /// The shared library by entry id, and the ids its last change deleted.
+  Map<String, LibraryEntry>? _source;
+  Set<String> _deletedIds = const {};
 
   Future<void> _onStarted(
     LibraryBrowseStarted event,
@@ -108,11 +111,11 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
   Future<void> _loadFirstPage(
     Emitter<LibraryBrowseState> emit, {
     bool keepEntries = false,
+    bool reconcile = false,
   }) async {
     final userId = state.userId;
     if (userId == null || userId.isEmpty) return;
     final generation = ++_generation;
-    final filters = state.filters;
     emit(
       state.copyWith(
         status: LibraryBrowseStatus.loading,
@@ -123,19 +126,11 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
     try {
       final response = await _repository.queryLibrary(
         userId,
-        filters,
+        state.filters,
         limit: pageSize,
       );
       if (generation != _generation) return;
-      emit(
-        state.copyWith(
-          status: LibraryBrowseStatus.success,
-          entries: response.entries,
-          totalCount: response.totalCount,
-          nextOffset: response.entries.length,
-          hasMore: response.entries.length < response.totalCount,
-        ),
-      );
+      _emitFirstPage(emit, response, reconcile: reconcile);
     } catch (e) {
       if (generation != _generation) return;
       emit(
@@ -147,6 +142,42 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
         ),
       );
     }
+  }
+
+  /// With [reconcile] the shared library wins over the response, because
+  /// the response can predate a mutation that is still in flight.
+  void _emitFirstPage(
+    Emitter<LibraryBrowseState> emit,
+    LibraryEntriesResponse response, {
+    required bool reconcile,
+  }) {
+    final entries = reconcile
+        ? _reconciled(response.entries)
+        : response.entries;
+    final dropped = response.entries.length - entries.length;
+    final total = math.max(0, response.totalCount - dropped);
+    emit(
+      state.copyWith(
+        status: LibraryBrowseStatus.success,
+        entries: entries,
+        totalCount: total,
+        nextOffset: entries.length,
+        hasMore: entries.length < total,
+      ),
+    );
+  }
+
+  /// [entries] with the shared library's version of each row. Rows that were
+  /// deleted, or that no longer pass the filters, are left out.
+  List<LibraryEntry> _reconciled(List<LibraryEntry> entries) => [
+    for (final shown in entries) ?_reconcile(shown),
+  ];
+
+  LibraryEntry? _reconcile(LibraryEntry shown) {
+    if (_deletedIds.contains(shown.id)) return null;
+    final latest = _source?[shown.id];
+    if (latest == null || latest == shown) return shown;
+    return state.filters.admits(latest) ? latest : null;
   }
 
   Future<void> _onLoadMore(
@@ -211,23 +242,19 @@ class LibraryBrowseBloc extends Bloc<LibraryBrowseEvent, LibraryBrowseState> {
     LibraryBrowseSourceChanged event,
     Emitter<LibraryBrowseState> emit,
   ) async {
-    final ids = {for (final e in event.entries) e.id};
-    final previous = _sourceIds;
-    _sourceIds = ids;
+    final latest = {for (final e in event.entries) e.id: e};
+    final previous = _source;
+    _source = latest;
     if (previous == null) return;
+    _deletedIds = previous.keys.where((id) => !latest.containsKey(id)).toSet();
+    final changed = latest.entries.any((e) => previous[e.key] != e.value);
+    _emitReconciled(emit);
+    // A new or edited entry can change membership, order and totals.
+    if (changed) await _loadFirstPage(emit, keepEntries: true, reconcile: true);
+  }
 
-    final added = ids.difference(previous);
-    if (added.isNotEmpty) {
-      await _loadFirstPage(emit, keepEntries: true);
-      return;
-    }
-
-    final removed = previous.difference(ids);
-    final byId = {for (final e in event.entries) e.id: e};
-    final patched = <LibraryEntry>[
-      for (final entry in state.entries)
-        if (!removed.contains(entry.id)) byId[entry.id] ?? entry,
-    ];
+  void _emitReconciled(Emitter<LibraryBrowseState> emit) {
+    final patched = _reconciled(state.entries);
     final dropped = state.entries.length - patched.length;
     emit(
       state.copyWith(

@@ -255,7 +255,37 @@ void main() {
     );
 
     blocTest<LibraryBrowseBloc, LibraryBrowseState>(
-      'source changes patch rows in place and drop deleted entries',
+      'deleted entries drop from the list without a reload',
+      build: build,
+      seed: () => LibraryBrowseState(
+        status: LibraryBrowseStatus.success,
+        userId: 'u1',
+        entries: _entries(0, 3),
+        totalCount: 3,
+        nextOffset: 3,
+      ),
+      act: (b) async {
+        b.add(LibraryBrowseSourceChanged(_entries(0, 3)));
+        await Future<void>.delayed(Duration.zero);
+        b.add(
+          LibraryBrowseSourceChanged([
+            entry(id: 'e0', igdbId: 0, name: 'Game 0'),
+            entry(id: 'e2', igdbId: 2, name: 'Game 2'),
+          ]),
+        );
+      },
+      verify: (b) {
+        expect(b.state.entries.map((e) => e.id), ['e0', 'e2']);
+        expect(b.state.totalCount, 2);
+        verifyNever(
+          () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+        );
+      },
+    );
+
+    blocTest<LibraryBrowseBloc, LibraryBrowseState>(
+      'an edited entry patches its row and reloads the query',
+      setUp: () => stubPage(_entries(0, 3), 3),
       build: build,
       seed: () => LibraryBrowseState(
         status: LibraryBrowseStatus.success,
@@ -270,19 +300,73 @@ void main() {
         b.add(
           LibraryBrowseSourceChanged([
             entry(id: 'e0', igdbId: 0, name: 'Game 0', favorite: true),
-            entry(id: 'e2', igdbId: 2, name: 'Game 2'),
+            ..._entries(1, 2),
           ]),
         );
       },
       verify: (b) {
-        expect(b.state.entries.map((e) => e.id), ['e0', 'e2']);
+        expect(b.state.entries.map((e) => e.id), ['e0', 'e1', 'e2']);
+        // The reload answered with the older row; the shared library wins.
         expect(b.state.entries.first.isFavorite, isTrue);
-        expect(b.state.totalCount, 2);
-        verifyNever(
+        verify(
           () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
-        );
+        ).called(1);
       },
     );
+
+    final filtered = <String, (LibraryFilters, LibraryEntry, LibraryEntry)>{
+      'status': (
+        const LibraryFilters(statuses: {GameStatus.planned}),
+        entry(id: 'e0', igdbId: 0, name: 'Game 0'),
+        entry(id: 'e0', igdbId: 0, name: 'Game 0', status: GameStatus.playing),
+      ),
+      'favorite': (
+        const LibraryFilters(favoritesOnly: true),
+        entry(id: 'e0', igdbId: 0, name: 'Game 0', favorite: true),
+        entry(id: 'e0', igdbId: 0, name: 'Game 0'),
+      ),
+      'collection': (
+        const LibraryFilters(collectionId: 'c-1'),
+        entry(id: 'e0', igdbId: 0, name: 'Game 0', collectionIds: ['c-1']),
+        entry(id: 'e0', igdbId: 0, name: 'Game 0'),
+      ),
+    };
+    for (final MapEntry(key: name, value: (filters, before, after))
+        in filtered.entries) {
+      final other = entry(
+        id: 'e1',
+        igdbId: 1,
+        name: 'Game 1',
+        favorite: true,
+        collectionIds: ['c-1'],
+      );
+      blocTest<LibraryBrowseBloc, LibraryBrowseState>(
+        'an entry that leaves the $name filter leaves the list and the count',
+        // The reload may still see the old row; it must not come back.
+        setUp: () => stubPage([before, other], 2),
+        build: build,
+        seed: () => LibraryBrowseState(
+          status: LibraryBrowseStatus.success,
+          userId: 'u1',
+          filters: filters,
+          entries: [before, other],
+          totalCount: 2,
+          nextOffset: 2,
+        ),
+        act: (b) async {
+          b.add(LibraryBrowseSourceChanged([before, other]));
+          await Future<void>.delayed(Duration.zero);
+          b.add(LibraryBrowseSourceChanged([after, other]));
+        },
+        verify: (b) {
+          expect(b.state.entries.map((e) => e.id), ['e1']);
+          expect(b.state.totalCount, 1);
+          verify(
+            () => repo.queryLibrary(any(), any(), limit: any(named: 'limit')),
+          ).called(1);
+        },
+      );
+    }
 
     blocTest<LibraryBrowseBloc, LibraryBrowseState>(
       'a newly added library entry reloads the first page',

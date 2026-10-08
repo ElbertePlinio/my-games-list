@@ -609,9 +609,18 @@
     "@homeEyebrow": {
         "description": "Eyebrow above the home greeting"
     },
+    "homeGreetingNight": "Up late, {name}?",
+    "@homeGreetingNight": {
+        "description": "Home greeting from midnight to 4:59",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
     "homeGreetingMorning": "Good morning, {name}",
     "@homeGreetingMorning": {
-        "description": "Home greeting before noon",
+        "description": "Home greeting from 5:00 to 11:59",
         "placeholders": {
             "name": {
                 "type": "String"
@@ -620,7 +629,7 @@
     },
     "homeGreetingAfternoon": "Good afternoon, {name}",
     "@homeGreetingAfternoon": {
-        "description": "Home greeting in the afternoon",
+        "description": "Home greeting from 12:00 to 17:59",
         "placeholders": {
             "name": {
                 "type": "String"
@@ -629,7 +638,7 @@
     },
     "homeGreetingEvening": "Good evening, {name}",
     "@homeGreetingEvening": {
-        "description": "Home greeting in the evening",
+        "description": "Home greeting from 18:00 to 23:59",
         "placeholders": {
             "name": {
                 "type": "String"

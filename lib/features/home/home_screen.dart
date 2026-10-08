@@ -30,6 +30,7 @@ import 'package:picklog/features/games/widgets/collections_widget.dart';
 import 'package:picklog/features/games/widgets/discovery_games_widget.dart';
 import 'package:picklog/features/games/widgets/featured_banners_carousel.dart';
 import 'package:picklog/features/games/widgets/recommendations_widget.dart';
+import 'package:picklog/l10n/app_localizations.dart';
 
 /// Home feed: greeting, featured picks, anticipated releases,
 /// recommendations, discovery rails and curated collections.
@@ -150,19 +151,20 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+/// Greeting for the local [hour]: night 0-4, morning 5-11, afternoon 12-17
+/// and evening 18-23. Uses only the first word of [name].
+String homeGreeting(AppLocalizations l10n, String? name, int hour) {
+  if (name == null || name.trim().isEmpty) return l10n.homeGreetingAnonymous;
+  final first = name.trim().split(RegExp(r'\s+')).first;
+  if (hour < 5) return l10n.homeGreetingNight(first);
+  if (hour < 12) return l10n.homeGreetingMorning(first);
+  if (hour < 18) return l10n.homeGreetingAfternoon(first);
+  return l10n.homeGreetingEvening(first);
+}
+
 /// Personal greeting with an ember eyebrow.
 class _Greeting extends StatelessWidget {
   const _Greeting();
-
-  String _greeting(BuildContext context, String? name) {
-    final l10n = context.l10n;
-    if (name == null || name.trim().isEmpty) return l10n.homeGreetingAnonymous;
-    final first = name.trim().split(RegExp(r'\s+')).first;
-    final hour = DateTime.now().hour;
-    if (hour < 12) return l10n.homeGreetingMorning(first);
-    if (hour < 18) return l10n.homeGreetingAfternoon(first);
-    return l10n.homeGreetingEvening(first);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +192,7 @@ class _Greeting extends StatelessWidget {
           Semantics(
             header: true,
             child: Text(
-              _greeting(context, name),
+              homeGreeting(context.l10n, name, DateTime.now().hour),
               style: theme.textTheme.displaySmall,
             ),
           ),

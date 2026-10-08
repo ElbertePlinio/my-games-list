@@ -854,6 +854,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get homeEyebrow => 'Picklog · Início';
 
   @override
+  String homeGreetingNight(String name) {
+    return 'Boa madrugada, $name';
+  }
+
+  @override
   String homeGreetingMorning(String name) {
     return 'Bom dia, $name';
   }

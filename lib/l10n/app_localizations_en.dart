@@ -847,6 +847,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeEyebrow => 'Picklog · Home';
 
   @override
+  String homeGreetingNight(String name) {
+    return 'Up late, $name?';
+  }
+
+  @override
   String homeGreetingMorning(String name) {
     return 'Good morning, $name';
   }

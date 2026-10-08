@@ -1628,19 +1628,25 @@ abstract class AppLocalizations {
   /// **'Picklog · Home'**
   String get homeEyebrow;
 
-  /// Home greeting before noon
+  /// Home greeting from midnight to 4:59
+  ///
+  /// In en, this message translates to:
+  /// **'Up late, {name}?'**
+  String homeGreetingNight(String name);
+
+  /// Home greeting from 5:00 to 11:59
   ///
   /// In en, this message translates to:
   /// **'Good morning, {name}'**
   String homeGreetingMorning(String name);
 
-  /// Home greeting in the afternoon
+  /// Home greeting from 12:00 to 17:59
   ///
   /// In en, this message translates to:
   /// **'Good afternoon, {name}'**
   String homeGreetingAfternoon(String name);
 
-  /// Home greeting in the evening
+  /// Home greeting from 18:00 to 23:59
   ///
   /// In en, this message translates to:
   /// **'Good evening, {name}'**

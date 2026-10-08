@@ -1,0 +1,232 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:picklog/features/ai/ai_models.dart';
+import 'package:picklog/features/ai/ai_repository.dart';
+import 'package:picklog/features/ai/bloc/play_next_cubit.dart';
+import 'package:picklog/features/library/library_entry_model.dart';
+
+import '../ai_fixtures.dart';
+
+LibraryEntry _entry(
+  String id,
+  GameStatus status, {
+  int? platformId,
+  String? platform,
+}) => LibraryEntry(
+  id: id,
+  userId: 'u1',
+  game: CachedGame(
+    id: 'g$id',
+    igdbId: id.hashCode,
+    name: 'Game $id',
+    lastSyncedAt: DateTime.utc(2026),
+  ),
+  platform: platformId == null
+      ? null
+      : CachedPlatform(
+          id: 'p$platformId',
+          igdbPlatformId: platformId,
+          name: platform!,
+          abbreviation: platform,
+        ),
+  status: status,
+  isFavorite: false,
+  createdAt: DateTime.utc(2026),
+  updatedAt: DateTime.utc(2026),
+);
+
+void main() {
+  late MockAiRepository ai;
+  late MockLibraryRepository library;
+
+  setUpAll(() => registerFallbackValue(const PlayNextRequest()));
+
+  setUp(() {
+    ai = MockAiRepository();
+    library = MockLibraryRepository();
+  });
+
+  PlayNextCubit build() =>
+      PlayNextCubit(aiRepository: ai, libraryRepository: library, userId: 'u1');
+
+  group('PlayNextCubit', () {
+    blocTest<PlayNextCubit, PlayNextState>(
+      'loadLibrary collects platforms and counts the backlog',
+      build: () {
+        when(() => library.getLibrary('u1')).thenAnswer(
+          (_) async => [
+            _entry('1', GameStatus.planned, platformId: 6, platform: 'PC'),
+            _entry('2', GameStatus.finished, platformId: 167, platform: 'PS5'),
+            _entry('3', GameStatus.onHold, platformId: 6, platform: 'PC'),
+          ],
+        );
+        return build();
+      },
+      act: (cubit) => cubit.loadLibrary(),
+      expect: () => [
+        const PlayNextState(
+          platforms: [
+            LibraryPlatformOption(id: 6, label: 'PC'),
+            LibraryPlatformOption(id: 167, label: 'PS5'),
+          ],
+          backlogCount: 2,
+        ),
+      ],
+    );
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'an empty backlog is detected before generating',
+      build: () {
+        when(
+          () => library.getLibrary('u1'),
+        ).thenAnswer((_) async => [_entry('1', GameStatus.finished)]);
+        return build();
+      },
+      act: (cubit) => cubit.loadLibrary(),
+      verify: (cubit) => expect(cubit.state.isBacklogEmpty, isTrue),
+    );
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'generate sends the form and emits picks',
+      build: () {
+        when(() => ai.playNext(any())).thenAnswer((_) async => kPlayNextResult);
+        return build();
+      },
+      act: (cubit) => cubit
+        ..selectMood(AiMood.story)
+        ..setMinutesStop(5)
+        ..selectPlatform(6)
+        ..setNote('cozy')
+        ..generate(),
+      skip: 4,
+      expect: () => [
+        isA<PlayNextState>().having(
+          (s) => s.status,
+          'status',
+          PlayNextStatus.loading,
+        ),
+        isA<PlayNextState>()
+            .having((s) => s.status, 'status', PlayNextStatus.success)
+            .having((s) => s.picks, 'picks', kPlayNextResult.picks)
+            .having((s) => s.remainingToday, 'remaining', 16),
+      ],
+      verify: (_) => verify(
+        () => ai.playNext(
+          const PlayNextRequest(
+            minutesAvailable: 120,
+            mood: AiMood.story,
+            platformId: 6,
+            note: 'cozy',
+          ),
+        ),
+      ).called(1),
+    );
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'selecting the same mood again clears it',
+      build: build,
+      act: (cubit) => cubit
+        ..selectMood(AiMood.chill)
+        ..selectMood(AiMood.chill),
+      expect: () => [
+        const PlayNextState(mood: AiMood.chill),
+        const PlayNextState(),
+      ],
+    );
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'no picks from the API means an empty backlog',
+      build: () {
+        when(() => ai.playNext(any())).thenAnswer(
+          (_) async => const PlayNextResult(picks: [], remainingToday: 20),
+        );
+        return build();
+      },
+      act: (cubit) => cubit.generate(),
+      verify: (cubit) => expect(cubit.state.isBacklogEmpty, isTrue),
+    );
+
+    for (final kind in [
+      AiErrorKind.consentRequired,
+      AiErrorKind.quotaExceeded,
+      AiErrorKind.upstream,
+    ]) {
+      blocTest<PlayNextCubit, PlayNextState>(
+        'a $kind failure is stored',
+        build: () {
+          when(() => ai.playNext(any())).thenThrow(AiException(kind));
+          return build();
+        },
+        act: (cubit) => cubit.generate(),
+        expect: () => [
+          const PlayNextState(status: PlayNextStatus.loading),
+          PlayNextState(status: PlayNextStatus.failure, errorKind: kind),
+        ],
+      );
+    }
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'startPlaying sets the entry to playing through the library repository',
+      build: () {
+        when(
+          () => library.updateLibraryEntry(
+            entryId: 'entry-1',
+            status: GameStatus.playing,
+          ),
+        ).thenAnswer((_) async => _entry('entry-1', GameStatus.playing));
+        return build();
+      },
+      seed: () => const PlayNextState(
+        status: PlayNextStatus.success,
+        picks: [kPickHades],
+      ),
+      act: (cubit) => cubit.startPlaying(kPickHades),
+      expect: () => [
+        const PlayNextState(
+          status: PlayNextStatus.success,
+          picks: [kPickHades],
+          startingIds: {'entry-1'},
+        ),
+        const PlayNextState(
+          status: PlayNextStatus.success,
+          picks: [kPickHades],
+          startedIds: {'entry-1'},
+        ),
+      ],
+    );
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'a failed startPlaying bumps the failure counter',
+      build: () {
+        when(
+          () => library.updateLibraryEntry(
+            entryId: 'entry-1',
+            status: GameStatus.playing,
+          ),
+        ).thenThrow(Exception('offline'));
+        return build();
+      },
+      seed: () => const PlayNextState(
+        status: PlayNextStatus.success,
+        picks: [kPickHades],
+      ),
+      act: (cubit) => cubit.startPlaying(kPickHades),
+      skip: 1,
+      expect: () => [
+        const PlayNextState(
+          status: PlayNextStatus.success,
+          picks: [kPickHades],
+          startFailureCount: 1,
+        ),
+      ],
+    );
+
+    blocTest<PlayNextCubit, PlayNextState>(
+      'the note is capped at 200 characters',
+      build: build,
+      act: (cubit) => cubit.setNote('x' * 250),
+      verify: (cubit) => expect(cubit.state.note.length, kPlayNextNoteMax),
+    );
+  });
+}

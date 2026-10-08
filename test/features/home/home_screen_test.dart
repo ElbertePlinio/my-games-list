@@ -8,6 +8,8 @@ import 'package:picklog/core/theme/app_theme.dart';
 import 'package:picklog/core/utils/app_router.dart';
 import 'package:picklog/core/widgets/brand_mark.dart';
 import 'package:picklog/core/widgets/section_header.dart';
+import 'package:picklog/features/ai/ai_models.dart';
+import 'package:picklog/features/ai/bloc/ai_status_cubit.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
 import 'package:picklog/features/auth/user_model.dart';
 import 'package:picklog/features/games/anticipated_game_model.dart';
@@ -35,6 +37,7 @@ import 'package:picklog/l10n/app_localizations.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../mocks/mock_blocs.dart';
+import '../ai/ai_fixtures.dart';
 
 class _MockAnticipated
     extends MockBloc<AnticipatedGamesEvent, AnticipatedGamesState>
@@ -115,7 +118,7 @@ void main() {
     when(() => collections.state).thenReturn(const CollectionsState());
   });
 
-  Widget buildSubject() {
+  Widget buildSubject({AiStatusCubit? aiStatus}) {
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -128,6 +131,8 @@ void main() {
               BlocProvider<FeaturedBannersBloc>.value(value: banners),
               BlocProvider<RecommendationsBloc>.value(value: recommendations),
               BlocProvider<CollectionsBloc>.value(value: collections),
+              if (aiStatus != null)
+                BlocProvider<AiStatusCubit>.value(value: aiStatus),
             ],
             child: const HomeScreen(),
           ),
@@ -252,5 +257,41 @@ void main() {
       ),
     );
     expect(label, 'Já disponível');
+  });
+
+  group('AI entry', () {
+    Future<AiStatusCubit> aiCubit(AiStatus status) async {
+      final repository = MockAiRepository();
+      when(() => repository.getStatus()).thenAnswer((_) async => status);
+      final cubit = AiStatusCubit(repository: repository);
+      await cubit.load();
+      return cubit;
+    }
+
+    testWidgets('shows the play next card near the top when enabled', (
+      tester,
+    ) async {
+      final cubit = await aiCubit(kStatusConsented);
+      addTearDown(cubit.close);
+      await tester.pumpWidget(buildSubject(aiStatus: cubit));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('What should I play tonight?'), findsOneWidget);
+      expect(find.text('Discover with AI'), findsOneWidget);
+    });
+
+    testWidgets('hides the AI card when AI is disabled', (tester) async {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final cubit = await aiCubit(kStatusDisabled);
+      addTearDown(cubit.close);
+      await tester.pumpWidget(buildSubject(aiStatus: cubit));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('What should I play tonight?'), findsNothing);
+      expect(find.text('Discover with AI'), findsNothing);
+      expect(find.widgetWithText(SectionHeader, 'Most anticipated'), findsOne);
+    });
   });
 }

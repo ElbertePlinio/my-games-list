@@ -253,8 +253,9 @@ class PlayNextCubit extends Cubit<PlayNextState> {
       // update sends back its score, dates, difficulty and notes.
       final current = await _library.getLibraryEntry(id);
       await _library.updateLibraryEntry(current, status: GameStatus.playing);
-      if (isClosed) return;
+      // The save happened even if the user left this screen.
       _refreshLibrary(library);
+      if (isClosed) return;
       emit(
         state.copyWith(
           startingIds: {...state.startingIds}..remove(id),

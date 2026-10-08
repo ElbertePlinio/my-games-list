@@ -235,6 +235,32 @@ void main() {
       ).called(1);
     });
 
+    test('a save that ends after Back still refreshes the library', () async {
+      final shared = MockLibraryBloc();
+      when(() => shared.isClosed).thenReturn(false);
+      sl.registerSingleton<LibraryBloc>(shared);
+      addTearDown(() => sl.unregister<LibraryBloc>());
+      final current = detailedEntry();
+      final saving = Completer<LibraryEntry>();
+      when(
+        () => library.getLibraryEntry('entry-1'),
+      ).thenAnswer((_) async => current);
+      when(
+        () => library.updateLibraryEntry(current, status: GameStatus.playing),
+      ).thenAnswer((_) => saving.future);
+      final cubit = build();
+
+      final starting = cubit.startPlaying(kPickHades);
+      await Future<void>.delayed(Duration.zero);
+      await cubit.close();
+      saving.complete(_entry('entry-1', GameStatus.playing));
+      await starting;
+
+      verify(
+        () => shared.add(const LibraryRefreshRequested(userId: 'u1')),
+      ).called(1);
+    });
+
     test('a save that ends after a session switch refreshes nothing', () async {
       final first = MockLibraryBloc();
       when(() => first.isClosed).thenReturn(false);

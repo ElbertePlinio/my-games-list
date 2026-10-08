@@ -2700,6 +2700,876 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filter by genre, platform, year and rating.'**
   String get browseExploreHint;
+
+  /// Eyebrow above the Play next screen and home card
+  ///
+  /// In en, this message translates to:
+  /// **'AI · Play next'**
+  String get aiEyebrowPlayNext;
+
+  /// Eyebrow above the AI discover screen
+  ///
+  /// In en, this message translates to:
+  /// **'AI · Discover'**
+  String get aiEyebrowDiscover;
+
+  /// App bar title of the AI play next screen
+  ///
+  /// In en, this message translates to:
+  /// **'Play next'**
+  String get aiPlayNextTitle;
+
+  /// Headline of the play next screen and home card
+  ///
+  /// In en, this message translates to:
+  /// **'What should I play tonight?'**
+  String get aiPlayNextHeadline;
+
+  /// Subtitle under the play next headline
+  ///
+  /// In en, this message translates to:
+  /// **'Tell Picklog your mood and your time. It picks from your backlog.'**
+  String get aiPlayNextSubtitle;
+
+  /// Label above the mood chips
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get aiMoodLabel;
+
+  /// Mood chip
+  ///
+  /// In en, this message translates to:
+  /// **'Chill'**
+  String get aiMoodChill;
+
+  /// Mood chip
+  ///
+  /// In en, this message translates to:
+  /// **'Intense'**
+  String get aiMoodIntense;
+
+  /// Mood chip
+  ///
+  /// In en, this message translates to:
+  /// **'Story'**
+  String get aiMoodStory;
+
+  /// Mood chip
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get aiMoodSocial;
+
+  /// Mood chip
+  ///
+  /// In en, this message translates to:
+  /// **'Quick'**
+  String get aiMoodQuick;
+
+  /// Mood chip
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge'**
+  String get aiMoodChallenge;
+
+  /// Label above the time slider
+  ///
+  /// In en, this message translates to:
+  /// **'Time available'**
+  String get aiTimeLabel;
+
+  /// A duration in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String aiDurationMinutes(int minutes);
+
+  /// A duration in whole hours
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h'**
+  String aiDurationHours(int hours);
+
+  /// A duration in hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String aiDurationHoursMinutes(int hours, int minutes);
+
+  /// Last slider stop: four hours or more
+  ///
+  /// In en, this message translates to:
+  /// **'4 h+'**
+  String get aiDurationFourPlus;
+
+  /// Label above the platform chips
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get aiPlatformLabel;
+
+  /// Chip that clears the platform filter
+  ///
+  /// In en, this message translates to:
+  /// **'Any platform'**
+  String get aiPlatformAny;
+
+  /// Label of the optional note field
+  ///
+  /// In en, this message translates to:
+  /// **'Anything else? (optional)'**
+  String get aiNoteLabel;
+
+  /// Hint of the optional note field
+  ///
+  /// In en, this message translates to:
+  /// **'For example: something I can pause often'**
+  String get aiNoteHint;
+
+  /// Button that asks the AI for picks
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest games'**
+  String get aiGenerateButton;
+
+  /// Button that asks the AI for new picks
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get aiRegenerateButton;
+
+  /// Daily AI usage counter
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} of {limit} left today'**
+  String aiRemainingToday(int remaining, int limit);
+
+  /// Daily AI usage counter without the limit
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} left today'**
+  String aiRemainingTodayShort(int remaining);
+
+  /// Rotating status line while play next loads
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your backlog'**
+  String get aiLoadingPlayNext1;
+
+  /// Rotating status line while play next loads
+  ///
+  /// In en, this message translates to:
+  /// **'Weighing your mood and time'**
+  String get aiLoadingPlayNext2;
+
+  /// Rotating status line while play next loads
+  ///
+  /// In en, this message translates to:
+  /// **'Comparing genres and scores'**
+  String get aiLoadingPlayNext3;
+
+  /// Rotating status line while AI results load
+  ///
+  /// In en, this message translates to:
+  /// **'Picking the best fits'**
+  String get aiLoadingPlayNext4;
+
+  /// Rotating status line while discover loads
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your taste'**
+  String get aiLoadingDiscover1;
+
+  /// Rotating status line while discover loads
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for new games'**
+  String get aiLoadingDiscover2;
+
+  /// Rotating status line while discover loads
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the catalogue'**
+  String get aiLoadingDiscover3;
+
+  /// Heading above AI results
+  ///
+  /// In en, this message translates to:
+  /// **'Your picks'**
+  String get aiResultsTitle;
+
+  /// Eyebrow on the first play next pick
+  ///
+  /// In en, this message translates to:
+  /// **'Top pick'**
+  String get aiTopPick;
+
+  /// Estimated session length of a pick
+  ///
+  /// In en, this message translates to:
+  /// **'About {duration} per session'**
+  String aiSessionLength(String duration);
+
+  /// Sets a pick's library status to playing
+  ///
+  /// In en, this message translates to:
+  /// **'Start playing'**
+  String get aiStartPlaying;
+
+  /// Shown after a pick is set to playing
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing'**
+  String get aiNowPlaying;
+
+  /// Opens the game details
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get aiOpenGame;
+
+  /// Error after start playing fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update this game. Try again.'**
+  String get aiStartPlayingError;
+
+  /// Empty state title when there is nothing to pick from
+  ///
+  /// In en, this message translates to:
+  /// **'Your backlog is empty'**
+  String get aiEmptyBacklogTitle;
+
+  /// Empty state message when there is nothing to pick from
+  ///
+  /// In en, this message translates to:
+  /// **'Play next picks from games you plan to play, are playing, or put on hold. Add a few first.'**
+  String get aiEmptyBacklogMessage;
+
+  /// Button to the Explore screen
+  ///
+  /// In en, this message translates to:
+  /// **'Explore games'**
+  String get aiGoExplore;
+
+  /// Button to the Search screen
+  ///
+  /// In en, this message translates to:
+  /// **'Search games'**
+  String get aiGoSearch;
+
+  /// Error 503 error.ai.unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggestions are not available right now.'**
+  String get aiErrorUnavailable;
+
+  /// Error 403 error.ai.consent_required
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on AI suggestions to use this feature.'**
+  String get aiErrorConsentRequired;
+
+  /// Error 429 error.ai.quota_exceeded
+  ///
+  /// In en, this message translates to:
+  /// **'You used all of today\'s AI suggestions. Come back tomorrow.'**
+  String get aiErrorQuotaExceeded;
+
+  /// Error 502 error.ai.upstream
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service did not answer. Try again in a moment.'**
+  String get aiErrorUpstream;
+
+  /// Title when AI is disabled on the server
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggestions are off'**
+  String get aiUnavailableTitle;
+
+  /// Title when the daily AI quota is used
+  ///
+  /// In en, this message translates to:
+  /// **'Daily limit reached'**
+  String get aiQuotaTitle;
+
+  /// Title when the user has not opted in
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggestions need your OK'**
+  String get aiConsentNeededTitle;
+
+  /// Message when the user has not opted in
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog sends data to the AI service only after you agree.'**
+  String get aiConsentNeededMessage;
+
+  /// Button that reopens the AI consent dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Review and turn on'**
+  String get aiReviewConsent;
+
+  /// AI consent dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on AI suggestions?'**
+  String get aiConsentTitle;
+
+  /// AI consent dialog: what is sent
+  ///
+  /// In en, this message translates to:
+  /// **'To make suggestions, Picklog sends OpenAI the names, statuses, scores, genres, and playtime of games in your library, plus the note you type.'**
+  String get aiConsentBody;
+
+  /// AI consent dialog: what is never sent
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog never sends your email or your name.'**
+  String get aiConsentNever;
+
+  /// AI consent dialog: how to revoke
+  ///
+  /// In en, this message translates to:
+  /// **'You can turn this off at any time in Settings.'**
+  String get aiConsentRevoke;
+
+  /// AI consent dialog accept button
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get aiConsentAccept;
+
+  /// AI consent dialog decline button
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get aiConsentDecline;
+
+  /// Error when saving AI consent fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your choice. Try again.'**
+  String get aiConsentSaveError;
+
+  /// Settings group label for AI
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggestions'**
+  String get aiSettingsTitle;
+
+  /// Settings switch for AI consent
+  ///
+  /// In en, this message translates to:
+  /// **'Allow AI suggestions'**
+  String get aiSettingsSwitch;
+
+  /// Settings AI switch subtitle when on
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog can send game data from your library to OpenAI.'**
+  String get aiSettingsSwitchOn;
+
+  /// Settings AI switch subtitle when off
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is sent to OpenAI.'**
+  String get aiSettingsSwitchOff;
+
+  /// Daily AI usage in settings
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {limit} used today'**
+  String aiSettingsUsage(int used, int limit);
+
+  /// Settings note when AI is disabled
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggestions are not available on this server.'**
+  String get aiSettingsUnavailable;
+
+  /// Settings note when AI status fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your AI settings.'**
+  String get aiSettingsLoadError;
+
+  /// Home AI card subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Get picks from your backlog for your mood and your time.'**
+  String get aiHomeCardSubtitle;
+
+  /// Home AI card button
+  ///
+  /// In en, this message translates to:
+  /// **'Pick for me'**
+  String get aiHomeCardAction;
+
+  /// Title of the AI discover screen and its home entry
+  ///
+  /// In en, this message translates to:
+  /// **'Discover with AI'**
+  String get aiDiscoverTitle;
+
+  /// Home discover entry subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what you want and find new games.'**
+  String get aiHomeDiscoverSubtitle;
+
+  /// Subtitle of the AI discover screen
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what you feel like playing. Picklog suggests games you do not have yet.'**
+  String get aiDiscoverSubtitle;
+
+  /// Label of the discover prompt field
+  ///
+  /// In en, this message translates to:
+  /// **'What are you in the mood for?'**
+  String get aiDiscoverPromptLabel;
+
+  /// Hint of the discover prompt field
+  ///
+  /// In en, this message translates to:
+  /// **'For example: a relaxing farming game'**
+  String get aiDiscoverPromptHint;
+
+  /// Button that runs AI discover
+  ///
+  /// In en, this message translates to:
+  /// **'Find games'**
+  String get aiDiscoverSubmit;
+
+  /// Discover prompt suggestion chip
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy games for the weekend'**
+  String get aiDiscoverSuggestion1;
+
+  /// Discover prompt suggestion chip
+  ///
+  /// In en, this message translates to:
+  /// **'Like Hades but slower'**
+  String get aiDiscoverSuggestion2;
+
+  /// Discover prompt suggestion chip
+  ///
+  /// In en, this message translates to:
+  /// **'Short story games under 10 hours'**
+  String get aiDiscoverSuggestion3;
+
+  /// Label above the discover suggestion chips
+  ///
+  /// In en, this message translates to:
+  /// **'Try one'**
+  String get aiDiscoverSuggestionsLabel;
+
+  /// Discover empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No new games found'**
+  String get aiDiscoverEmptyTitle;
+
+  /// Discover empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different prompt.'**
+  String get aiDiscoverEmptyMessage;
+
+  /// Spoken label for a rating badge
+  ///
+  /// In en, this message translates to:
+  /// **'Rating {score}'**
+  String aiRatingLabel(int score);
+
+  /// Connected accounts screen title and settings label
+  ///
+  /// In en, this message translates to:
+  /// **'Connected accounts'**
+  String get accountsTitle;
+
+  /// Eyebrow on the connected accounts screen
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Accounts'**
+  String get accountsEyebrow;
+
+  /// Intro text on the connected accounts screen
+  ///
+  /// In en, this message translates to:
+  /// **'Link public gaming profiles to bring in achievements and playtime. Picklog uses public identifiers only and never asks for your passwords.'**
+  String get accountsIntro;
+
+  /// Settings subtitle listing the services
+  ///
+  /// In en, this message translates to:
+  /// **'Steam, Xbox, RetroAchievements, PlayStation'**
+  String get accountsSettingsSubtitle;
+
+  /// Pill when a provider is not configured
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get accountsUnavailable;
+
+  /// Message when a provider is not configured
+  ///
+  /// In en, this message translates to:
+  /// **'This service is not set up yet.'**
+  String get accountsUnavailableMessage;
+
+  /// Pill for the experimental PlayStation provider
+  ///
+  /// In en, this message translates to:
+  /// **'Experimental'**
+  String get accountsExperimental;
+
+  /// Status of a provider without a linked account
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked'**
+  String get accountsNotLinked;
+
+  /// Button that opens the link sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get accountsLink;
+
+  /// Link sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Link {provider}'**
+  String accountsLinkTitle(String provider);
+
+  /// Steam identifier field label
+  ///
+  /// In en, this message translates to:
+  /// **'Steam profile URL or ID'**
+  String get accountsSteamFieldLabel;
+
+  /// Steam identifier help text
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your profile link, your custom URL name, or your 17-digit SteamID.'**
+  String get accountsSteamHelp;
+
+  /// Steam privacy note
+  ///
+  /// In en, this message translates to:
+  /// **'Game details must be public. In Steam, open your profile, choose Edit Profile, then Privacy Settings, and set Game details to Public.'**
+  String get accountsSteamPublicNote;
+
+  /// Xbox identifier field label
+  ///
+  /// In en, this message translates to:
+  /// **'Xbox gamertag'**
+  String get accountsXboxFieldLabel;
+
+  /// Xbox identifier help text
+  ///
+  /// In en, this message translates to:
+  /// **'Your gamertag as it shows on your Xbox profile.'**
+  String get accountsXboxHelp;
+
+  /// RetroAchievements identifier field label
+  ///
+  /// In en, this message translates to:
+  /// **'RetroAchievements username'**
+  String get accountsRaFieldLabel;
+
+  /// RetroAchievements identifier help text
+  ///
+  /// In en, this message translates to:
+  /// **'Your username on retroachievements.org.'**
+  String get accountsRaHelp;
+
+  /// PlayStation identifier field label
+  ///
+  /// In en, this message translates to:
+  /// **'PSN online ID'**
+  String get accountsPsnFieldLabel;
+
+  /// PlayStation identifier help text
+  ///
+  /// In en, this message translates to:
+  /// **'Your online ID. Your trophy list must be visible to anyone.'**
+  String get accountsPsnHelp;
+
+  /// PlayStation experimental note
+  ///
+  /// In en, this message translates to:
+  /// **'PlayStation support is experimental. It reads public trophy lists only.'**
+  String get accountsPsnExperimentalNote;
+
+  /// Link sheet submit button
+  ///
+  /// In en, this message translates to:
+  /// **'Link account'**
+  String get accountsLinkSubmit;
+
+  /// Snackbar after linking
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} linked. Tap Sync now to import your data.'**
+  String accountsLinkedMessage(String provider);
+
+  /// Last sync time of a linked account
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {time}'**
+  String accountsLastSynced(String time);
+
+  /// Linked account that never synced
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced yet'**
+  String get accountsNeverSynced;
+
+  /// Sync status pill
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get accountsSyncing;
+
+  /// Sync status pill
+  ///
+  /// In en, this message translates to:
+  /// **'Up to date'**
+  String get accountsSyncOk;
+
+  /// Sync status pill
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync failed'**
+  String get accountsSyncError;
+
+  /// Button that starts a sync
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get accountsSyncNow;
+
+  /// Switch to import games during sync
+  ///
+  /// In en, this message translates to:
+  /// **'Also import games to my library'**
+  String get accountsImportToggle;
+
+  /// Help under the import switch
+  ///
+  /// In en, this message translates to:
+  /// **'Adds games you own or played that are not in your library yet.'**
+  String get accountsImportHelp;
+
+  /// Snackbar after a sync starts
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing {provider}. This can take a few minutes.'**
+  String accountsSyncStarted(String provider);
+
+  /// Snackbar when a sync ends
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} sync finished'**
+  String accountsSyncFinished(String provider);
+
+  /// Button that unlinks an account
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get accountsUnlink;
+
+  /// Unlink confirm dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink {provider}?'**
+  String accountsUnlinkTitle(String provider);
+
+  /// Unlink confirm dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog deletes the achievements and progress it imported from this account. Games already in your library stay.'**
+  String get accountsUnlinkMessage;
+
+  /// Snackbar after unlinking
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} unlinked'**
+  String accountsUnlinkedMessage(String provider);
+
+  /// Error 404 error.integration.account_not_found
+  ///
+  /// In en, this message translates to:
+  /// **'We could not find that account. Check the spelling and try again.'**
+  String get accountsErrorNotFound;
+
+  /// Error 422 error.integration.private_profile
+  ///
+  /// In en, this message translates to:
+  /// **'This profile is private. Make your game details public and try again.'**
+  String get accountsErrorPrivate;
+
+  /// Error 429 error.integration.sync_too_soon
+  ///
+  /// In en, this message translates to:
+  /// **'This account synced recently. Try again in a few minutes.'**
+  String get accountsErrorSyncTooSoon;
+
+  /// Error 503 error.integration.unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'This service is not available right now.'**
+  String get accountsErrorUnavailable;
+
+  /// Error for an empty or invalid identifier
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid identifier.'**
+  String get accountsErrorInvalid;
+
+  /// Error 502 error.integration.upstream
+  ///
+  /// In en, this message translates to:
+  /// **'The service did not answer. Try again later.'**
+  String get accountsErrorUpstream;
+
+  /// Error 404 error.integration.game_not_found
+  ///
+  /// In en, this message translates to:
+  /// **'We could not find achievements for this game.'**
+  String get accountsErrorGameNotFound;
+
+  /// Relative time under one minute
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get timeJustNow;
+
+  /// Relative time in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min ago'**
+  String timeMinutesAgo(int minutes);
+
+  /// Relative time in hours
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h ago'**
+  String timeHoursAgo(int hours);
+
+  /// Achievements hub title and game details section title
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievementsTitle;
+
+  /// Eyebrow on the achievements hub
+  ///
+  /// In en, this message translates to:
+  /// **'Picklog · Achievements'**
+  String get achievementsEyebrow;
+
+  /// Label beside the completion ring
+  ///
+  /// In en, this message translates to:
+  /// **'Overall completion'**
+  String get achievementsCompletion;
+
+  /// Unlocked count out of total
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} of {total} unlocked'**
+  String achievementsUnlockedOf(int unlocked, int total);
+
+  /// Number of games for a provider
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 game} other{{count} games}}'**
+  String achievementsGamesCount(int count);
+
+  /// Section title for recent unlocks
+  ///
+  /// In en, this message translates to:
+  /// **'Recent unlocks'**
+  String get achievementsRecentTitle;
+
+  /// Section title for the games list
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get achievementsGamesTitle;
+
+  /// Provider filter chip for all providers
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get achievementsFilterAll;
+
+  /// Achievements empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No achievements yet'**
+  String get achievementsEmptyTitle;
+
+  /// Achievements empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'Link Steam, Xbox, RetroAchievements, or PlayStation to see your achievements here.'**
+  String get achievementsEmptyMessage;
+
+  /// Achievements empty state button
+  ///
+  /// In en, this message translates to:
+  /// **'Connect an account'**
+  String get achievementsConnectAction;
+
+  /// Share of players with an achievement
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% of players'**
+  String achievementsRarity(String percent);
+
+  /// Pill for an achievement under 10% rarity
+  ///
+  /// In en, this message translates to:
+  /// **'Rare'**
+  String get achievementsRare;
+
+  /// Unlock date of an achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked {date}'**
+  String achievementsUnlockedOn(String date);
+
+  /// Label for a locked achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get achievementsLocked;
+
+  /// Last played date of a game
+  ///
+  /// In en, this message translates to:
+  /// **'Played {date}'**
+  String achievementsLastPlayed(String date);
+
+  /// Per-game screen with an empty list
+  ///
+  /// In en, this message translates to:
+  /// **'This game has no achievements to show.'**
+  String get achievementsGameEmpty;
+
+  /// Headline of the AI discover screen
+  ///
+  /// In en, this message translates to:
+  /// **'Find your next favorite game'**
+  String get aiDiscoverHeadline;
 }
 
 class _AppLocalizationsDelegate

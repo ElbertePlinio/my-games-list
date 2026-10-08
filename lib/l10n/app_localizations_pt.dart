@@ -1537,4 +1537,527 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get browseExploreHint => 'Filtre por gênero, plataforma, ano e nota.';
+
+  @override
+  String get aiEyebrowPlayNext => 'IA · Jogar a seguir';
+
+  @override
+  String get aiEyebrowDiscover => 'IA · Descobrir';
+
+  @override
+  String get aiPlayNextTitle => 'Jogar a seguir';
+
+  @override
+  String get aiPlayNextHeadline => 'O que eu jogo hoje à noite?';
+
+  @override
+  String get aiPlayNextSubtitle =>
+      'Conte seu humor e seu tempo. O Picklog escolhe do seu backlog.';
+
+  @override
+  String get aiMoodLabel => 'Humor';
+
+  @override
+  String get aiMoodChill => 'Tranquilo';
+
+  @override
+  String get aiMoodIntense => 'Intenso';
+
+  @override
+  String get aiMoodStory => 'História';
+
+  @override
+  String get aiMoodSocial => 'Social';
+
+  @override
+  String get aiMoodQuick => 'Rápido';
+
+  @override
+  String get aiMoodChallenge => 'Desafio';
+
+  @override
+  String get aiTimeLabel => 'Tempo disponível';
+
+  @override
+  String aiDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String aiDurationHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String aiDurationHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get aiDurationFourPlus => '4 h+';
+
+  @override
+  String get aiPlatformLabel => 'Plataforma';
+
+  @override
+  String get aiPlatformAny => 'Qualquer plataforma';
+
+  @override
+  String get aiNoteLabel => 'Algo mais? (opcional)';
+
+  @override
+  String get aiNoteHint => 'Por exemplo: algo que eu possa pausar sempre';
+
+  @override
+  String get aiGenerateButton => 'Sugerir jogos';
+
+  @override
+  String get aiRegenerateButton => 'Gerar de novo';
+
+  @override
+  String aiRemainingToday(int remaining, int limit) {
+    return '$remaining de $limit restantes hoje';
+  }
+
+  @override
+  String aiRemainingTodayShort(int remaining) {
+    return '$remaining restantes hoje';
+  }
+
+  @override
+  String get aiLoadingPlayNext1 => 'Lendo seu backlog';
+
+  @override
+  String get aiLoadingPlayNext2 => 'Pesando seu humor e seu tempo';
+
+  @override
+  String get aiLoadingPlayNext3 => 'Comparando gêneros e notas';
+
+  @override
+  String get aiLoadingPlayNext4 => 'Escolhendo as melhores opções';
+
+  @override
+  String get aiLoadingDiscover1 => 'Lendo seu gosto';
+
+  @override
+  String get aiLoadingDiscover2 => 'Procurando jogos novos';
+
+  @override
+  String get aiLoadingDiscover3 => 'Conferindo o catálogo';
+
+  @override
+  String get aiResultsTitle => 'Suas escolhas';
+
+  @override
+  String get aiTopPick => 'Melhor escolha';
+
+  @override
+  String aiSessionLength(String duration) {
+    return 'Cerca de $duration por sessão';
+  }
+
+  @override
+  String get aiStartPlaying => 'Começar a jogar';
+
+  @override
+  String get aiNowPlaying => 'Jogando agora';
+
+  @override
+  String get aiOpenGame => 'Abrir';
+
+  @override
+  String get aiStartPlayingError =>
+      'Não foi possível atualizar este jogo. Tente de novo.';
+
+  @override
+  String get aiEmptyBacklogTitle => 'Seu backlog está vazio';
+
+  @override
+  String get aiEmptyBacklogMessage =>
+      'O Jogar a seguir escolhe entre jogos planejados, em andamento ou em pausa. Adicione alguns primeiro.';
+
+  @override
+  String get aiGoExplore => 'Explorar jogos';
+
+  @override
+  String get aiGoSearch => 'Buscar jogos';
+
+  @override
+  String get aiErrorUnavailable =>
+      'As sugestões com IA não estão disponíveis agora.';
+
+  @override
+  String get aiErrorConsentRequired =>
+      'Ative as sugestões com IA para usar este recurso.';
+
+  @override
+  String get aiErrorQuotaExceeded =>
+      'Você usou todas as sugestões com IA de hoje. Volte amanhã.';
+
+  @override
+  String get aiErrorUpstream =>
+      'O serviço de IA não respondeu. Tente de novo em instantes.';
+
+  @override
+  String get aiUnavailableTitle => 'Sugestões com IA desligadas';
+
+  @override
+  String get aiQuotaTitle => 'Limite diário atingido';
+
+  @override
+  String get aiConsentNeededTitle => 'As sugestões com IA precisam do seu OK';
+
+  @override
+  String get aiConsentNeededMessage =>
+      'O Picklog só envia dados ao serviço de IA depois que você concordar.';
+
+  @override
+  String get aiReviewConsent => 'Revisar e ativar';
+
+  @override
+  String get aiConsentTitle => 'Ativar sugestões com IA?';
+
+  @override
+  String get aiConsentBody =>
+      'Para criar sugestões, o Picklog envia à OpenAI os nomes, status, notas, gêneros e tempo de jogo dos jogos da sua biblioteca, além do texto que você digitar.';
+
+  @override
+  String get aiConsentNever => 'O Picklog nunca envia seu email nem seu nome.';
+
+  @override
+  String get aiConsentRevoke =>
+      'Você pode desligar isso a qualquer momento nas Configurações.';
+
+  @override
+  String get aiConsentAccept => 'Ativar';
+
+  @override
+  String get aiConsentDecline => 'Agora não';
+
+  @override
+  String get aiConsentSaveError =>
+      'Não foi possível salvar sua escolha. Tente de novo.';
+
+  @override
+  String get aiSettingsTitle => 'Sugestões com IA';
+
+  @override
+  String get aiSettingsSwitch => 'Permitir sugestões com IA';
+
+  @override
+  String get aiSettingsSwitchOn =>
+      'O Picklog pode enviar dados de jogos da sua biblioteca à OpenAI.';
+
+  @override
+  String get aiSettingsSwitchOff => 'Nada é enviado à OpenAI.';
+
+  @override
+  String aiSettingsUsage(int used, int limit) {
+    return '$used de $limit usadas hoje';
+  }
+
+  @override
+  String get aiSettingsUnavailable =>
+      'As sugestões com IA não estão disponíveis neste servidor.';
+
+  @override
+  String get aiSettingsLoadError =>
+      'Não foi possível carregar suas configurações de IA.';
+
+  @override
+  String get aiHomeCardSubtitle =>
+      'Receba escolhas do seu backlog para seu humor e seu tempo.';
+
+  @override
+  String get aiHomeCardAction => 'Escolha por mim';
+
+  @override
+  String get aiDiscoverTitle => 'Descobrir com IA';
+
+  @override
+  String get aiHomeDiscoverSubtitle =>
+      'Descreva o que você quer e encontre jogos novos.';
+
+  @override
+  String get aiDiscoverSubtitle =>
+      'Descreva o que você quer jogar. O Picklog sugere jogos que você ainda não tem.';
+
+  @override
+  String get aiDiscoverPromptLabel => 'Do que você está com vontade?';
+
+  @override
+  String get aiDiscoverPromptHint =>
+      'Por exemplo: um jogo relaxante de fazenda';
+
+  @override
+  String get aiDiscoverSubmit => 'Encontrar jogos';
+
+  @override
+  String get aiDiscoverSuggestion1 =>
+      'Jogos aconchegantes para o fim de semana';
+
+  @override
+  String get aiDiscoverSuggestion2 => 'Como Hades, mas mais calmo';
+
+  @override
+  String get aiDiscoverSuggestion3 => 'Jogos de história com menos de 10 horas';
+
+  @override
+  String get aiDiscoverSuggestionsLabel => 'Experimente';
+
+  @override
+  String get aiDiscoverEmptyTitle => 'Nenhum jogo novo encontrado';
+
+  @override
+  String get aiDiscoverEmptyMessage => 'Tente outro pedido.';
+
+  @override
+  String aiRatingLabel(int score) {
+    return 'Nota $score';
+  }
+
+  @override
+  String get accountsTitle => 'Contas conectadas';
+
+  @override
+  String get accountsEyebrow => 'Picklog · Contas';
+
+  @override
+  String get accountsIntro =>
+      'Conecte perfis públicos de jogos para trazer conquistas e tempo de jogo. O Picklog usa só identificadores públicos e nunca pede suas senhas.';
+
+  @override
+  String get accountsSettingsSubtitle =>
+      'Steam, Xbox, RetroAchievements, PlayStation';
+
+  @override
+  String get accountsUnavailable => 'Indisponível';
+
+  @override
+  String get accountsUnavailableMessage =>
+      'Este serviço ainda não está configurado.';
+
+  @override
+  String get accountsExperimental => 'Experimental';
+
+  @override
+  String get accountsNotLinked => 'Não conectada';
+
+  @override
+  String get accountsLink => 'Conectar';
+
+  @override
+  String accountsLinkTitle(String provider) {
+    return 'Conectar $provider';
+  }
+
+  @override
+  String get accountsSteamFieldLabel => 'URL ou ID do perfil Steam';
+
+  @override
+  String get accountsSteamHelp =>
+      'Cole o link do seu perfil, o nome da sua URL personalizada ou o seu SteamID de 17 dígitos.';
+
+  @override
+  String get accountsSteamPublicNote =>
+      'Os detalhes de jogos precisam ser públicos. Na Steam, abra seu perfil, escolha Editar perfil, depois Configurações de privacidade, e defina Detalhes dos jogos como Público.';
+
+  @override
+  String get accountsXboxFieldLabel => 'Gamertag da Xbox';
+
+  @override
+  String get accountsXboxHelp =>
+      'Sua gamertag como aparece no seu perfil Xbox.';
+
+  @override
+  String get accountsRaFieldLabel => 'Usuário do RetroAchievements';
+
+  @override
+  String get accountsRaHelp => 'Seu nome de usuário em retroachievements.org.';
+
+  @override
+  String get accountsPsnFieldLabel => 'ID online da PSN';
+
+  @override
+  String get accountsPsnHelp =>
+      'Seu ID online. Sua lista de troféus precisa estar visível para qualquer pessoa.';
+
+  @override
+  String get accountsPsnExperimentalNote =>
+      'O suporte ao PlayStation é experimental. Ele lê só listas públicas de troféus.';
+
+  @override
+  String get accountsLinkSubmit => 'Conectar conta';
+
+  @override
+  String accountsLinkedMessage(String provider) {
+    return '$provider conectada. Toque em Sincronizar agora para importar seus dados.';
+  }
+
+  @override
+  String accountsLastSynced(String time) {
+    return 'Última sincronização: $time';
+  }
+
+  @override
+  String get accountsNeverSynced => 'Ainda não sincronizada';
+
+  @override
+  String get accountsSyncing => 'Sincronizando';
+
+  @override
+  String get accountsSyncOk => 'Atualizada';
+
+  @override
+  String get accountsSyncError => 'A última sincronização falhou';
+
+  @override
+  String get accountsSyncNow => 'Sincronizar agora';
+
+  @override
+  String get accountsImportToggle =>
+      'Também importar jogos para minha biblioteca';
+
+  @override
+  String get accountsImportHelp =>
+      'Adiciona jogos que você tem ou jogou e que ainda não estão na sua biblioteca.';
+
+  @override
+  String accountsSyncStarted(String provider) {
+    return 'Sincronizando $provider. Isso pode levar alguns minutos.';
+  }
+
+  @override
+  String accountsSyncFinished(String provider) {
+    return 'Sincronização de $provider concluída';
+  }
+
+  @override
+  String get accountsUnlink => 'Desconectar';
+
+  @override
+  String accountsUnlinkTitle(String provider) {
+    return 'Desconectar $provider?';
+  }
+
+  @override
+  String get accountsUnlinkMessage =>
+      'O Picklog apaga as conquistas e o progresso importados desta conta. Os jogos que já estão na sua biblioteca continuam.';
+
+  @override
+  String accountsUnlinkedMessage(String provider) {
+    return '$provider desconectada';
+  }
+
+  @override
+  String get accountsErrorNotFound =>
+      'Não encontramos essa conta. Confira o que você digitou e tente de novo.';
+
+  @override
+  String get accountsErrorPrivate =>
+      'Este perfil é privado. Deixe os detalhes de jogos públicos e tente de novo.';
+
+  @override
+  String get accountsErrorSyncTooSoon =>
+      'Esta conta foi sincronizada há pouco. Tente de novo em alguns minutos.';
+
+  @override
+  String get accountsErrorUnavailable =>
+      'Este serviço não está disponível agora.';
+
+  @override
+  String get accountsErrorInvalid => 'Digite um identificador válido.';
+
+  @override
+  String get accountsErrorUpstream =>
+      'O serviço não respondeu. Tente de novo mais tarde.';
+
+  @override
+  String get accountsErrorGameNotFound =>
+      'Não encontramos conquistas para este jogo.';
+
+  @override
+  String get timeJustNow => 'agora mesmo';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return 'há $minutes min';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return 'há $hours h';
+  }
+
+  @override
+  String get achievementsTitle => 'Conquistas';
+
+  @override
+  String get achievementsEyebrow => 'Picklog · Conquistas';
+
+  @override
+  String get achievementsCompletion => 'Conclusão geral';
+
+  @override
+  String achievementsUnlockedOf(int unlocked, int total) {
+    return '$unlocked de $total desbloqueadas';
+  }
+
+  @override
+  String achievementsGamesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jogos',
+      one: '1 jogo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get achievementsRecentTitle => 'Desbloqueadas recentemente';
+
+  @override
+  String get achievementsGamesTitle => 'Jogos';
+
+  @override
+  String get achievementsFilterAll => 'Todos';
+
+  @override
+  String get achievementsEmptyTitle => 'Nenhuma conquista ainda';
+
+  @override
+  String get achievementsEmptyMessage =>
+      'Conecte Steam, Xbox, RetroAchievements ou PlayStation para ver suas conquistas aqui.';
+
+  @override
+  String get achievementsConnectAction => 'Conectar uma conta';
+
+  @override
+  String achievementsRarity(String percent) {
+    return '$percent% dos jogadores';
+  }
+
+  @override
+  String get achievementsRare => 'Rara';
+
+  @override
+  String achievementsUnlockedOn(String date) {
+    return 'Desbloqueada em $date';
+  }
+
+  @override
+  String get achievementsLocked => 'Bloqueada';
+
+  @override
+  String achievementsLastPlayed(String date) {
+    return 'Jogado em $date';
+  }
+
+  @override
+  String get achievementsGameEmpty =>
+      'Este jogo não tem conquistas para mostrar.';
+
+  @override
+  String get aiDiscoverHeadline => 'Encontre seu próximo jogo favorito';
 }

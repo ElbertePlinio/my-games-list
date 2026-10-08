@@ -2,17 +2,17 @@
     "appTitle": "Picklog",
     "welcomeMessage": "Welcome to Picklog",
     "@appTitle": {
-      "description": "The title of the application"
+        "description": "The title of the application"
     },
     "errorTitle": "Error",
     "errorMessage": "Oops! Something went wrong.",
     "offlineBannerMessage": "You're offline",
     "@offlineBannerMessage": {
-      "description": "Shown in a banner when the device has no network connection"
+        "description": "Shown in a banner when the device has no network connection"
     },
     "loadingLabel": "Loading",
     "@loadingLabel": {
-      "description": "Accessibility label announced while a section is loading"
+        "description": "Accessibility label announced while a section is loading"
     },
     "goHome": "Go home",
     "signInTitle": "Sign in",
@@ -47,19 +47,19 @@
     "userInformationTitle": "Account",
     "nameFormat": "Name: {name}",
     "@nameFormat": {
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "emailFormat": "Email: {email}",
     "@emailFormat": {
-      "placeholders": {
-        "email": {
-          "type": "String"
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
         }
-      }
     },
     "unknown": "Unknown",
     "appearanceTitle": "Appearance",
@@ -70,11 +70,11 @@
     "searchGamesInitialMessage": "Search for your favorite games",
     "searchGamesNoResults": "No results found for \"{query}\"",
     "@searchGamesNoResults": {
-      "placeholders": {
-        "query": {
-          "type": "String"
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
         }
-      }
     },
     "searchGamesErrorMessage": "An error occurred",
     "searchGamesOffsetLimitReached": "Maximum search results reached. Please refine your search.",
@@ -96,19 +96,19 @@
     "searchFilterNoFacets": "Filters appear once results load.",
     "searchFilterChipYear": "Year: {year}",
     "@searchFilterChipYear": {
-      "placeholders": {
-        "year": {
-          "type": "int"
+        "placeholders": {
+            "year": {
+                "type": "int"
+            }
         }
-      }
     },
     "searchFilterChipSort": "Sort: {sort}",
     "@searchFilterChipSort": {
-      "placeholders": {
-        "sort": {
-          "type": "String"
+        "placeholders": {
+            "sort": {
+                "type": "String"
+            }
         }
-      }
     },
     "searchNoResultsForFiltersTitle": "No matches for these filters",
     "searchNoResultsForFiltersHint": "Try removing a filter to see more games.",
@@ -140,11 +140,11 @@
     "orContinueWith": "or continue with",
     "signInWithEmail": "Sign in with email",
     "@signInWithEmail": {
-      "description": "Toggle button label that expands the secondary email/password sign-in form"
+        "description": "Toggle button label that expands the secondary email/password sign-in form"
     },
     "recommended": "Recommended",
     "@recommended": {
-      "description": "Badge marking Google as the preferred sign-in option"
+        "description": "Badge marking Google as the preferred sign-in option"
     },
     "browseTitle": "Browse",
     "browseGenresError": "Couldn't load genres. Please try again.",
@@ -154,66 +154,66 @@
     "browseRetry": "Try again",
     "browseGenresSection": "Genres",
     "@browseGenresSection": {
-      "description": "Section header above the genre grid on the Browse hub"
+        "description": "Section header above the genre grid on the Browse hub"
     },
     "offlineTitle": "You're offline",
     "@offlineTitle": {
-      "description": "Heading shown in an error/empty view when the device has no network connection"
+        "description": "Heading shown in an error/empty view when the device has no network connection"
     },
     "offlineErrorMessage": "Check your connection and try again.",
     "@offlineErrorMessage": {
-      "description": "Body shown in an error view when a load failed because the device is offline"
+        "description": "Body shown in an error view when a load failed because the device is offline"
     },
     "gameCoverLabel": "Cover of {name}",
     "@gameCoverLabel": {
-      "description": "Accessibility label for a game cover image",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Accessibility label for a game cover image",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "clearSearch": "Clear search",
     "@clearSearch": {
-      "description": "Tooltip and accessibility label for the button that clears the search field"
+        "description": "Tooltip and accessibility label for the button that clears the search field"
     },
     "clearDate": "Clear date",
     "@clearDate": {
-      "description": "Accessibility label for the button that clears a selected date"
+        "description": "Accessibility label for the button that clears a selected date"
     },
     "screenshotLabel": "Screenshot of {name}",
     "@screenshotLabel": {
-      "description": "Accessibility label for a game screenshot image",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Accessibility label for a game screenshot image",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "favorited": "Favorited",
     "@favorited": {
-      "description": "Accessibility label/tooltip for a favorite toggle when the game is already favorited"
+        "description": "Accessibility label/tooltip for a favorite toggle when the game is already favorited"
     },
     "libraryEntryLabel": "{name}, {status}",
     "@libraryEntryLabel": {
-      "description": "Accessibility label for a library entry card combining the game name and its status",
-      "placeholders": {
-        "name": {
-          "type": "String"
-        },
-        "status": {
-          "type": "String"
+        "description": "Accessibility label for a library entry card combining the game name and its status",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "status": {
+                "type": "String"
+            }
         }
-      }
     },
     "genreCardLabel": "{name} genre",
     "@genreCardLabel": {
-      "description": "Accessibility label for a browseable genre card",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Accessibility label for a browseable genre card",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "navHome": "Home",
     "navBrowse": "Browse",
@@ -225,11 +225,11 @@
     "failedToLoadLibrary": "Failed to load library",
     "favoritesWithCount": "Favorites ({count})",
     "@favoritesWithCount": {
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "emptyFavorites": "No favorite games yet.\nTap the heart icon to add favorites!",
     "emptyStatusGames": "No games with this status yet.\nAdd games with this status to see them here.",
@@ -259,23 +259,23 @@
     "noUpcomingGames": "No upcoming games found",
     "shareGameMessage": "Check out {gameName} on Picklog!\n{url}",
     "@shareGameMessage": {
-      "placeholders": {
-        "gameName": {
-          "type": "String"
-        },
-        "url": {
-          "type": "String"
+        "placeholders": {
+            "gameName": {
+                "type": "String"
+            },
+            "url": {
+                "type": "String"
+            }
         }
-      }
     },
     "removeFromLibrary": "Remove from library",
     "removeFromLibraryConfirm": "Are you sure you want to remove \"{gameName}\" from your library?",
     "@removeFromLibraryConfirm": {
-      "placeholders": {
-        "gameName": {
-          "type": "String"
+        "placeholders": {
+            "gameName": {
+                "type": "String"
+            }
         }
-      }
     },
     "cancel": "Cancel",
     "remove": "Remove",
@@ -328,1301 +328,2003 @@
     "deleteAccountDialogBody": "This permanently deletes your account and all your data. This cannot be undone.",
     "deleteAccountConfirmLabel": "Type {word} to confirm",
     "@deleteAccountConfirmLabel": {
-      "description": "Label for the type-to-confirm field in the delete-account dialog",
-      "placeholders": {
-        "word": {
-          "type": "String"
+        "description": "Label for the type-to-confirm field in the delete-account dialog",
+        "placeholders": {
+            "word": {
+                "type": "String"
+            }
         }
-      }
     },
     "deleteAccountConfirmWord": "DELETE",
     "@deleteAccountConfirmWord": {
-      "description": "The exact word the user must type to confirm account deletion"
+        "description": "The exact word the user must type to confirm account deletion"
     },
     "deleteAccountConfirmButton": "Delete account",
     "deleteAccountError": "Could not delete your account. Please try again.",
     "consentBannerTitle": "Your privacy choices",
     "@consentBannerTitle": {
-      "description": "Title of the first-run / web consent banner"
+        "description": "Title of the first-run / web consent banner"
     },
     "consentBannerBody": "Choose what data you allow. You can change these anytime in Settings.",
     "@consentBannerBody": {
-      "description": "Body text of the first-run / web consent banner"
+        "description": "Body text of the first-run / web consent banner"
     },
     "consentAcceptAll": "Accept all",
     "@consentAcceptAll": {
-      "description": "Consent banner button that grants every data-collection category"
+        "description": "Consent banner button that grants every data-collection category"
     },
     "consentRejectAll": "Reject all",
     "@consentRejectAll": {
-      "description": "Consent banner button that denies every data-collection category"
+        "description": "Consent banner button that denies every data-collection category"
     },
     "consentCustomize": "Customize",
     "@consentCustomize": {
-      "description": "Consent banner button that opens the per-category choices sheet"
+        "description": "Consent banner button that opens the per-category choices sheet"
     },
     "consentCustomizeTitle": "Choose what you allow",
     "@consentCustomizeTitle": {
-      "description": "Title of the per-category consent customization sheet"
+        "description": "Title of the per-category consent customization sheet"
     },
     "consentSave": "Save",
     "@consentSave": {
-      "description": "Button that saves the per-category consent choices"
+        "description": "Button that saves the per-category consent choices"
     },
     "consentAnalyticsTitle": "Usage analytics",
     "@consentAnalyticsTitle": {
-      "description": "Label for the usage analytics consent category"
+        "description": "Label for the usage analytics consent category"
     },
     "consentAnalyticsSubtitle": "Anonymous usage data to help improve the app.",
     "@consentAnalyticsSubtitle": {
-      "description": "Description for the usage analytics consent category"
+        "description": "Description for the usage analytics consent category"
     },
     "consentCrashTitle": "Crash reports",
     "@consentCrashTitle": {
-      "description": "Label for the crash reporting consent category"
+        "description": "Label for the crash reporting consent category"
     },
     "consentCrashSubtitle": "Send crash and error reports to help fix problems.",
     "@consentCrashSubtitle": {
-      "description": "Description for the crash reporting consent category"
+        "description": "Description for the crash reporting consent category"
     },
     "consentPushTitle": "Push notifications",
     "@consentPushTitle": {
-      "description": "Label for the push notifications consent category"
+        "description": "Label for the push notifications consent category"
     },
     "consentPushSubtitle": "Receive notifications about your games and updates.",
     "@consentPushSubtitle": {
-      "description": "Description for the push notifications consent category"
+        "description": "Description for the push notifications consent category"
     },
     "privacyPolicyTitle": "Privacy Policy",
     "@privacyPolicyTitle": {
-      "description": "Title of the Privacy Policy screen and its settings link"
+        "description": "Title of the Privacy Policy screen and its settings link"
     },
     "termsTitle": "Terms of Service",
     "@termsTitle": {
-      "description": "Title of the Terms of Service screen and its settings link"
+        "description": "Title of the Terms of Service screen and its settings link"
     },
     "legalTitle": "Legal",
     "@legalTitle": {
-      "description": "Header for the legal documents section in settings"
+        "description": "Header for the legal documents section in settings"
     },
     "legalDraftBanner": "DRAFT — placeholder text. Replace with the final legal text before release.",
     "@legalDraftBanner": {
-      "description": "Banner shown on legal screens warning the content is placeholder text"
+        "description": "Banner shown on legal screens warning the content is placeholder text"
     },
     "legalLoadError": "Could not load this document. Please try again later.",
     "@legalLoadError": {
-      "description": "Error shown when a legal document asset fails to load"
+        "description": "Error shown when a legal document asset fails to load"
     },
     "signUpAcceptPrefix": "I accept the ",
     "@signUpAcceptPrefix": {
-      "description": "Leading text of the sign-up consent checkbox, before the Privacy Policy link"
+        "description": "Leading text of the sign-up consent checkbox, before the Privacy Policy link"
     },
     "signUpAcceptPrivacyLink": "Privacy Policy",
     "@signUpAcceptPrivacyLink": {
-      "description": "Tappable Privacy Policy link inside the sign-up consent checkbox label"
+        "description": "Tappable Privacy Policy link inside the sign-up consent checkbox label"
     },
     "signUpAcceptConjunction": " and ",
     "@signUpAcceptConjunction": {
-      "description": "Conjunction between the Privacy Policy and Terms links in the consent checkbox label"
+        "description": "Conjunction between the Privacy Policy and Terms links in the consent checkbox label"
     },
     "signUpAcceptTermsLink": "Terms of Service",
     "@signUpAcceptTermsLink": {
-      "description": "Tappable Terms of Service link inside the sign-up consent checkbox label"
+        "description": "Tappable Terms of Service link inside the sign-up consent checkbox label"
     },
     "signUpAcceptRequired": "Please accept the Privacy Policy and Terms to continue.",
     "@signUpAcceptRequired": {
-      "description": "Message shown when sign-up is attempted without accepting the Privacy Policy and Terms"
+        "description": "Message shown when sign-up is attempted without accepting the Privacy Policy and Terms"
     },
     "signInLegalNotice": "By continuing you accept our Privacy Policy and Terms of Service.",
     "@signInLegalNotice": {
-      "description": "Notice shown near the social sign-in buttons stating that continuing implies acceptance"
+        "description": "Notice shown near the social sign-in buttons stating that continuing implies acceptance"
     },
     "errorNetwork": "Can't reach Picklog right now. Check your connection.",
     "@errorNetwork": {
-      "description": "Error message when the server cannot be reached"
+        "description": "Error message when the server cannot be reached"
     },
     "errorNotFound": "We couldn't find that.",
     "@errorNotFound": {
-      "description": "Error message when the requested item does not exist"
+        "description": "Error message when the requested item does not exist"
     },
     "errorUnauthorized": "Your session ended. Sign in again.",
     "@errorUnauthorized": {
-      "description": "Error message when the session is missing or expired"
+        "description": "Error message when the session is missing or expired"
     },
     "errorServer": "The server had a problem. Try again in a moment.",
     "@errorServer": {
-      "description": "Error message when the server fails"
+        "description": "Error message when the server fails"
     },
     "errorUnknown": "Something went wrong. Try again.",
     "@errorUnknown": {
-      "description": "Generic error message"
+        "description": "Generic error message"
     },
     "splashTagline": "Your game library, logged",
     "@splashTagline": {
-      "description": "Short tagline under the app name on the splash screen"
+        "description": "Short tagline under the app name on the splash screen"
     },
     "onboardingTrackEyebrow": "01 · Track",
     "@onboardingTrackEyebrow": {
-      "description": "Onboarding page eyebrow for the tracking page"
+        "description": "Onboarding page eyebrow for the tracking page"
     },
     "onboardingDiscoverEyebrow": "02 · Discover",
     "@onboardingDiscoverEyebrow": {
-      "description": "Onboarding page eyebrow for the discovery page"
+        "description": "Onboarding page eyebrow for the discovery page"
     },
     "onboardingShareEyebrow": "03 · Make it yours",
     "@onboardingShareEyebrow": {
-      "description": "Onboarding page eyebrow for the personalization page"
+        "description": "Onboarding page eyebrow for the personalization page"
     },
     "pageIndicatorLabel": "Page {current} of {total}",
     "@pageIndicatorLabel": {
-      "description": "Spoken position of a page indicator",
-      "placeholders": {
-        "current": {
-          "type": "int"
-        },
-        "total": {
-          "type": "int"
+        "description": "Spoken position of a page indicator",
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
-      }
     },
     "signInEyebrow": "Picklog · Sign in",
     "@signInEyebrow": {
-      "description": "Eyebrow above the sign-in headline"
+        "description": "Eyebrow above the sign-in headline"
     },
     "signInHeadline": "Welcome back",
     "@signInHeadline": {
-      "description": "Sign-in screen headline"
+        "description": "Sign-in screen headline"
     },
     "signUpEyebrow": "Picklog · Create account",
     "@signUpEyebrow": {
-      "description": "Eyebrow above the sign-up headline"
+        "description": "Eyebrow above the sign-up headline"
     },
     "gameWithScoreLabel": "{name}, rating {score}",
     "@gameWithScoreLabel": {
-      "description": "Accessibility label for a game card that shows a 0-100 score",
-      "placeholders": {
-        "name": {
-          "type": "String"
-        },
-        "score": {
-          "type": "int"
+        "description": "Accessibility label for a game card that shows a 0-100 score",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "score": {
+                "type": "int"
+            }
         }
-      }
     },
     "@seeAll": {
-      "description": "Section header link that opens the full list"
+        "description": "Section header link that opens the full list"
     },
     "recommendationsSubtitle": "Picked from the genres you play",
     "@recommendationsSubtitle": {
-      "description": "Subtitle under the Recommended for you section"
+        "description": "Subtitle under the Recommended for you section"
     },
     "@recommendationsTitle": {
-      "description": "Title of the personalized recommendations section"
+        "description": "Title of the personalized recommendations section"
     },
     "@mostAnticipated": {
-      "description": "Title of the most anticipated games carousel"
+        "description": "Title of the most anticipated games carousel"
     },
     "collectionsSectionTitle": "Collections",
     "@collectionsSectionTitle": {
-      "description": "Title shown for the curated collections section when it fails to load"
+        "description": "Title shown for the curated collections section when it fails to load"
     },
     "featuredEyebrow": "Featured",
     "@featuredEyebrow": {
-      "description": "Eyebrow on a featured banner card"
+        "description": "Eyebrow on a featured banner card"
     },
     "featuredError": "Couldn't load featured picks.",
     "@featuredError": {
-      "description": "Inline error when the featured banners fail to load"
+        "description": "Inline error when the featured banners fail to load"
     },
     "countdownDaysHoursMinutes": "{days}d {hours}h {minutes}m",
     "@countdownDaysHoursMinutes": {
-      "description": "Countdown to release with days, hours and minutes",
-      "placeholders": {
-        "days": {
-          "type": "int"
-        },
-        "hours": {
-          "type": "int"
-        },
-        "minutes": {
-          "type": "int"
+        "description": "Countdown to release with days, hours and minutes",
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
         }
-      }
     },
     "countdownHoursMinutes": "{hours}h {minutes}m",
     "@countdownHoursMinutes": {
-      "description": "Countdown to release with hours and minutes",
-      "placeholders": {
-        "hours": {
-          "type": "int"
-        },
-        "minutes": {
-          "type": "int"
+        "description": "Countdown to release with hours and minutes",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
         }
-      }
     },
     "countdownMinutes": "{minutes}m",
     "@countdownMinutes": {
-      "description": "Countdown to release with minutes only",
-      "placeholders": {
-        "minutes": {
-          "type": "int"
+        "description": "Countdown to release with minutes only",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
         }
-      }
     },
     "countdownReleased": "Out now",
     "@countdownReleased": {
-      "description": "Countdown badge text once a game has released"
+        "description": "Countdown badge text once a game has released"
     },
     "anticipatedHypes": "{count, plural, =1{1 hype} other{{count} hypes}}",
     "@anticipatedHypes": {
-      "description": "Number of IGDB hype votes for an upcoming game",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Number of IGDB hype votes for an upcoming game",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "playtimeNone": "No playtime",
     "@playtimeNone": {
-      "description": "Library row when no playtime is logged"
+        "description": "Library row when no playtime is logged"
     },
     "playtimeMinutesShort": "{minutes} min",
     "@playtimeMinutesShort": {
-      "description": "Playtime under one hour",
-      "placeholders": {
-        "minutes": {
-          "type": "int"
+        "description": "Playtime under one hour",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
         }
-      }
     },
     "playtimeHoursShort": "{hours} h",
     "@playtimeHoursShort": {
-      "description": "Playtime in hours; hours is already formatted for the locale",
-      "placeholders": {
-        "hours": {
-          "type": "String"
+        "description": "Playtime in hours; hours is already formatted for the locale",
+        "placeholders": {
+            "hours": {
+                "type": "String"
+            }
         }
-      }
     },
     "homeEyebrow": "Picklog · Home",
     "@homeEyebrow": {
-      "description": "Eyebrow above the home greeting"
+        "description": "Eyebrow above the home greeting"
     },
     "homeGreetingMorning": "Good morning, {name}",
     "@homeGreetingMorning": {
-      "description": "Home greeting before noon",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Home greeting before noon",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "homeGreetingAfternoon": "Good afternoon, {name}",
     "@homeGreetingAfternoon": {
-      "description": "Home greeting in the afternoon",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Home greeting in the afternoon",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "homeGreetingEvening": "Good evening, {name}",
     "@homeGreetingEvening": {
-      "description": "Home greeting in the evening",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Home greeting in the evening",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "homeGreetingAnonymous": "Welcome back",
     "@homeGreetingAnonymous": {
-      "description": "Home greeting when the user name is unknown"
+        "description": "Home greeting when the user name is unknown"
     },
     "homeSubtitle": "What are you playing next?",
     "@homeSubtitle": {
-      "description": "Line under the home greeting"
+        "description": "Line under the home greeting"
     },
     "libraryEyebrow": "Picklog · Library",
     "@libraryEyebrow": {
-      "description": "Eyebrow above the library title"
+        "description": "Eyebrow above the library title"
     },
     "libraryGameCount": "{count, plural, =0{No games yet} =1{1 game} other{{count} games}}",
     "@libraryGameCount": {
-      "description": "Number of games in the library",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Number of games in the library",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "libraryFavoriteFailed": "Couldn't update the favorite. Try again.",
     "@libraryFavoriteFailed": {
-      "description": "Snackbar when toggling a favorite fails"
+        "description": "Snackbar when toggling a favorite fails"
     },
     "libraryDeleteFailed": "Couldn't remove the game. It's back in your library.",
     "@libraryDeleteFailed": {
-      "description": "Snackbar when removing a library entry fails"
+        "description": "Snackbar when removing a library entry fails"
     },
     "libraryRefreshFailed": "Couldn't refresh your library.",
     "@libraryRefreshFailed": {
-      "description": "Snackbar when refreshing the library fails"
+        "description": "Snackbar when refreshing the library fails"
     },
     "librarySaveFailed": "Couldn't save your changes. Try again.",
     "@librarySaveFailed": {
-      "description": "Snackbar when adding or updating a library entry fails"
+        "description": "Snackbar when adding or updating a library entry fails"
     },
     "@libraryTitle": {
-      "description": "Library screen title"
+        "description": "Library screen title"
     },
     "@addGame": {
-      "description": "Button that opens search to add a game"
+        "description": "Button that opens search to add a game"
     },
     "@addFirstGame": {
-      "description": "Empty library call to action"
+        "description": "Empty library call to action"
     },
     "lightboxPosition": "{current} / {total}",
     "@lightboxPosition": {
-      "description": "Screenshot lightbox position counter",
-      "placeholders": {
-        "current": {
-          "type": "int"
-        },
-        "total": {
-          "type": "int"
+        "description": "Screenshot lightbox position counter",
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
-      }
     },
     "lightboxClose": "Close",
     "@lightboxClose": {
-      "description": "Tooltip for closing the screenshot viewer"
+        "description": "Tooltip for closing the screenshot viewer"
     },
     "lightboxPrevious": "Previous screenshot",
     "@lightboxPrevious": {
-      "description": "Tooltip for the previous screenshot button"
+        "description": "Tooltip for the previous screenshot button"
     },
     "lightboxNext": "Next screenshot",
     "@lightboxNext": {
-      "description": "Tooltip for the next screenshot button"
+        "description": "Tooltip for the next screenshot button"
     },
     "inYourLibrary": "In your library",
     "@inYourLibrary": {
-      "description": "Title of the card on game details when the game is in the library"
+        "description": "Title of the card on game details when the game is in the library"
     },
     "yourScore": "Your score",
     "@yourScore": {
-      "description": "Label for the user's own 0-100 score"
+        "description": "Label for the user's own 0-100 score"
     },
     "igdbScore": "Critic and player score",
     "@igdbScore": {
-      "description": "Label for the IGDB 0-100 rating on game details"
+        "description": "Label for the IGDB 0-100 rating on game details"
     },
     "releaseDate": "Release",
     "@releaseDate": {
-      "description": "Label for a game's release date"
+        "description": "Label for a game's release date"
     },
     "@editEntry": {
-      "description": "Button and sheet title for editing a library entry"
+        "description": "Button and sheet title for editing a library entry"
     },
     "@addToLibrary": {
-      "description": "Button and sheet title for adding a game to the library"
+        "description": "Button and sheet title for adding a game to the library"
     },
     "@linkCopied": {
-      "description": "Snackbar after copying a share link"
+        "description": "Snackbar after copying a share link"
     },
     "detailsAbout": "About",
     "@detailsAbout": {
-      "description": "Game details section title for the storyline and summary"
+        "description": "Game details section title for the storyline and summary"
     },
     "@readMore": {
-      "description": "Expands a long description"
+        "description": "Expands a long description"
     },
     "@readLess": {
-      "description": "Collapses a long description"
+        "description": "Collapses a long description"
     },
     "@similarGames": {
-      "description": "Game details section of similar games"
+        "description": "Game details section of similar games"
     },
     "@whereToBuy": {
-      "description": "Game details section of store links"
+        "description": "Game details section of store links"
     },
     "@screenshots": {
-      "description": "Game details screenshots section title"
+        "description": "Game details screenshots section title"
     },
     "searchLoadMoreFailed": "Couldn't load more results.",
     "@searchLoadMoreFailed": {
-      "description": "Inline error when fetching the next page of search results fails"
+        "description": "Inline error when fetching the next page of search results fails"
     },
     "browseEyebrow": "Picklog · Browse",
     "@browseEyebrow": {
-      "description": "Eyebrow above the browse sections"
+        "description": "Eyebrow above the browse sections"
     },
     "libraryDetailsSection": "More details",
     "@libraryDetailsSection": {
-      "description": "Toggle that reveals playtime, dates, difficulty and notes in the add-to-library sheet"
+        "description": "Toggle that reveals playtime, dates, difficulty and notes in the add-to-library sheet"
     },
     "libraryDetailsHint": "Playtime, dates, difficulty and notes",
     "@libraryDetailsHint": {
-      "description": "Hint under the More details toggle"
+        "description": "Hint under the More details toggle"
     },
     "scoreNotSet": "Not rated",
     "@scoreNotSet": {
-      "description": "Shown when no 0-100 score is set"
+        "description": "Shown when no 0-100 score is set"
     },
     "@removeFromLibrary": {
-      "description": "Button and dialog title to remove a game from the library"
+        "description": "Button and dialog title to remove a game from the library"
     },
     "@startDate": {
-      "description": "Library entry start date label"
+        "description": "Library entry start date label"
     },
     "@endDate": {
-      "description": "Library entry end date label"
+        "description": "Library entry end date label"
     },
     "@libraryEntryUpdated": {
-      "description": "Snackbar after updating a library entry"
+        "description": "Snackbar after updating a library entry"
     },
     "@gameAddedToLibrary": {
-      "description": "Snackbar after adding a game to the library"
+        "description": "Snackbar after adding a game to the library"
     },
     "themeTitle": "Theme",
     "@themeTitle": {
-      "description": "Settings label for the theme selector"
+        "description": "Settings label for the theme selector"
     },
     "themeSystem": "System",
     "@themeSystem": {
-      "description": "Theme option that follows the device setting"
+        "description": "Theme option that follows the device setting"
     },
     "themeLight": "Light",
     "@themeLight": {
-      "description": "Light theme option"
+        "description": "Light theme option"
     },
     "themeDark": "Dark",
     "@themeDark": {
-      "description": "Dark theme option"
+        "description": "Dark theme option"
     },
     "settingsEyebrow": "Picklog · Settings",
     "@settingsEyebrow": {
-      "description": "Eyebrow above the settings sections"
+        "description": "Eyebrow above the settings sections"
     },
     "profileEyebrow": "Picklog · Profile",
     "@profileEyebrow": {
-      "description": "Eyebrow above the profile header"
+        "description": "Eyebrow above the profile header"
     },
     "routeNotFoundMessage": "This page doesn't exist or moved.",
     "@routeNotFoundMessage": {
-      "description": "Body of the router error screen"
+        "description": "Body of the router error screen"
     },
     "@discoveryTrending": {
-      "description": "Discovery list title for trending games"
+        "description": "Discovery list title for trending games"
     },
     "@discoveryIndie": {
-      "description": "Discovery list title for indie games"
+        "description": "Discovery list title for indie games"
     },
     "@discoveryUpcoming": {
-      "description": "Discovery list title for upcoming games"
+        "description": "Discovery list title for upcoming games"
     },
     "@discoveryNewReleases": {
-      "description": "Discovery list title for new releases"
+        "description": "Discovery list title for new releases"
     },
     "@discoveryComingSoon": {
-      "description": "Discovery list title for games coming soon"
+        "description": "Discovery list title for games coming soon"
     },
     "@goHome": {
-      "description": "Button that returns to the home tab"
+        "description": "Button that returns to the home tab"
     },
     "@signInTitle": {
-      "description": "Sign-in title"
+        "description": "Sign-in title"
     },
     "@signInButton": {
-      "description": "Email sign-in submit button"
+        "description": "Email sign-in submit button"
     },
     "@signUpLink": {
-      "description": "Link from sign-in to sign-up"
+        "description": "Link from sign-in to sign-up"
     },
     "@signUpBodyTitle": {
-      "description": "Sign-up headline"
+        "description": "Sign-up headline"
     },
     "@confirmPasswordLabel": {
-      "description": "Confirm password field label"
+        "description": "Confirm password field label"
     },
     "@signUpButton": {
-      "description": "Sign-up submit button"
+        "description": "Sign-up submit button"
     },
     "@signInLink": {
-      "description": "Link from sign-up to sign-in"
+        "description": "Link from sign-up to sign-in"
     },
     "@userInformationTitle": {
-      "description": "Settings group label for the user's account"
+        "description": "Settings group label for the user's account"
     },
     "@searchGamesTitle": {
-      "description": "Search screen title"
+        "description": "Search screen title"
     },
     "@searchGamesTooltip": {
-      "description": "Tooltip for the search action"
+        "description": "Tooltip for the search action"
     },
     "@statusOnHold": {
-      "description": "Library status: on hold"
+        "description": "Library status: on hold"
     },
     "librarySortUpdated": "Recently updated",
     "@librarySortUpdated": {
-      "description": "Library sort: last updated first"
+        "description": "Library sort: last updated first"
     },
     "librarySortAdded": "Recently added",
     "@librarySortAdded": {
-      "description": "Library sort: newest additions first"
+        "description": "Library sort: newest additions first"
     },
     "librarySortName": "Name (A-Z)",
     "@librarySortName": {
-      "description": "Library sort: by name"
+        "description": "Library sort: by name"
     },
     "librarySortScore": "Your score",
     "@librarySortScore": {
-      "description": "Library sort: by the user's score"
+        "description": "Library sort: by the user's score"
     },
     "librarySortPlaytime": "Most played",
     "@librarySortPlaytime": {
-      "description": "Library sort: by playtime"
+        "description": "Library sort: by playtime"
     },
     "librarySortRelease": "Release date",
     "@librarySortRelease": {
-      "description": "Library sort: by release date"
+        "description": "Library sort: by release date"
     },
     "librarySortRating": "Community rating",
     "@librarySortRating": {
-      "description": "Library sort: by IGDB rating"
+        "description": "Library sort: by IGDB rating"
     },
     "collectionErrorDuplicateName": "You already have a collection with this name.",
     "@collectionErrorDuplicateName": {
-      "description": "Collection error: name taken"
+        "description": "Collection error: name taken"
     },
     "collectionErrorLimit": "You can have up to 50 collections. Delete one to create another.",
     "@collectionErrorLimit": {
-      "description": "Collection error: too many collections"
+        "description": "Collection error: too many collections"
     },
     "collectionErrorEntriesLimit": "This collection is full (500 games).",
     "@collectionErrorEntriesLimit": {
-      "description": "Collection error: too many games"
+        "description": "Collection error: too many games"
     },
     "collectionErrorNameInvalid": "Use 1 to 60 characters for the name.",
     "@collectionErrorNameInvalid": {
-      "description": "Collection error: bad name"
+        "description": "Collection error: bad name"
     },
     "collectionErrorDescriptionTooLong": "Keep the description under 280 characters.",
     "@collectionErrorDescriptionTooLong": {
-      "description": "Collection error: description too long"
+        "description": "Collection error: description too long"
     },
     "collectionErrorNotFound": "This collection no longer exists.",
     "@collectionErrorNotFound": {
-      "description": "Collection error: not found"
+        "description": "Collection error: not found"
     },
     "recommendationReasonSimilar": "Because you liked {name}",
     "@recommendationReasonSimilar": {
-      "description": "Recommendation reason: similar to a game",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Recommendation reason: similar to a game",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "recommendationReasonSimilarGeneric": "Similar to games you like",
     "@recommendationReasonSimilarGeneric": {
-      "description": "Recommendation reason without a source game"
+        "description": "Recommendation reason without a source game"
     },
     "recommendationReasonGenre": "More {genre}",
     "@recommendationReasonGenre": {
-      "description": "Recommendation reason: genre",
-      "placeholders": {
-        "genre": {
-          "type": "String"
+        "description": "Recommendation reason: genre",
+        "placeholders": {
+            "genre": {
+                "type": "String"
+            }
         }
-      }
     },
     "recommendationReasonGenreGeneric": "Matches your favorite genres",
     "@recommendationReasonGenreGeneric": {
-      "description": "Recommendation reason: genre without a name"
+        "description": "Recommendation reason: genre without a name"
     },
     "recommendationReasonPopular": "Popular now",
     "@recommendationReasonPopular": {
-      "description": "Recommendation reason: popular"
+        "description": "Recommendation reason: popular"
     },
     "exploreSortPopular": "Popular",
     "@exploreSortPopular": {
-      "description": "Explore sort"
+        "description": "Explore sort"
     },
     "exploreSortRating": "Top rated",
     "@exploreSortRating": {
-      "description": "Explore sort"
+        "description": "Explore sort"
     },
     "exploreSortNewest": "Newest",
     "@exploreSortNewest": {
-      "description": "Explore sort"
+        "description": "Explore sort"
     },
     "exploreSortOldest": "Oldest",
     "@exploreSortOldest": {
-      "description": "Explore sort"
+        "description": "Explore sort"
     },
     "exploreSortName": "A-Z",
     "@exploreSortName": {
-      "description": "Explore sort by name"
+        "description": "Explore sort by name"
     },
     "filterOptionsFailed": "Could not load the options.",
     "@filterOptionsFailed": {
-      "description": "Filter panel: genres or platforms failed"
+        "description": "Filter panel: genres or platforms failed"
     },
     "filterReleaseYears": "Release years",
     "@filterReleaseYears": {
-      "description": "Filter section title"
+        "description": "Filter section title"
     },
     "filterYearRangeValue": "{from}-{to}",
     "@filterYearRangeValue": {
-      "description": "Year range value",
-      "placeholders": {
-        "from": {
-          "type": "int"
-        },
-        "to": {
-          "type": "int"
+        "description": "Year range value",
+        "placeholders": {
+            "from": {
+                "type": "int"
+            },
+            "to": {
+                "type": "int"
+            }
         }
-      }
     },
     "filterMinRating": "Minimum rating",
     "@filterMinRating": {
-      "description": "Filter section title"
+        "description": "Filter section title"
     },
     "filterAnyRating": "Any",
     "@filterAnyRating": {
-      "description": "No minimum rating"
+        "description": "No minimum rating"
     },
     "filterRatingValue": "Rating {rating}+",
     "@filterRatingValue": {
-      "description": "Minimum rating chip",
-      "placeholders": {
-        "rating": {
-          "type": "int"
+        "description": "Minimum rating chip",
+        "placeholders": {
+            "rating": {
+                "type": "int"
+            }
         }
-      }
     },
     "filterGenreFallback": "Genre",
     "@filterGenreFallback": {
-      "description": "Chip label when the genre name is unknown"
+        "description": "Chip label when the genre name is unknown"
     },
     "filterPlatformFallback": "Platform",
     "@filterPlatformFallback": {
-      "description": "Chip label when the platform name is unknown"
+        "description": "Chip label when the platform name is unknown"
     },
     "filterRemoveChip": "Remove {label}",
     "@filterRemoveChip": {
-      "description": "Tooltip to remove a filter chip",
-      "placeholders": {
-        "label": {
-          "type": "String"
+        "description": "Tooltip to remove a filter chip",
+        "placeholders": {
+            "label": {
+                "type": "String"
+            }
         }
-      }
     },
     "exploreTitle": "Explore",
     "@exploreTitle": {
-      "description": "Explore screen title"
+        "description": "Explore screen title"
     },
     "searchExploreCatalog": "Explore the catalog",
     "@searchExploreCatalog": {
-      "description": "Search empty state action that opens Explore"
+        "description": "Search empty state action that opens Explore"
     },
     "searchSortLoadedScopeCaption": "Sorting reorders the results loaded so far.",
     "@searchSortLoadedScopeCaption": {
-      "description": "Caption when a client-side sort is active"
+        "description": "Caption when a client-side sort is active"
     },
     "exploreFiltersButton": "Filters",
     "@exploreFiltersButton": {
-      "description": "Explore filters button"
+        "description": "Explore filters button"
     },
     "exploreFiltersTitle": "Filters",
     "@exploreFiltersTitle": {
-      "description": "Explore filters panel title"
+        "description": "Explore filters panel title"
     },
     "exploreEmptyTitle": "No games match",
     "@exploreEmptyTitle": {
-      "description": "Explore empty title"
+        "description": "Explore empty title"
     },
     "exploreEmptyHint": "Try fewer filters or a wider year range.",
     "@exploreEmptyHint": {
-      "description": "Explore empty hint"
+        "description": "Explore empty hint"
     },
     "exploreResultCount": "{count, plural, =1{1 game shown} other{{count} games shown}}",
     "@exploreResultCount": {
-      "description": "Explore loaded result count",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Explore loaded result count",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "exploreEndOfResults": "You reached the end.",
     "@exploreEndOfResults": {
-      "description": "Explore end of results"
+        "description": "Explore end of results"
     },
     "undo": "Undo",
     "@undo": {
-      "description": "Snackbar undo action"
+        "description": "Snackbar undo action"
     },
     "libraryChangeStatusTitle": "Change status of {name}",
     "@libraryChangeStatusTitle": {
-      "description": "Status picker title",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Status picker title",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "collectionEditTitle": "Edit collection",
     "@collectionEditTitle": {
-      "description": "Collection edit dialog title"
+        "description": "Collection edit dialog title"
     },
     "collectionNewTitle": "New collection",
     "@collectionNewTitle": {
-      "description": "Collection create dialog title and action"
+        "description": "Collection create dialog title and action"
     },
     "collectionNameLabel": "Name",
     "@collectionNameLabel": {
-      "description": "Collection name field"
+        "description": "Collection name field"
     },
     "collectionDescriptionLabel": "Description (optional)",
     "@collectionDescriptionLabel": {
-      "description": "Collection description field"
+        "description": "Collection description field"
     },
     "collectionCreateAction": "Create",
     "@collectionCreateAction": {
-      "description": "Collection create button"
+        "description": "Collection create button"
     },
     "collectionDeleteTitle": "Delete collection?",
     "@collectionDeleteTitle": {
-      "description": "Delete collection dialog title"
+        "description": "Delete collection dialog title"
     },
     "collectionDeleteConfirm": "\"{name}\" will be deleted. The games stay in your library.",
     "@collectionDeleteConfirm": {
-      "description": "Delete collection confirmation",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Delete collection confirmation",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "collectionDeleteAction": "Delete",
     "@collectionDeleteAction": {
-      "description": "Delete collection action"
+        "description": "Delete collection action"
     },
     "collectionPickerTitle": "Add to collections",
     "@collectionPickerTitle": {
-      "description": "Collection picker title and menu item"
+        "description": "Collection picker title and menu item"
     },
     "collectionPickerEmpty": "No collections yet. Create one to group games your way.",
     "@collectionPickerEmpty": {
-      "description": "Collection picker empty"
+        "description": "Collection picker empty"
     },
     "collectionGameCount": "{count, plural, =0{No games} =1{1 game} other{{count} games}}",
     "@collectionGameCount": {
-      "description": "Games in a collection",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Games in a collection",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "collectionsEmptyTitle": "No collections yet",
     "@collectionsEmptyTitle": {
-      "description": "Collections empty title"
+        "description": "Collections empty title"
     },
     "collectionsEmptyHint": "Group games into lists like Couch co-op or Comfort games.",
     "@collectionsEmptyHint": {
-      "description": "Collections empty hint"
+        "description": "Collections empty hint"
     },
     "collectionDeleted": "Collection deleted",
     "@collectionDeleted": {
-      "description": "Snackbar after deleting a collection"
+        "description": "Snackbar after deleting a collection"
     },
     "collectionCardLabel": "{name}, {count, plural, =1{1 game} other{{count} games}}",
     "@collectionCardLabel": {
-      "description": "Collection card semantics",
-      "placeholders": {
-        "name": {
-          "type": "String"
-        },
-        "count": {
-          "type": "int"
+        "description": "Collection card semantics",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "collectionActions": "Collection actions",
     "@collectionActions": {
-      "description": "Collection menu tooltip"
+        "description": "Collection menu tooltip"
     },
     "statsTotal": "Total",
     "@statsTotal": {
-      "description": "Stats label: total games"
+        "description": "Stats label: total games"
     },
     "statsHours": "Hours",
     "@statsHours": {
-      "description": "Stats label: hours played"
+        "description": "Stats label: hours played"
     },
     "libraryStatsSemantics": "{total} games, {playing} playing, {finished} finished, {hours} hours",
     "@libraryStatsSemantics": {
-      "description": "Library stats header for screen readers",
-      "placeholders": {
-        "total": {
-          "type": "int"
-        },
-        "playing": {
-          "type": "int"
-        },
-        "finished": {
-          "type": "int"
-        },
-        "hours": {
-          "type": "String"
+        "description": "Library stats header for screen readers",
+        "placeholders": {
+            "total": {
+                "type": "int"
+            },
+            "playing": {
+                "type": "int"
+            },
+            "finished": {
+                "type": "int"
+            },
+            "hours": {
+                "type": "String"
+            }
         }
-      }
     },
     "libraryFiltersTitle": "Filter library",
     "@libraryFiltersTitle": {
-      "description": "Library filters sheet title"
+        "description": "Library filters sheet title"
     },
     "libraryFavoritesFilter": "Favorites",
     "@libraryFavoritesFilter": {
-      "description": "Favorites filter chip"
+        "description": "Favorites filter chip"
     },
     "libraryFilterMinScore": "Minimum score",
     "@libraryFilterMinScore": {
-      "description": "Library filter: minimum score"
+        "description": "Library filter: minimum score"
     },
     "libraryFilterCollection": "Collection",
     "@libraryFilterCollection": {
-      "description": "Library filter: collection"
+        "description": "Library filter: collection"
     },
     "libraryScoreChip": "Score {score}+",
     "@libraryScoreChip": {
-      "description": "Active chip for minimum score",
-      "placeholders": {
-        "score": {
-          "type": "int"
+        "description": "Active chip for minimum score",
+        "placeholders": {
+            "score": {
+                "type": "int"
+            }
         }
-      }
     },
     "libraryUnfavorited": "{name} removed from favorites",
     "@libraryUnfavorited": {
-      "description": "Snackbar after unfavoriting",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Snackbar after unfavoriting",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "libraryFavorited": "{name} added to favorites",
     "@libraryFavorited": {
-      "description": "Snackbar after favoriting",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Snackbar after favoriting",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "libraryStatusChanged": "{name} is now {status}",
     "@libraryStatusChanged": {
-      "description": "Snackbar after a status change",
-      "placeholders": {
-        "name": {
-          "type": "String"
-        },
-        "status": {
-          "type": "String"
+        "description": "Snackbar after a status change",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "status": {
+                "type": "String"
+            }
         }
-      }
     },
     "libraryEntryActions": "More actions",
     "@libraryEntryActions": {
-      "description": "Library entry menu tooltip"
+        "description": "Library entry menu tooltip"
     },
     "libraryChangeStatus": "Change status",
     "@libraryChangeStatus": {
-      "description": "Library entry action"
+        "description": "Library entry action"
     },
     "rouletteTitle": "Pick for me",
     "@rouletteTitle": {
-      "description": "Backlog roulette title and entry"
+        "description": "Backlog roulette title and entry"
     },
     "librarySegmentGames": "Games",
     "@librarySegmentGames": {
-      "description": "Library segment"
+        "description": "Library segment"
     },
     "librarySegmentCollections": "Collections",
     "@librarySegmentCollections": {
-      "description": "Library segment"
+        "description": "Library segment"
     },
     "librarySearchHint": "Search titles",
     "@librarySearchHint": {
-      "description": "Library search field hint"
+        "description": "Library search field hint"
     },
     "librarySortTooltip": "Sort",
     "@librarySortTooltip": {
-      "description": "Library sort menu tooltip"
+        "description": "Library sort menu tooltip"
     },
     "libraryViewList": "Show as list",
     "@libraryViewList": {
-      "description": "Toggle to list view"
+        "description": "Toggle to list view"
     },
     "libraryViewGrid": "Show as grid",
     "@libraryViewGrid": {
-      "description": "Toggle to grid view"
+        "description": "Toggle to grid view"
     },
     "libraryMatchCount": "{count, plural, =0{No matches} =1{1 match} other{{count} matches}}",
     "@libraryMatchCount": {
-      "description": "Library filtered match count",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Library filtered match count",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "libraryNoMatchesTitle": "No games match",
     "@libraryNoMatchesTitle": {
-      "description": "Library filtered empty title"
+        "description": "Library filtered empty title"
     },
     "libraryNoMatchesHint": "Try another search or clear the filters.",
     "@libraryNoMatchesHint": {
-      "description": "Library filtered empty hint"
+        "description": "Library filtered empty hint"
     },
     "rouletteEyebrow": "Backlog roulette",
     "@rouletteEyebrow": {
-      "description": "Roulette eyebrow"
+        "description": "Roulette eyebrow"
     },
     "rouletteCandidates": "{count, plural, =0{No games to pick from} =1{1 game in the draw} other{{count} games in the draw}}",
     "@rouletteCandidates": {
-      "description": "Roulette candidate count",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Roulette candidate count",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "rouletteAnyPlatform": "Any platform",
     "@rouletteAnyPlatform": {
-      "description": "Roulette platform filter"
+        "description": "Roulette platform filter"
     },
     "rouletteAnyLength": "Any time played",
     "@rouletteAnyLength": {
-      "description": "Roulette hours filter"
+        "description": "Roulette hours filter"
     },
     "rouletteMaxHours": "Up to {hours} h played",
     "@rouletteMaxHours": {
-      "description": "Roulette max hours played chip",
-      "placeholders": {
-        "hours": {
-          "type": "int"
+        "description": "Roulette max hours played chip",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
         }
-      }
     },
     "rouletteNoMatch": "No backlog game matches these filters.",
     "@rouletteNoMatch": {
-      "description": "Roulette no candidate"
+        "description": "Roulette no candidate"
     },
     "rouletteHint": "Spin to let Picklog choose your next game from the backlog.",
     "@rouletteHint": {
-      "description": "Roulette intro"
+        "description": "Roulette intro"
     },
     "rouletteStartPlaying": "Start playing",
     "@rouletteStartPlaying": {
-      "description": "Roulette primary action"
+        "description": "Roulette primary action"
     },
     "rouletteSpinAgain": "Spin again",
     "@rouletteSpinAgain": {
-      "description": "Roulette secondary action"
+        "description": "Roulette secondary action"
     },
     "rouletteSpin": "Spin",
     "@rouletteSpin": {
-      "description": "Roulette first spin"
+        "description": "Roulette first spin"
     },
     "rouletteStarted": "Have fun with {name}!",
     "@rouletteStarted": {
-      "description": "Snackbar after starting the picked game",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Snackbar after starting the picked game",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "rouletteEmptyTitle": "Your backlog is empty",
     "@rouletteEmptyTitle": {
-      "description": "Roulette empty title"
+        "description": "Roulette empty title"
     },
     "rouletteEmptyHint": "Add games as Planned or On hold and Picklog will pick one for you.",
     "@rouletteEmptyHint": {
-      "description": "Roulette empty hint"
+        "description": "Roulette empty hint"
     },
     "collectionEyebrow": "Collection",
     "@collectionEyebrow": {
-      "description": "Collection screen eyebrow"
+        "description": "Collection screen eyebrow"
     },
     "collectionEmptyTitle": "No games here yet",
     "@collectionEmptyTitle": {
-      "description": "Empty collection title"
+        "description": "Empty collection title"
     },
     "collectionEmptyHint": "Add games from a game's library sheet or the library menu.",
     "@collectionEmptyHint": {
-      "description": "Empty collection hint"
+        "description": "Empty collection hint"
     },
     "collectionEntryRemoved": "{name} removed from the collection",
     "@collectionEntryRemoved": {
-      "description": "Snackbar after removing a game from a collection",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Snackbar after removing a game from a collection",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "collectionRemoveEntry": "Remove from collection",
     "@collectionRemoveEntry": {
-      "description": "Remove a game from a collection"
+        "description": "Remove a game from a collection"
     },
     "profileTopGenres": "Top genres",
     "@profileTopGenres": {
-      "description": "Profile card title"
+        "description": "Profile card title"
     },
     "profileTopPlatforms": "Top platforms",
     "@profileTopPlatforms": {
-      "description": "Profile card title"
+        "description": "Profile card title"
     },
     "profileStatsFailed": "Could not load your stats.",
     "@profileStatsFailed": {
-      "description": "Profile stats error"
+        "description": "Profile stats error"
     },
     "profileSettingsHint": "Account, theme, privacy and language",
     "@profileSettingsHint": {
-      "description": "Profile settings link subtitle"
+        "description": "Profile settings link subtitle"
     },
     "profileMemberLine": "Picklog member",
     "@profileMemberLine": {
-      "description": "Profile member line without stats"
+        "description": "Profile member line without stats"
     },
     "profileMemberLineCount": "{count, plural, =0{Picklog member · No games logged yet} =1{Picklog member · 1 game logged} other{Picklog member · {count} games logged}}",
     "@profileMemberLineCount": {
-      "description": "Profile member line",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Profile member line",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "profileStatGames": "Games",
     "@profileStatGames": {
-      "description": "Profile stat label"
+        "description": "Profile stat label"
     },
     "profileStatAverage": "Avg score",
     "@profileStatAverage": {
-      "description": "Profile stat label"
+        "description": "Profile stat label"
     },
     "profileStatBacklog": "Backlog",
     "@profileStatBacklog": {
-      "description": "Profile stat label"
+        "description": "Profile stat label"
     },
     "profileStatusDistribution": "By status",
     "@profileStatusDistribution": {
-      "description": "Profile status bar title"
+        "description": "Profile status bar title"
     },
     "profileYearInReviewLabel": "Open your {year} in review",
     "@profileYearInReviewLabel": {
-      "description": "Year in review card semantics",
-      "placeholders": {
-        "year": {
-          "type": "int"
+        "description": "Year in review card semantics",
+        "placeholders": {
+            "year": {
+                "type": "int"
+            }
         }
-      }
     },
     "yearInReviewEyebrow": "Year in review",
     "@yearInReviewEyebrow": {
-      "description": "Year in review eyebrow"
+        "description": "Year in review eyebrow"
     },
     "profileYearInReviewHint": "Your year in games, card by card.",
     "@profileYearInReviewHint": {
-      "description": "Year in review card hint"
+        "description": "Year in review card hint"
     },
     "profileAchievements": "Achievements",
     "@profileAchievements": {
-      "description": "Profile achievements tile"
+        "description": "Profile achievements tile"
     },
     "profileAchievementsValue": "{unlocked} of {total} unlocked",
     "@profileAchievementsValue": {
-      "description": "Achievements tile value",
-      "placeholders": {
-        "unlocked": {
-          "type": "int"
-        },
-        "total": {
-          "type": "int"
+        "description": "Achievements tile value",
+        "placeholders": {
+            "unlocked": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
-      }
     },
     "profileBacklogValue": "{count, plural, =0{Backlog is empty} =1{1 game in backlog} other{{count} games in backlog}}",
     "@profileBacklogValue": {
-      "description": "Roulette tile value",
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "description": "Roulette tile value",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "profileFavorites": "Favorites",
     "@profileFavorites": {
-      "description": "Favorites shelf title"
+        "description": "Favorites shelf title"
     },
     "profileFavoritesEmpty": "Tap the heart on a game to see it here.",
     "@profileFavoritesEmpty": {
-      "description": "Favorites shelf empty"
+        "description": "Favorites shelf empty"
     },
     "yearShareText": "My {year} in games on Picklog",
     "@yearShareText": {
-      "description": "Text sent with the shared image",
-      "placeholders": {
-        "year": {
-          "type": "int"
+        "description": "Text sent with the shared image",
+        "placeholders": {
+            "year": {
+                "type": "int"
+            }
         }
-      }
     },
     "yearShareFailed": "Could not share the image.",
     "@yearShareFailed": {
-      "description": "Share failed"
+        "description": "Share failed"
     },
     "yearInReviewTitle": "{year} in review",
     "@yearInReviewTitle": {
-      "description": "Year in review app bar",
-      "placeholders": {
-        "year": {
-          "type": "int"
+        "description": "Year in review app bar",
+        "placeholders": {
+            "year": {
+                "type": "int"
+            }
         }
-      }
     },
     "yearPickerTooltip": "Choose year",
     "@yearPickerTooltip": {
-      "description": "Year picker tooltip"
+        "description": "Year picker tooltip"
     },
     "yearShareTooltip": "Share",
     "@yearShareTooltip": {
-      "description": "Share action tooltip"
+        "description": "Share action tooltip"
     },
     "yearIntroTitle": "Your year in games",
     "@yearIntroTitle": {
-      "description": "Year intro title"
+        "description": "Year intro title"
     },
     "yearIntroEmpty": "Nothing logged this year yet. Add games to fill your story.",
     "@yearIntroEmpty": {
-      "description": "Year intro when empty"
+        "description": "Year intro when empty"
     },
     "yearIntroHint": "Scroll through what you added, finished and loved.",
     "@yearIntroHint": {
-      "description": "Year intro hint"
+        "description": "Year intro hint"
     },
     "yearGamesAdded": "Games added",
     "@yearGamesAdded": {
-      "description": "Year stat"
+        "description": "Year stat"
     },
     "yearGamesFinished": "Games finished",
     "@yearGamesFinished": {
-      "description": "Year stat"
+        "description": "Year stat"
     },
     "yearHoursPlayed": "Hours played",
     "@yearHoursPlayed": {
-      "description": "Year stat"
+        "description": "Year stat"
     },
     "yearByMonth": "Month by month",
     "@yearByMonth": {
-      "description": "Year chart title"
+        "description": "Year chart title"
     },
     "yearByMonthSemantics": "Chart by month: {added} added and {finished} finished in total",
     "@yearByMonthSemantics": {
-      "description": "Chart description for screen readers",
-      "placeholders": {
-        "added": {
-          "type": "int"
-        },
-        "finished": {
-          "type": "int"
+        "description": "Chart description for screen readers",
+        "placeholders": {
+            "added": {
+                "type": "int"
+            },
+            "finished": {
+                "type": "int"
+            }
         }
-      }
     },
     "yearLegendAdded": "Added",
     "@yearLegendAdded": {
-      "description": "Chart legend"
+        "description": "Chart legend"
     },
     "yearLegendFinished": "Finished",
     "@yearLegendFinished": {
-      "description": "Chart legend"
+        "description": "Chart legend"
     },
     "yearTopRated": "Top rated",
     "@yearTopRated": {
-      "description": "Year card title"
+        "description": "Year card title"
     },
     "yearTopGenres": "Top genres",
     "@yearTopGenres": {
-      "description": "Year card title"
+        "description": "Year card title"
     },
     "yearGenreChip": "{name} · {count}",
     "@yearGenreChip": {
-      "description": "Genre with count",
-      "placeholders": {
-        "name": {
-          "type": "String"
-        },
-        "count": {
-          "type": "int"
+        "description": "Genre with count",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "yearFirstFinished": "First game finished",
     "@yearFirstFinished": {
-      "description": "Year card title"
+        "description": "Year card title"
     },
     "yearShareEyebrow": "Share your year",
     "@yearShareEyebrow": {
-      "description": "Share card title"
+        "description": "Share card title"
     },
     "yearShareAction": "Share image",
     "@yearShareAction": {
-      "description": "Share button"
+        "description": "Share button"
     },
     "yearShareAdded": "Added",
     "@yearShareAdded": {
-      "description": "Share card stat"
+        "description": "Share card stat"
     },
     "yearShareFinished": "Finished",
     "@yearShareFinished": {
-      "description": "Share card stat"
+        "description": "Share card stat"
     },
     "yearShareHours": "Hours",
     "@yearShareHours": {
-      "description": "Share card stat"
+        "description": "Share card stat"
     },
     "yearShareTopRated": "Top rated: {name}",
     "@yearShareTopRated": {
-      "description": "Share card line",
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "description": "Share card line",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "yearShareTopGenre": "Top genre: {genre}",
     "@yearShareTopGenre": {
-      "description": "Share card line",
-      "placeholders": {
-        "genre": {
-          "type": "String"
+        "description": "Share card line",
+        "placeholders": {
+            "genre": {
+                "type": "String"
+            }
         }
-      }
     },
     "browseExploreTitle": "Explore the catalog",
     "@browseExploreTitle": {
-      "description": "Browse explore card title"
+        "description": "Browse explore card title"
     },
     "browseExploreHint": "Filter by genre, platform, year and rating.",
     "@browseExploreHint": {
-      "description": "Browse explore card hint"
+        "description": "Browse explore card hint"
+    },
+    "aiEyebrowPlayNext": "AI · Play next",
+    "@aiEyebrowPlayNext": {
+        "description": "Eyebrow above the Play next screen and home card"
+    },
+    "aiEyebrowDiscover": "AI · Discover",
+    "@aiEyebrowDiscover": {
+        "description": "Eyebrow above the AI discover screen"
+    },
+    "aiPlayNextTitle": "Play next",
+    "@aiPlayNextTitle": {
+        "description": "App bar title of the AI play next screen"
+    },
+    "aiPlayNextHeadline": "What should I play tonight?",
+    "@aiPlayNextHeadline": {
+        "description": "Headline of the play next screen and home card"
+    },
+    "aiPlayNextSubtitle": "Tell Picklog your mood and your time. It picks from your backlog.",
+    "@aiPlayNextSubtitle": {
+        "description": "Subtitle under the play next headline"
+    },
+    "aiMoodLabel": "Mood",
+    "@aiMoodLabel": {
+        "description": "Label above the mood chips"
+    },
+    "aiMoodChill": "Chill",
+    "@aiMoodChill": {
+        "description": "Mood chip"
+    },
+    "aiMoodIntense": "Intense",
+    "@aiMoodIntense": {
+        "description": "Mood chip"
+    },
+    "aiMoodStory": "Story",
+    "@aiMoodStory": {
+        "description": "Mood chip"
+    },
+    "aiMoodSocial": "Social",
+    "@aiMoodSocial": {
+        "description": "Mood chip"
+    },
+    "aiMoodQuick": "Quick",
+    "@aiMoodQuick": {
+        "description": "Mood chip"
+    },
+    "aiMoodChallenge": "Challenge",
+    "@aiMoodChallenge": {
+        "description": "Mood chip"
+    },
+    "aiTimeLabel": "Time available",
+    "@aiTimeLabel": {
+        "description": "Label above the time slider"
+    },
+    "aiDurationMinutes": "{minutes} min",
+    "@aiDurationMinutes": {
+        "description": "A duration in minutes",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "aiDurationHours": "{hours} h",
+    "@aiDurationHours": {
+        "description": "A duration in whole hours",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "aiDurationHoursMinutes": "{hours} h {minutes} min",
+    "@aiDurationHoursMinutes": {
+        "description": "A duration in hours and minutes",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "aiDurationFourPlus": "4 h+",
+    "@aiDurationFourPlus": {
+        "description": "Last slider stop: four hours or more"
+    },
+    "aiPlatformLabel": "Platform",
+    "@aiPlatformLabel": {
+        "description": "Label above the platform chips"
+    },
+    "aiPlatformAny": "Any platform",
+    "@aiPlatformAny": {
+        "description": "Chip that clears the platform filter"
+    },
+    "aiNoteLabel": "Anything else? (optional)",
+    "@aiNoteLabel": {
+        "description": "Label of the optional note field"
+    },
+    "aiNoteHint": "For example: something I can pause often",
+    "@aiNoteHint": {
+        "description": "Hint of the optional note field"
+    },
+    "aiGenerateButton": "Suggest games",
+    "@aiGenerateButton": {
+        "description": "Button that asks the AI for picks"
+    },
+    "aiRegenerateButton": "Regenerate",
+    "@aiRegenerateButton": {
+        "description": "Button that asks the AI for new picks"
+    },
+    "aiRemainingToday": "{remaining} of {limit} left today",
+    "@aiRemainingToday": {
+        "description": "Daily AI usage counter",
+        "placeholders": {
+            "remaining": {
+                "type": "int"
+            },
+            "limit": {
+                "type": "int"
+            }
+        }
+    },
+    "aiRemainingTodayShort": "{remaining} left today",
+    "@aiRemainingTodayShort": {
+        "description": "Daily AI usage counter without the limit",
+        "placeholders": {
+            "remaining": {
+                "type": "int"
+            }
+        }
+    },
+    "aiLoadingPlayNext1": "Reading your backlog",
+    "@aiLoadingPlayNext1": {
+        "description": "Rotating status line while play next loads"
+    },
+    "aiLoadingPlayNext2": "Weighing your mood and time",
+    "@aiLoadingPlayNext2": {
+        "description": "Rotating status line while play next loads"
+    },
+    "aiLoadingPlayNext3": "Comparing genres and scores",
+    "@aiLoadingPlayNext3": {
+        "description": "Rotating status line while play next loads"
+    },
+    "aiLoadingPlayNext4": "Picking the best fits",
+    "@aiLoadingPlayNext4": {
+        "description": "Rotating status line while AI results load"
+    },
+    "aiLoadingDiscover1": "Reading your taste",
+    "@aiLoadingDiscover1": {
+        "description": "Rotating status line while discover loads"
+    },
+    "aiLoadingDiscover2": "Looking for new games",
+    "@aiLoadingDiscover2": {
+        "description": "Rotating status line while discover loads"
+    },
+    "aiLoadingDiscover3": "Checking the catalogue",
+    "@aiLoadingDiscover3": {
+        "description": "Rotating status line while discover loads"
+    },
+    "aiResultsTitle": "Your picks",
+    "@aiResultsTitle": {
+        "description": "Heading above AI results"
+    },
+    "aiTopPick": "Top pick",
+    "@aiTopPick": {
+        "description": "Eyebrow on the first play next pick"
+    },
+    "aiSessionLength": "About {duration} per session",
+    "@aiSessionLength": {
+        "description": "Estimated session length of a pick",
+        "placeholders": {
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStartPlaying": "Start playing",
+    "@aiStartPlaying": {
+        "description": "Sets a pick's library status to playing"
+    },
+    "aiNowPlaying": "Now playing",
+    "@aiNowPlaying": {
+        "description": "Shown after a pick is set to playing"
+    },
+    "aiOpenGame": "Open",
+    "@aiOpenGame": {
+        "description": "Opens the game details"
+    },
+    "aiStartPlayingError": "Could not update this game. Try again.",
+    "@aiStartPlayingError": {
+        "description": "Error after start playing fails"
+    },
+    "aiEmptyBacklogTitle": "Your backlog is empty",
+    "@aiEmptyBacklogTitle": {
+        "description": "Empty state title when there is nothing to pick from"
+    },
+    "aiEmptyBacklogMessage": "Play next picks from games you plan to play, are playing, or put on hold. Add a few first.",
+    "@aiEmptyBacklogMessage": {
+        "description": "Empty state message when there is nothing to pick from"
+    },
+    "aiGoExplore": "Explore games",
+    "@aiGoExplore": {
+        "description": "Button to the Explore screen"
+    },
+    "aiGoSearch": "Search games",
+    "@aiGoSearch": {
+        "description": "Button to the Search screen"
+    },
+    "aiErrorUnavailable": "AI suggestions are not available right now.",
+    "@aiErrorUnavailable": {
+        "description": "Error 503 error.ai.unavailable"
+    },
+    "aiErrorConsentRequired": "Turn on AI suggestions to use this feature.",
+    "@aiErrorConsentRequired": {
+        "description": "Error 403 error.ai.consent_required"
+    },
+    "aiErrorQuotaExceeded": "You used all of today's AI suggestions. Come back tomorrow.",
+    "@aiErrorQuotaExceeded": {
+        "description": "Error 429 error.ai.quota_exceeded"
+    },
+    "aiErrorUpstream": "The AI service did not answer. Try again in a moment.",
+    "@aiErrorUpstream": {
+        "description": "Error 502 error.ai.upstream"
+    },
+    "aiUnavailableTitle": "AI suggestions are off",
+    "@aiUnavailableTitle": {
+        "description": "Title when AI is disabled on the server"
+    },
+    "aiQuotaTitle": "Daily limit reached",
+    "@aiQuotaTitle": {
+        "description": "Title when the daily AI quota is used"
+    },
+    "aiConsentNeededTitle": "AI suggestions need your OK",
+    "@aiConsentNeededTitle": {
+        "description": "Title when the user has not opted in"
+    },
+    "aiConsentNeededMessage": "Picklog sends data to the AI service only after you agree.",
+    "@aiConsentNeededMessage": {
+        "description": "Message when the user has not opted in"
+    },
+    "aiReviewConsent": "Review and turn on",
+    "@aiReviewConsent": {
+        "description": "Button that reopens the AI consent dialog"
+    },
+    "aiConsentTitle": "Turn on AI suggestions?",
+    "@aiConsentTitle": {
+        "description": "AI consent dialog title"
+    },
+    "aiConsentBody": "To make suggestions, Picklog sends OpenAI the names, statuses, scores, genres, and playtime of games in your library, plus the note you type.",
+    "@aiConsentBody": {
+        "description": "AI consent dialog: what is sent"
+    },
+    "aiConsentNever": "Picklog never sends your email or your name.",
+    "@aiConsentNever": {
+        "description": "AI consent dialog: what is never sent"
+    },
+    "aiConsentRevoke": "You can turn this off at any time in Settings.",
+    "@aiConsentRevoke": {
+        "description": "AI consent dialog: how to revoke"
+    },
+    "aiConsentAccept": "Turn on",
+    "@aiConsentAccept": {
+        "description": "AI consent dialog accept button"
+    },
+    "aiConsentDecline": "Not now",
+    "@aiConsentDecline": {
+        "description": "AI consent dialog decline button"
+    },
+    "aiConsentSaveError": "Could not save your choice. Try again.",
+    "@aiConsentSaveError": {
+        "description": "Error when saving AI consent fails"
+    },
+    "aiSettingsTitle": "AI suggestions",
+    "@aiSettingsTitle": {
+        "description": "Settings group label for AI"
+    },
+    "aiSettingsSwitch": "Allow AI suggestions",
+    "@aiSettingsSwitch": {
+        "description": "Settings switch for AI consent"
+    },
+    "aiSettingsSwitchOn": "Picklog can send game data from your library to OpenAI.",
+    "@aiSettingsSwitchOn": {
+        "description": "Settings AI switch subtitle when on"
+    },
+    "aiSettingsSwitchOff": "Nothing is sent to OpenAI.",
+    "@aiSettingsSwitchOff": {
+        "description": "Settings AI switch subtitle when off"
+    },
+    "aiSettingsUsage": "{used} of {limit} used today",
+    "@aiSettingsUsage": {
+        "description": "Daily AI usage in settings",
+        "placeholders": {
+            "used": {
+                "type": "int"
+            },
+            "limit": {
+                "type": "int"
+            }
+        }
+    },
+    "aiSettingsUnavailable": "AI suggestions are not available on this server.",
+    "@aiSettingsUnavailable": {
+        "description": "Settings note when AI is disabled"
+    },
+    "aiSettingsLoadError": "Could not load your AI settings.",
+    "@aiSettingsLoadError": {
+        "description": "Settings note when AI status fails to load"
+    },
+    "aiHomeCardSubtitle": "Get picks from your backlog for your mood and your time.",
+    "@aiHomeCardSubtitle": {
+        "description": "Home AI card subtitle"
+    },
+    "aiHomeCardAction": "Pick for me",
+    "@aiHomeCardAction": {
+        "description": "Home AI card button"
+    },
+    "aiDiscoverTitle": "Discover with AI",
+    "@aiDiscoverTitle": {
+        "description": "Title of the AI discover screen and its home entry"
+    },
+    "aiHomeDiscoverSubtitle": "Describe what you want and find new games.",
+    "@aiHomeDiscoverSubtitle": {
+        "description": "Home discover entry subtitle"
+    },
+    "aiDiscoverSubtitle": "Describe what you feel like playing. Picklog suggests games you do not have yet.",
+    "@aiDiscoverSubtitle": {
+        "description": "Subtitle of the AI discover screen"
+    },
+    "aiDiscoverPromptLabel": "What are you in the mood for?",
+    "@aiDiscoverPromptLabel": {
+        "description": "Label of the discover prompt field"
+    },
+    "aiDiscoverPromptHint": "For example: a relaxing farming game",
+    "@aiDiscoverPromptHint": {
+        "description": "Hint of the discover prompt field"
+    },
+    "aiDiscoverSubmit": "Find games",
+    "@aiDiscoverSubmit": {
+        "description": "Button that runs AI discover"
+    },
+    "aiDiscoverSuggestion1": "Cozy games for the weekend",
+    "@aiDiscoverSuggestion1": {
+        "description": "Discover prompt suggestion chip"
+    },
+    "aiDiscoverSuggestion2": "Like Hades but slower",
+    "@aiDiscoverSuggestion2": {
+        "description": "Discover prompt suggestion chip"
+    },
+    "aiDiscoverSuggestion3": "Short story games under 10 hours",
+    "@aiDiscoverSuggestion3": {
+        "description": "Discover prompt suggestion chip"
+    },
+    "aiDiscoverSuggestionsLabel": "Try one",
+    "@aiDiscoverSuggestionsLabel": {
+        "description": "Label above the discover suggestion chips"
+    },
+    "aiDiscoverEmptyTitle": "No new games found",
+    "@aiDiscoverEmptyTitle": {
+        "description": "Discover empty state title"
+    },
+    "aiDiscoverEmptyMessage": "Try a different prompt.",
+    "@aiDiscoverEmptyMessage": {
+        "description": "Discover empty state message"
+    },
+    "aiRatingLabel": "Rating {score}",
+    "@aiRatingLabel": {
+        "description": "Spoken label for a rating badge",
+        "placeholders": {
+            "score": {
+                "type": "int"
+            }
+        }
+    },
+    "accountsTitle": "Connected accounts",
+    "@accountsTitle": {
+        "description": "Connected accounts screen title and settings label"
+    },
+    "accountsEyebrow": "Picklog · Accounts",
+    "@accountsEyebrow": {
+        "description": "Eyebrow on the connected accounts screen"
+    },
+    "accountsIntro": "Link public gaming profiles to bring in achievements and playtime. Picklog uses public identifiers only and never asks for your passwords.",
+    "@accountsIntro": {
+        "description": "Intro text on the connected accounts screen"
+    },
+    "accountsSettingsSubtitle": "Steam, Xbox, RetroAchievements, PlayStation",
+    "@accountsSettingsSubtitle": {
+        "description": "Settings subtitle listing the services"
+    },
+    "accountsUnavailable": "Unavailable",
+    "@accountsUnavailable": {
+        "description": "Pill when a provider is not configured"
+    },
+    "accountsUnavailableMessage": "This service is not set up yet.",
+    "@accountsUnavailableMessage": {
+        "description": "Message when a provider is not configured"
+    },
+    "accountsExperimental": "Experimental",
+    "@accountsExperimental": {
+        "description": "Pill for the experimental PlayStation provider"
+    },
+    "accountsNotLinked": "Not linked",
+    "@accountsNotLinked": {
+        "description": "Status of a provider without a linked account"
+    },
+    "accountsLink": "Link",
+    "@accountsLink": {
+        "description": "Button that opens the link sheet"
+    },
+    "accountsLinkTitle": "Link {provider}",
+    "@accountsLinkTitle": {
+        "description": "Link sheet title",
+        "placeholders": {
+            "provider": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsSteamFieldLabel": "Steam profile URL or ID",
+    "@accountsSteamFieldLabel": {
+        "description": "Steam identifier field label"
+    },
+    "accountsSteamHelp": "Paste your profile link, your custom URL name, or your 17-digit SteamID.",
+    "@accountsSteamHelp": {
+        "description": "Steam identifier help text"
+    },
+    "accountsSteamPublicNote": "Game details must be public. In Steam, open your profile, choose Edit Profile, then Privacy Settings, and set Game details to Public.",
+    "@accountsSteamPublicNote": {
+        "description": "Steam privacy note"
+    },
+    "accountsXboxFieldLabel": "Xbox gamertag",
+    "@accountsXboxFieldLabel": {
+        "description": "Xbox identifier field label"
+    },
+    "accountsXboxHelp": "Your gamertag as it shows on your Xbox profile.",
+    "@accountsXboxHelp": {
+        "description": "Xbox identifier help text"
+    },
+    "accountsRaFieldLabel": "RetroAchievements username",
+    "@accountsRaFieldLabel": {
+        "description": "RetroAchievements identifier field label"
+    },
+    "accountsRaHelp": "Your username on retroachievements.org.",
+    "@accountsRaHelp": {
+        "description": "RetroAchievements identifier help text"
+    },
+    "accountsPsnFieldLabel": "PSN online ID",
+    "@accountsPsnFieldLabel": {
+        "description": "PlayStation identifier field label"
+    },
+    "accountsPsnHelp": "Your online ID. Your trophy list must be visible to anyone.",
+    "@accountsPsnHelp": {
+        "description": "PlayStation identifier help text"
+    },
+    "accountsPsnExperimentalNote": "PlayStation support is experimental. It reads public trophy lists only.",
+    "@accountsPsnExperimentalNote": {
+        "description": "PlayStation experimental note"
+    },
+    "accountsLinkSubmit": "Link account",
+    "@accountsLinkSubmit": {
+        "description": "Link sheet submit button"
+    },
+    "accountsLinkedMessage": "{provider} linked. Tap Sync now to import your data.",
+    "@accountsLinkedMessage": {
+        "description": "Snackbar after linking",
+        "placeholders": {
+            "provider": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsLastSynced": "Last synced {time}",
+    "@accountsLastSynced": {
+        "description": "Last sync time of a linked account",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsNeverSynced": "Not synced yet",
+    "@accountsNeverSynced": {
+        "description": "Linked account that never synced"
+    },
+    "accountsSyncing": "Syncing",
+    "@accountsSyncing": {
+        "description": "Sync status pill"
+    },
+    "accountsSyncOk": "Up to date",
+    "@accountsSyncOk": {
+        "description": "Sync status pill"
+    },
+    "accountsSyncError": "Last sync failed",
+    "@accountsSyncError": {
+        "description": "Sync status pill"
+    },
+    "accountsSyncNow": "Sync now",
+    "@accountsSyncNow": {
+        "description": "Button that starts a sync"
+    },
+    "accountsImportToggle": "Also import games to my library",
+    "@accountsImportToggle": {
+        "description": "Switch to import games during sync"
+    },
+    "accountsImportHelp": "Adds games you own or played that are not in your library yet.",
+    "@accountsImportHelp": {
+        "description": "Help under the import switch"
+    },
+    "accountsSyncStarted": "Syncing {provider}. This can take a few minutes.",
+    "@accountsSyncStarted": {
+        "description": "Snackbar after a sync starts",
+        "placeholders": {
+            "provider": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsSyncFinished": "{provider} sync finished",
+    "@accountsSyncFinished": {
+        "description": "Snackbar when a sync ends",
+        "placeholders": {
+            "provider": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsUnlink": "Unlink",
+    "@accountsUnlink": {
+        "description": "Button that unlinks an account"
+    },
+    "accountsUnlinkTitle": "Unlink {provider}?",
+    "@accountsUnlinkTitle": {
+        "description": "Unlink confirm dialog title",
+        "placeholders": {
+            "provider": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsUnlinkMessage": "Picklog deletes the achievements and progress it imported from this account. Games already in your library stay.",
+    "@accountsUnlinkMessage": {
+        "description": "Unlink confirm dialog message"
+    },
+    "accountsUnlinkedMessage": "{provider} unlinked",
+    "@accountsUnlinkedMessage": {
+        "description": "Snackbar after unlinking",
+        "placeholders": {
+            "provider": {
+                "type": "String"
+            }
+        }
+    },
+    "accountsErrorNotFound": "We could not find that account. Check the spelling and try again.",
+    "@accountsErrorNotFound": {
+        "description": "Error 404 error.integration.account_not_found"
+    },
+    "accountsErrorPrivate": "This profile is private. Make your game details public and try again.",
+    "@accountsErrorPrivate": {
+        "description": "Error 422 error.integration.private_profile"
+    },
+    "accountsErrorSyncTooSoon": "This account synced recently. Try again in a few minutes.",
+    "@accountsErrorSyncTooSoon": {
+        "description": "Error 429 error.integration.sync_too_soon"
+    },
+    "accountsErrorUnavailable": "This service is not available right now.",
+    "@accountsErrorUnavailable": {
+        "description": "Error 503 error.integration.unavailable"
+    },
+    "accountsErrorInvalid": "Enter a valid identifier.",
+    "@accountsErrorInvalid": {
+        "description": "Error for an empty or invalid identifier"
+    },
+    "accountsErrorUpstream": "The service did not answer. Try again later.",
+    "@accountsErrorUpstream": {
+        "description": "Error 502 error.integration.upstream"
+    },
+    "accountsErrorGameNotFound": "We could not find achievements for this game.",
+    "@accountsErrorGameNotFound": {
+        "description": "Error 404 error.integration.game_not_found"
+    },
+    "timeJustNow": "just now",
+    "@timeJustNow": {
+        "description": "Relative time under one minute"
+    },
+    "timeMinutesAgo": "{minutes} min ago",
+    "@timeMinutesAgo": {
+        "description": "Relative time in minutes",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "timeHoursAgo": "{hours} h ago",
+    "@timeHoursAgo": {
+        "description": "Relative time in hours",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "achievementsTitle": "Achievements",
+    "@achievementsTitle": {
+        "description": "Achievements hub title and game details section title"
+    },
+    "achievementsEyebrow": "Picklog · Achievements",
+    "@achievementsEyebrow": {
+        "description": "Eyebrow on the achievements hub"
+    },
+    "achievementsCompletion": "Overall completion",
+    "@achievementsCompletion": {
+        "description": "Label beside the completion ring"
+    },
+    "achievementsUnlockedOf": "{unlocked} of {total} unlocked",
+    "@achievementsUnlockedOf": {
+        "description": "Unlocked count out of total",
+        "placeholders": {
+            "unlocked": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "achievementsGamesCount": "{count, plural, =1{1 game} other{{count} games}}",
+    "@achievementsGamesCount": {
+        "description": "Number of games for a provider",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "achievementsRecentTitle": "Recent unlocks",
+    "@achievementsRecentTitle": {
+        "description": "Section title for recent unlocks"
+    },
+    "achievementsGamesTitle": "Games",
+    "@achievementsGamesTitle": {
+        "description": "Section title for the games list"
+    },
+    "achievementsFilterAll": "All",
+    "@achievementsFilterAll": {
+        "description": "Provider filter chip for all providers"
+    },
+    "achievementsEmptyTitle": "No achievements yet",
+    "@achievementsEmptyTitle": {
+        "description": "Achievements empty state title"
+    },
+    "achievementsEmptyMessage": "Link Steam, Xbox, RetroAchievements, or PlayStation to see your achievements here.",
+    "@achievementsEmptyMessage": {
+        "description": "Achievements empty state message"
+    },
+    "achievementsConnectAction": "Connect an account",
+    "@achievementsConnectAction": {
+        "description": "Achievements empty state button"
+    },
+    "achievementsRarity": "{percent}% of players",
+    "@achievementsRarity": {
+        "description": "Share of players with an achievement",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "achievementsRare": "Rare",
+    "@achievementsRare": {
+        "description": "Pill for an achievement under 10% rarity"
+    },
+    "achievementsUnlockedOn": "Unlocked {date}",
+    "@achievementsUnlockedOn": {
+        "description": "Unlock date of an achievement",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "achievementsLocked": "Locked",
+    "@achievementsLocked": {
+        "description": "Label for a locked achievement"
+    },
+    "achievementsLastPlayed": "Played {date}",
+    "@achievementsLastPlayed": {
+        "description": "Last played date of a game",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "achievementsGameEmpty": "This game has no achievements to show.",
+    "@achievementsGameEmpty": {
+        "description": "Per-game screen with an empty list"
+    },
+    "aiDiscoverHeadline": "Find your next favorite game",
+    "@aiDiscoverHeadline": {
+        "description": "Headline of the AI discover screen"
     }
 }

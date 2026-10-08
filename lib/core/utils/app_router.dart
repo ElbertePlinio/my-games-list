@@ -11,6 +11,12 @@ import 'package:picklog/core/utils/l10n_extensions.dart';
 import 'package:picklog/core/utils/service_locator.dart';
 import 'package:picklog/core/widgets/bottom_nav_bar.dart';
 import 'package:picklog/core/widgets/state_views.dart';
+import 'package:picklog/features/ai/ai_repository.dart';
+import 'package:picklog/features/ai/bloc/ai_status_cubit.dart';
+import 'package:picklog/features/ai/bloc/discover_cubit.dart';
+import 'package:picklog/features/ai/bloc/play_next_cubit.dart';
+import 'package:picklog/features/ai/discover_screen.dart';
+import 'package:picklog/features/ai/play_next_screen.dart';
 import 'package:picklog/features/auth/auth_repository.dart';
 import 'package:picklog/features/auth/bloc/auth_bloc.dart';
 import 'package:picklog/features/auth/bloc/auth_state.dart';
@@ -49,6 +55,14 @@ import 'package:picklog/features/games/games_screen.dart';
 import 'package:picklog/features/games/i_games_repository.dart';
 import 'package:picklog/features/games/widgets/video_player_screen.dart';
 import 'package:picklog/features/home/home_screen.dart';
+import 'package:picklog/features/integrations/achievement_game_screen.dart';
+import 'package:picklog/features/integrations/achievements_screen.dart';
+import 'package:picklog/features/integrations/bloc/achievement_game_cubit.dart';
+import 'package:picklog/features/integrations/bloc/achievements_cubit.dart';
+import 'package:picklog/features/integrations/bloc/connected_accounts_cubit.dart';
+import 'package:picklog/features/integrations/connected_accounts_screen.dart';
+import 'package:picklog/features/integrations/integrations_models.dart';
+import 'package:picklog/features/integrations/integrations_repository.dart';
 import 'package:picklog/features/legal/legal_document.dart';
 import 'package:picklog/features/legal/presentation/legal_document_screen.dart';
 import 'package:picklog/features/library/bloc/library_bloc.dart';
@@ -289,6 +303,13 @@ class AppRouter {
                             gamesRepository: sl<IGamesRepository>(),
                           )..add(const CollectionsLoadRequested()),
                         ),
+                        BlocProvider(
+                          create: (_) {
+                            _ensureAiRepositoryRegistered();
+                            return AiStatusCubit(repository: sl<AiRepository>())
+                              ..load();
+                          },
+                        ),
                       ],
                       child: const HomeScreen(),
                     );
@@ -425,9 +446,19 @@ class AppRouter {
           name: settingsName,
           builder: (context, state) {
             _ensureAuthRepositoryRegistered();
-            return BlocProvider(
-              create: (_) =>
-                  AccountManagementBloc(authRepository: sl<AuthRepository>()),
+            _ensureAiRepositoryRegistered();
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) => AccountManagementBloc(
+                    authRepository: sl<AuthRepository>(),
+                  ),
+                ),
+                BlocProvider(
+                  create: (_) =>
+                      AiStatusCubit(repository: sl<AiRepository>())..load(),
+                ),
+              ],
               child: const SettingsScreen(),
             );
           },
@@ -591,6 +622,14 @@ class AppRouter {
                       ),
                     ),
                 ),
+                BlocProvider(
+                  create: (_) {
+                    _ensureIntegrationsRepositoryRegistered();
+                    return GameAchievementsCubit(
+                      repository: sl<IntegrationsRepository>(),
+                    )..load(gameId);
+                  },
+                ),
               ],
               child: GameDetailsScreen(
                 gameId: gameId,
@@ -666,6 +705,122 @@ class AppRouter {
             );
           },
         ),
+
+        // AI play next (outside bottom navigation)
+        GoRoute(
+          path: aiPlayNextPath,
+          name: aiPlayNextName,
+          builder: (context, state) {
+            _ensureAiRepositoryRegistered();
+            _ensureLibraryRepositoryAndBlocRegistered();
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) =>
+                      AiStatusCubit(repository: sl<AiRepository>())..load(),
+                ),
+                BlocProvider(
+                  create: (_) => PlayNextCubit(
+                    aiRepository: sl<AiRepository>(),
+                    libraryRepository: sl<LibraryRepository>(),
+                    userId: _currentUserId(),
+                  )..loadLibrary(),
+                ),
+              ],
+              child: const PlayNextScreen(),
+            );
+          },
+        ),
+
+        // AI discover (outside bottom navigation)
+        GoRoute(
+          path: aiDiscoverPath,
+          name: aiDiscoverName,
+          builder: (context, state) {
+            _ensureAiRepositoryRegistered();
+            _ensureLibraryRepositoryAndBlocRegistered();
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) =>
+                      AiStatusCubit(repository: sl<AiRepository>())..load(),
+                ),
+                BlocProvider(
+                  create: (_) => DiscoverCubit(repository: sl<AiRepository>()),
+                ),
+                // Shared library state for the add-to-library sheet.
+                BlocProvider.value(
+                  value: sl<LibraryBloc>()
+                    ..add(LibraryLoadRequested(userId: _currentUserId())),
+                ),
+              ],
+              child: const DiscoverScreen(),
+            );
+          },
+        ),
+
+        // Connected accounts (outside bottom navigation)
+        GoRoute(
+          path: connectedAccountsPath,
+          name: connectedAccountsName,
+          builder: (context, state) {
+            _ensureIntegrationsRepositoryRegistered();
+            return BlocProvider(
+              create: (_) => ConnectedAccountsCubit(
+                repository: sl<IntegrationsRepository>(),
+              )..load(),
+              child: const ConnectedAccountsScreen(),
+            );
+          },
+        ),
+
+        // Achievements hub (outside bottom navigation)
+        GoRoute(
+          path: achievementsPath,
+          name: achievementsName,
+          builder: (context, state) {
+            _ensureIntegrationsRepositoryRegistered();
+            return BlocProvider(
+              create: (_) =>
+                  AchievementsCubit(repository: sl<IntegrationsRepository>())
+                    ..load(),
+              child: const AchievementsScreen(),
+            );
+          },
+        ),
+
+        // Per-game achievements (outside bottom navigation)
+        GoRoute(
+          path: achievementGamePath,
+          name: achievementGameName,
+          builder: (context, state) {
+            final provider = GameProvider.fromApi(
+              state.pathParameters['provider'],
+            );
+            final externalGameId = state.pathParameters['externalGameId'] ?? '';
+
+            // A malformed or stale link must not throw inside the builder.
+            if (provider == null || externalGameId.isEmpty) {
+              return Scaffold(
+                appBar: AppBar(),
+                body: EmptyState(
+                  icon: Icons.emoji_events_outlined,
+                  title: context.l10n.accountsErrorGameNotFound,
+                ),
+              );
+            }
+
+            _ensureIntegrationsRepositoryRegistered();
+            return BlocProvider(
+              create: (_) => AchievementGameCubit(
+                repository: sl<IntegrationsRepository>(),
+                provider: provider,
+                externalGameId: externalGameId,
+              )..load(),
+              child: const AchievementGameScreen(),
+            );
+          },
+        ),
       ],
       errorBuilder: (context, state) => _ErrorScreen(error: state.error),
       debugLogDiagnostics: kDebugMode,
@@ -712,6 +867,33 @@ class AppRouter {
     if (!sl.isRegistered<IGamesRepository>()) {
       sl.registerLazySingleton<IGamesRepository>(
         () => GamesRepository(httpClient: sl<IHttpClient>()),
+      );
+    }
+  }
+
+  /// The signed-in user's id, or an empty string when signed out.
+  static String _currentUserId() {
+    final authState = sl<AuthBloc>().state;
+    return authState is AuthAuthenticated ? authState.user.id : '';
+  }
+
+  /// Ensures AiRepository is registered in the service locator.
+  /// Called lazily when an AI route, home or settings is opened.
+  static void _ensureAiRepositoryRegistered() {
+    if (!sl.isRegistered<AiRepository>()) {
+      sl.registerLazySingleton<AiRepository>(
+        () => AiRepository(httpClient: sl<IHttpClient>()),
+      );
+    }
+  }
+
+  /// Ensures IntegrationsRepository is registered in the service locator.
+  /// Called lazily when connected accounts, achievements or game details
+  /// are opened.
+  static void _ensureIntegrationsRepositoryRegistered() {
+    if (!sl.isRegistered<IntegrationsRepository>()) {
+      sl.registerLazySingleton<IntegrationsRepository>(
+        () => IntegrationsRepository(httpClient: sl<IHttpClient>()),
       );
     }
   }

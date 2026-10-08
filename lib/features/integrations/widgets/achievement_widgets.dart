@@ -52,17 +52,21 @@ class CompletionRing extends StatelessWidget {
               fill: colors.ember,
               stroke: stroke,
             ),
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(stroke * 1.5),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${(value * 100).round()}%',
-                    style: PfTypography.monoStyle(
-                      colors.textHi,
-                      size: size * 0.22,
-                      weight: FontWeight.w600,
+            // The number is part of a fixed-size graphic; cap its scaling.
+            child: MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(stroke * 1.5),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${(value * 100).round()}%',
+                      style: PfTypography.monoStyle(
+                        colors.textHi,
+                        size: size * 0.22,
+                        weight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

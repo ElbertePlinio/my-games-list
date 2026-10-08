@@ -417,20 +417,30 @@ class _LinkedBody extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    lastSynced == null
-                        ? l10n.accountsNeverSynced
-                        : l10n.accountsLastSynced(
+                  const SizedBox(height: PfSpace.xs),
+                  Wrap(
+                    spacing: PfSpace.sm,
+                    runSpacing: PfSpace.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      StatusPill(
+                        label: statusLabel,
+                        tone: tone,
+                        icon: icon,
+                        dense: true,
+                      ),
+                      if (lastSynced != null)
+                        Text(
+                          l10n.accountsLastSynced(
                             formatRelativeTime(context, lastSynced),
                           ),
-                    style: theme.textTheme.bodySmall,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: PfSpace.sm),
-            StatusPill(label: statusLabel, tone: tone, icon: icon, dense: true),
           ],
         ),
         if (syncing && !PfMotion.reduced(context)) ...[

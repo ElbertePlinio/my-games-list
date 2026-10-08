@@ -184,24 +184,24 @@ class _Hub extends StatelessWidget {
           ),
         ),
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(
-            PfSpace.lg,
-            0,
-            PfSpace.lg,
-            PfSpace.xxl + MediaQuery.viewPaddingOf(context).bottom,
+          padding: EdgeInsets.only(
+            bottom: PfSpace.xxl + MediaQuery.viewPaddingOf(context).bottom,
           ),
           sliver: SliverList.separated(
             itemCount: games.length,
             separatorBuilder: (_, _) => const SizedBox(height: PfSpace.sm),
             itemBuilder: (context, i) => MaxWidthBox(
-              child: StaggeredReveal(
-                index: i,
-                child: GameProgressTile(
-                  game: games[i],
-                  onTap: () => openAchievementGame(
-                    context,
-                    games[i].provider,
-                    games[i].externalGameId,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: PfSpace.lg),
+                child: StaggeredReveal(
+                  index: i,
+                  child: GameProgressTile(
+                    game: games[i],
+                    onTap: () => openAchievementGame(
+                      context,
+                      games[i].provider,
+                      games[i].externalGameId,
+                    ),
                   ),
                 ),
               ),
@@ -252,7 +252,7 @@ class _HeroSummary extends StatelessWidget {
                     style: theme.textTheme.bodySmall!.copyWith(
                       color: colors.textHi,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -278,6 +278,20 @@ class _HeroSummary extends StatelessWidget {
                   '${l10n.achievementsCompletion} '
                   '${summary.completionPct.round()}%',
             );
+            // Large text needs the full width for the totals.
+            final stacked =
+                constraints.maxWidth < 300 ||
+                MediaQuery.textScalerOf(context).scale(10) > 14;
+            if (stacked) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(child: ring),
+                  const SizedBox(height: PfSpace.xl),
+                  totals,
+                ],
+              );
+            }
             return Row(
               children: [
                 ring,
@@ -297,6 +311,19 @@ class _RecentList extends StatelessWidget {
 
   final List<RecentAchievement> recent;
 
+  Widget _tile(BuildContext context, RecentAchievement r) => InkWell(
+    onTap: () => openAchievementGame(context, r.provider, r.externalGameId),
+    child: AchievementTile(
+      name: r.achievementName,
+      subtitle: r.gameName,
+      description: r.description,
+      iconUrl: r.iconUrl,
+      unlocked: true,
+      unlockedAt: r.unlockedAt,
+      rarityPct: r.rarityPct,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -305,28 +332,39 @@ class _RecentList extends StatelessWidget {
           horizontal: PfSpace.lg,
           vertical: PfSpace.sm,
         ),
-        child: Column(
-          children: [
-            for (var i = 0; i < recent.length; i++) ...[
-              if (i > 0) const Divider(height: 1),
-              InkWell(
-                onTap: () => openAchievementGame(
-                  context,
-                  recent[i].provider,
-                  recent[i].externalGameId,
-                ),
-                child: AchievementTile(
-                  name: recent[i].achievementName,
-                  subtitle: recent[i].gameName,
-                  description: recent[i].description,
-                  iconUrl: recent[i].iconUrl,
-                  unlocked: true,
-                  unlockedAt: recent[i].unlockedAt,
-                  rarityPct: recent[i].rarityPct,
-                ),
-              ),
-            ],
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Two columns on wide screens so the games list stays in view.
+            final columns = constraints.maxWidth >= PfBreakpoints.twoPane - 64
+                ? 2
+                : 1;
+            final rows = <List<RecentAchievement>>[
+              for (var i = 0; i < recent.length; i += columns)
+                recent.sublist(i, (i + columns).clamp(0, recent.length)),
+            ];
+            return Column(
+              children: [
+                for (var i = 0; i < rows.length; i++) ...[
+                  if (i > 0) const Divider(height: 1),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var j = 0; j < columns; j++) ...[
+                          if (j > 0) const SizedBox(width: PfSpace.xl),
+                          Expanded(
+                            child: j < rows[i].length
+                                ? _tile(context, rows[i][j])
+                                : const SizedBox.shrink(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );

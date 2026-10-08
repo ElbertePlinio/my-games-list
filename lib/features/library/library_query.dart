@@ -103,10 +103,22 @@ class LibraryFilters extends Equatable {
   /// Whether [entry] passes the status, favorite, collection and score
   /// filters. The other filters need server data, so they pass here.
   bool admits(LibraryEntry entry) =>
-      (statuses.isEmpty || statuses.contains(entry.status)) &&
-      (!favoritesOnly || entry.isFavorite) &&
-      (collectionId == null || entry.collectionIds.contains(collectionId)) &&
-      (minScore == null || (entry.score ?? -1) >= minScore!);
+      _admitsStatus(entry) &&
+      _admitsFavorite(entry) &&
+      _admitsCollection(entry) &&
+      _admitsScore(entry);
+
+  bool _admitsStatus(LibraryEntry entry) =>
+      statuses.isEmpty || statuses.contains(entry.status);
+
+  bool _admitsFavorite(LibraryEntry entry) =>
+      !favoritesOnly || entry.isFavorite;
+
+  bool _admitsCollection(LibraryEntry entry) =>
+      collectionId == null || entry.collectionIds.contains(collectionId);
+
+  bool _admitsScore(LibraryEntry entry) =>
+      minScore == null || (entry.score ?? -1) >= minScore!;
 
   /// Clears every filter but keeps the sort.
   LibraryFilters cleared() => LibraryFilters(sort: sort);

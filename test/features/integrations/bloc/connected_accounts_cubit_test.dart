@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -218,5 +220,95 @@ void main() {
         expect(cubit.state.notice!.type, AccountNoticeType.unlinkFailed);
       },
     );
+    ConnectedAccountsCubit seeded(List<LinkedProvider> list) {
+      final cubit = ConnectedAccountsCubit(
+        repository: repository,
+        pollInterval: const Duration(minutes: 1),
+      );
+      addTearDown(cubit.close);
+      cubit.emit(
+        ConnectedAccountsState(
+          status: ConnectedAccountsStatus.ready,
+          providers: list,
+        ),
+      );
+      return cubit;
+    }
+
+    test('an older poll does not undo a sync started after it', () async {
+      final pending = Completer<List<LinkedProvider>>();
+      when(
+        () => repository.getLinkedAccounts(),
+      ).thenAnswer((_) => pending.future);
+      when(() => repository.sync(GameProvider.xbox)).thenAnswer((_) async {});
+      final cubit = seeded(
+        providers(
+          steam: account(status: SyncStatus.syncing),
+          xbox: account(status: SyncStatus.idle),
+        ),
+      );
+
+      final polling = cubit.poll();
+      await cubit.sync(GameProvider.xbox);
+      // The server answered before the Xbox sync started.
+      pending.complete(
+        providers(
+          steam: account(status: SyncStatus.syncing),
+          xbox: account(status: SyncStatus.idle),
+        ),
+      );
+      await polling;
+
+      expect(cubit.state.providerFor(GameProvider.xbox)!.isSyncing, isTrue);
+      expect(cubit.isPolling, isTrue);
+    });
+
+    test('an older poll does not restore an unlinked account', () async {
+      final pending = Completer<List<LinkedProvider>>();
+      when(
+        () => repository.getLinkedAccounts(),
+      ).thenAnswer((_) => pending.future);
+      when(() => repository.unlink(GameProvider.xbox)).thenAnswer((_) async {});
+      final cubit = seeded(
+        providers(
+          steam: account(status: SyncStatus.syncing),
+          xbox: account(),
+        ),
+      );
+
+      final polling = cubit.poll();
+      await cubit.unlink(GameProvider.xbox);
+      pending.complete(
+        providers(
+          steam: account(status: SyncStatus.syncing),
+          xbox: account(),
+        ),
+      );
+      await polling;
+
+      expect(cubit.state.providerFor(GameProvider.xbox)!.isLinked, isFalse);
+    });
+
+    test('a refresh keeps the list on screen while it loads', () async {
+      final pending = Completer<List<LinkedProvider>>();
+      when(
+        () => repository.getLinkedAccounts(),
+      ).thenAnswer((_) => pending.future);
+      final cubit = seeded(providers(steam: account()));
+      final statuses = <ConnectedAccountsStatus>[];
+      final sub = cubit.stream.listen((s) => statuses.add(s.status));
+      addTearDown(sub.cancel);
+
+      final refreshing = cubit.load();
+      pending.complete(providers(steam: account(name: 'Knight')));
+      await refreshing;
+      await Future<void>.delayed(Duration.zero);
+
+      expect(statuses, isNot(contains(ConnectedAccountsStatus.loading)));
+      expect(
+        cubit.state.providerFor(GameProvider.steam)!.account!.displayName,
+        'Knight',
+      );
+    });
   });
 }

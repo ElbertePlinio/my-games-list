@@ -119,23 +119,31 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
   bool _polling = false;
   int _noticeId = 0;
 
+  /// Bumped on each local account change, so a list request that started
+  /// earlier cannot overwrite the newer state.
+  int _generation = 0;
+
   /// True while the poll timer is active. Exposed for tests.
   bool get isPolling => _pollTimer?.isActive ?? false;
 
+  /// Loads the list. A refresh keeps the current list on screen.
   Future<void> load() async {
-    emit(
-      state.copyWith(
-        status: ConnectedAccountsStatus.loading,
-        errorKind: () => null,
-      ),
-    );
+    if (state.providers.isEmpty) {
+      emit(
+        state.copyWith(
+          status: ConnectedAccountsStatus.loading,
+          errorKind: () => null,
+        ),
+      );
+    }
+    final generation = _generation;
     try {
       final providers = await _repository.getLinkedAccounts();
       if (isClosed) return;
       emit(
         state.copyWith(
           status: ConnectedAccountsStatus.ready,
-          providers: providers,
+          providers: generation == _generation ? providers : null,
         ),
       );
       _updatePolling();
@@ -175,6 +183,7 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
     try {
       final account = await _repository.link(provider, identifier);
       if (isClosed) return;
+      _generation++;
       emit(
         state.copyWith(
           linkStatus: LinkStatus.success,
@@ -199,6 +208,7 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
     try {
       await _repository.sync(provider, importLibrary: importLibrary);
       if (isClosed) return;
+      _generation++;
       final current = state.providerFor(provider)?.account;
       emit(
         state.copyWith(
@@ -234,6 +244,7 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
     try {
       await _repository.unlink(provider);
       if (isClosed) return;
+      _generation++;
       emit(
         state.copyWith(
           busyProviders: {...state.busyProviders}..remove(provider),
@@ -257,17 +268,19 @@ class ConnectedAccountsCubit extends Cubit<ConnectedAccountsState> {
     }
   }
 
-  /// One silent refresh while a sync runs. Errors keep the last list.
+  /// One silent refresh while a sync runs. Errors keep the last list, and
+  /// a response older than the last account change is dropped.
   Future<void> poll() async {
     if (_polling || isClosed) return;
     _polling = true;
+    final generation = _generation;
     try {
       final before = {
         for (final p in state.providers)
           if (p.isSyncing) p.provider,
       };
       final providers = await _repository.getLinkedAccounts();
-      if (isClosed) return;
+      if (isClosed || generation != _generation) return;
       final finished = [
         for (final p in providers)
           if (before.contains(p.provider) && !p.isSyncing) p.provider,

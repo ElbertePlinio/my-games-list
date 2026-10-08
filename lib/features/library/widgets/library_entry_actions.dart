@@ -45,7 +45,7 @@ abstract final class LibraryEntryActions {
       // The sheet saves the status with the details. Closing it without
       // saving still applies the status.
       final saved = await editEntry(context, entry, initialStatus: next);
-      if (saved == true || !context.mounted) return;
+      if (saved || !context.mounted) return;
     }
     setStatus(context, entry, next);
   }
@@ -54,13 +54,13 @@ abstract final class LibraryEntryActions {
   /// date or a note while the game is fresh.
   static const _editsOnStatus = {GameStatus.finished, GameStatus.dropped};
 
-  /// Opens the edit sheet for [entry]. Returns true when it saved or removed
-  /// the entry.
-  static Future<bool?> editEntry(
+  /// Opens the edit sheet for [entry]. Returns true when it sent a save or
+  /// removed the entry, even if the sheet closed before the save finished.
+  static Future<bool> editEntry(
     BuildContext context,
     LibraryEntry entry, {
     GameStatus? initialStatus,
-  }) {
+  }) async {
     final library = context.read<LibraryBloc>();
     UserCollectionsBloc? collections;
     try {
@@ -69,7 +69,8 @@ abstract final class LibraryEntryActions {
       collections = null;
     }
     final platform = entry.platform;
-    return showModalBottomSheet<bool>(
+    var submitted = false;
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -90,10 +91,12 @@ abstract final class LibraryEntryActions {
               : null,
           existingEntry: entry,
           initialStatus: initialStatus,
+          onSubmitted: () => submitted = true,
           collectionsBloc: collections,
         ),
       ),
     );
+    return submitted || result == true;
   }
 
   /// Saves [status] for [entry] and offers an undo.
@@ -131,7 +134,7 @@ abstract final class LibraryEntryActions {
 }
 
 /// Row and card overflow menu items.
-enum LibraryEntryMenuAction { edit, changeStatus, collections, favorite }
+enum LibraryEntryMenuAction { changeStatus, collections, favorite }
 
 /// Overflow menu for one entry.
 class LibraryEntryMenuButton extends StatelessWidget {
@@ -139,7 +142,6 @@ class LibraryEntryMenuButton extends StatelessWidget {
     required this.entry,
     this.color,
     this.includeFavorite = false,
-    this.includeEdit = false,
     this.iconSize,
     super.key,
   });
@@ -148,7 +150,6 @@ class LibraryEntryMenuButton extends StatelessWidget {
   final Color? color;
   final double? iconSize;
   final bool includeFavorite;
-  final bool includeEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -160,8 +161,6 @@ class LibraryEntryMenuButton extends StatelessWidget {
       icon: Icon(Icons.more_vert, color: color),
       onSelected: (action) {
         switch (action) {
-          case LibraryEntryMenuAction.edit:
-            LibraryEntryActions.editEntry(context, entry);
           case LibraryEntryMenuAction.changeStatus:
             LibraryEntryActions.changeStatus(context, entry);
           case LibraryEntryMenuAction.collections:
@@ -171,15 +170,6 @@ class LibraryEntryMenuButton extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
-        if (includeEdit)
-          PopupMenuItem(
-            value: LibraryEntryMenuAction.edit,
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(l10n.editEntry),
-            ),
-          ),
         PopupMenuItem(
           value: LibraryEntryMenuAction.changeStatus,
           child: ListTile(

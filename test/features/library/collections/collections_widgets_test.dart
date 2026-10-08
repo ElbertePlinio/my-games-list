@@ -382,6 +382,7 @@ void main() {
       await t.pump();
       verifyNever(() => collections.add(any()));
 
+      await t.tap(find.text('Save'));
       states.add(
         LibraryState(
           status: LibraryStatus.success,
@@ -440,6 +441,7 @@ void main() {
       await t.tap(find.byKey(const ValueKey('sheet_collection_c-2')));
       await t.pump();
 
+      await t.tap(find.text('Save'));
       states.add(
         LibraryState(
           status: LibraryStatus.success,

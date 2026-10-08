@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -287,32 +289,38 @@ void main() {
     testWidgets('adding a game shows no toast; the card state shows it', (
       tester,
     ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
       whenListen(
         libraryBloc,
-        Stream<LibraryState>.fromIterable([
-          const LibraryState(gameAddedOrUpdated: true),
-        ]),
+        states.stream,
         initialState: const LibraryState(),
       );
 
       await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Save'));
+      states.add(const LibraryState(gameAddedOrUpdated: true));
       await tester.pump();
 
       expect(find.byType(SnackBar), findsNothing);
     });
 
     testWidgets('shows a localized message when saving fails', (tester) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
       whenListen(
         libraryBloc,
-        Stream<LibraryState>.fromIterable([
-          const LibraryState(
-            failure: LibraryFailure(LibraryAction.add, AppErrorKind.network),
-          ),
-        ]),
+        states.stream,
         initialState: const LibraryState(),
       );
 
       await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Save'));
+      states.add(
+        const LibraryState(
+          failure: LibraryFailure(LibraryAction.add, AppErrorKind.network),
+        ),
+      );
       await tester.pump();
 
       expect(
@@ -359,6 +367,63 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('PlayStation 4'), findsWidgets);
+    });
+
+    testWidgets('a save that this sheet did not send leaves it open', (
+      tester,
+    ) async {
+      final states = StreamController<LibraryState>();
+      addTearDown(states.close);
+      whenListen(
+        libraryBloc,
+        states.stream,
+        initialState: const LibraryState(),
+      );
+
+      await tester.pumpWidget(buildSubject(existingEntry: _buildEntry()));
+      states
+        ..add(const LibraryState(gameAddedOrUpdated: true))
+        ..add(
+          const LibraryState(
+            failure: LibraryFailure(LibraryAction.update, AppErrorKind.network),
+          ),
+        );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit entry'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+      verifyNever(() => libraryBloc.add(any()));
+    });
+
+    testWidgets('loading platforms keeps the current platform selected', (
+      tester,
+    ) async {
+      final entry = _buildEntry().copyWith(
+        platform: const CachedPlatform(
+          id: 'p-48',
+          igdbPlatformId: 48,
+          name: 'PS4',
+        ),
+      );
+      await tester.pumpWidget(
+        buildSubject(
+          existingEntry: entry,
+          sheetPlatforms: const [Platform(id: 48, name: 'PS4')],
+          loadPlatforms: () async => platforms,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('PlayStation 4'), findsOneWidget);
+      expect(find.text('PS4'), findsNothing);
+
+      await tester.tap(find.text('Save'));
+      await tester.pump();
+
+      final event =
+          verify(() => libraryBloc.add(captureAny())).captured.single
+              as LibraryUpdateEntryRequested;
+      expect(event.igdbPlatformId, 48);
     });
   });
 }

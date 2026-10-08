@@ -36,6 +36,7 @@ class AddToLibraryBottomSheet extends StatefulWidget {
     this.existingEntry,
     this.initialStatus,
     this.loadPlatforms,
+    this.onSubmitted,
     this.collectionsBloc,
   });
 
@@ -51,6 +52,10 @@ class AddToLibraryBottomSheet extends StatefulWidget {
   /// Loads the game's full platform list when [platforms] holds only the
   /// entry's current platform.
   final Future<List<Platform>> Function()? loadPlatforms;
+
+  /// Called when Save sends the entry, so a caller knows the write is on its
+  /// way even if the sheet closes before it finishes.
+  final VoidCallback? onSubmitted;
 
   /// Source of the user's collections. Defaults to a provided bloc, then the
   /// shared instance in the service locator. Without one the collections
@@ -112,6 +117,13 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   /// True once the entry saved, while the collection changes finish.
   bool _finishing = false;
 
+  /// True while this sheet's own save is in flight. Library writes started
+  /// elsewhere do not close the sheet.
+  bool _saving = false;
+
+  /// Changes when the full platform list arrives, to rebuild the dropdown.
+  int _platformsVersion = 0;
+
   /// Collections chosen in the sheet. Applied after the entry saves.
   late Set<String> _collectionIds = {...?widget.existingEntry?.collectionIds};
 
@@ -135,6 +147,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     if (!mounted || loaded.isEmpty) return;
     final current = _selectedPlatform;
     setState(() {
+      _platformsVersion++;
       _platforms = [
         ...loaded,
         if (current != null && loaded.every((p) => p.id != current.id)) current,
@@ -306,6 +319,8 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
 
   void _save() {
     final bloc = context.read<LibraryBloc>();
+    _saving = true;
+    widget.onSubmitted?.call();
 
     if (isEditing) {
       bloc.add(
@@ -483,10 +498,12 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
   }
 
   void _onLibraryState(BuildContext context, LibraryState state) {
+    if (!_saving) return;
     final failure = state.failure;
     if (failure != null &&
         (failure.action == LibraryAction.add ||
             failure.action == LibraryAction.update)) {
+      _saving = false;
       context.showErrorMessage(context.l10n.librarySaveFailed);
     }
     if (state.gameAddedOrUpdated && !_finishing) {
@@ -615,7 +632,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
       title: l10n.platformLabel,
       child: DropdownButtonFormField<Platform>(
         // Rebuilds the field when the full platform list arrives.
-        key: ValueKey(_platforms.length),
+        key: ValueKey(_platformsVersion),
         initialValue: _selectedPlatform,
         // Long platform names ellipsize instead of
         // overflowing at large text sizes.

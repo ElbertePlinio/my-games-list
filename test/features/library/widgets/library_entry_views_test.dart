@@ -212,5 +212,29 @@ void main() {
               as LibraryUpdateEntryRequested;
       expect(event.status, GameStatus.onHold);
     });
+
+    testWidgets('picking Dropped opens the sheet too', (t) async {
+      await pumpRow(t);
+      await pickStatus(t, 'Dropped');
+
+      expect(find.text('Remove from library'), findsOneWidget);
+      verifyNever(() => library.add(any()));
+    });
+
+    testWidgets('closing the sheet while its save runs sends no second write', (
+      t,
+    ) async {
+      await pumpRow(t);
+      await pickStatus(t, 'Finished');
+
+      await t.tap(find.text('Save'));
+      await t.pump();
+      await t.tap(find.byTooltip('Cancel'));
+      await t.pumpAndSettle();
+
+      final events = verify(() => library.add(captureAny())).captured;
+      expect(events, hasLength(1));
+      expect((events.single as LibraryUpdateEntryRequested).details, isNotNull);
+    });
   });
 }

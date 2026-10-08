@@ -208,6 +208,10 @@ void main() {
   });
 
   testWidgets('renders release rows with games', (tester) async {
+    // A tall viewport keeps both rows built below the Explore card.
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     when(() => genresBloc.state).thenReturn(
       const BrowseGenresState(
         status: BrowseGenresStatus.success,
@@ -374,5 +378,22 @@ void main() {
     expect(find.byType(CollectionsWidget), findsOneWidget);
     expect(find.text('Collections'), findsNothing);
     expect(find.byType(DiscoveryRowSkeleton), findsNothing);
+  });
+
+  testWidgets('the Explore card opens the explore route', (tester) async {
+    when(() => genresBloc.state).thenReturn(
+      const BrowseGenresState(
+        status: BrowseGenresStatus.success,
+        genres: genres,
+      ),
+    );
+    when(() => discoveryBloc.state).thenReturn(releasesState());
+    when(() => collectionsBloc.state).thenReturn(const CollectionsState());
+
+    await tester.pumpWidget(buildSubject());
+    await tester.pump();
+
+    expect(find.text('Explore the catalog'), findsOneWidget);
+    expect(find.byKey(const Key('browse_explore_card')), findsOneWidget);
   });
 }

@@ -59,6 +59,7 @@ class BrowseScreen extends StatelessWidget {
                 ),
                 child: Eyebrow(context.l10n.browseEyebrow),
               ),
+              const _ExploreCard(),
               const _GenresSection(),
               const _ReleasesSection(),
               const _CollectionsSection(),
@@ -90,6 +91,77 @@ class BrowseScreen extends StatelessWidget {
       ),
       collectionsBloc.stream.firstWhere((s) => !s.isLoading),
     ]);
+  }
+}
+
+/// Prominent entry to the catalog explorer.
+class _ExploreCard extends StatelessWidget {
+  const _ExploreCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(PfSpace.lg, PfSpace.md, PfSpace.lg, 0),
+      child: PressScale(
+        key: const Key('browse_explore_card'),
+        onTap: () => context.pushNamed(AppRouter.exploreName),
+        semanticLabel: l10n.browseExploreTitle,
+        child: ExcludeSemantics(
+          child: Container(
+            padding: const EdgeInsets.all(PfSpace.lg),
+            decoration: BoxDecoration(
+              borderRadius: PfRadius.cardAll,
+              border: Border.all(color: colors.ember.withValues(alpha: 0.4)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.alphaBlend(
+                    colors.ember.withValues(alpha: colors.isDark ? 0.18 : 0.12),
+                    colors.surface1,
+                  ),
+                  colors.surface1,
+                ],
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: colors.ember.withValues(alpha: 0.16),
+                    borderRadius: PfRadius.mdAll,
+                  ),
+                  child: Icon(Icons.travel_explore, color: colors.emberFg),
+                ),
+                const SizedBox(width: PfSpace.lg),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.browseExploreTitle,
+                        style: theme.textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.browseExploreHint,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward, color: colors.textMed),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

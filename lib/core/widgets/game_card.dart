@@ -55,11 +55,18 @@ class GameCard extends StatelessWidget {
   final Widget? overlay;
   final String? semanticLabel;
 
+  /// Title and optional meta line as one paragraph.
+  TextSpan _captionSpan(TextTheme textTheme) => TextSpan(
+    text: title,
+    style: textTheme.titleSmall,
+    children: [
+      if (subtitle != null)
+        TextSpan(text: '\n$subtitle', style: textTheme.bodySmall),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = context.pfColors;
-
     return PressScale(
       onTap: onTap,
       semanticLabel: semanticLabel ?? title,
@@ -68,30 +75,11 @@ class GameCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: DecoratedBox(
-                position: DecorationPosition.foreground,
-                decoration: BoxDecoration(
-                  borderRadius: PfRadius.mdAll,
-                  border: Border.all(color: colors.hairline),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    GameCover(url: coverUrl, heroTag: heroTag),
-                    if (score != null)
-                      Positioned(
-                        top: PfSpace.sm,
-                        right: PfSpace.sm,
-                        child: ScoreBadge(score: score, onImage: true),
-                      ),
-                    if (overlay != null)
-                      Positioned(
-                        top: PfSpace.sm,
-                        left: PfSpace.sm,
-                        child: overlay!,
-                      ),
-                  ],
-                ),
+              child: _CardCover(
+                coverUrl: coverUrl,
+                heroTag: heroTag,
+                score: score,
+                overlay: overlay,
               ),
             ),
             SizedBox(
@@ -101,17 +89,7 @@ class GameCard extends StatelessWidget {
                 // One paragraph (not a Column) so an unusually tall font
                 // clips quietly instead of overflowing the fixed caption.
                 child: Text.rich(
-                  TextSpan(
-                    text: title,
-                    style: theme.textTheme.titleSmall,
-                    children: [
-                      if (subtitle != null)
-                        TextSpan(
-                          text: '\n$subtitle',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                    ],
-                  ),
+                  _captionSpan(Theme.of(context).textTheme),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -119,6 +97,48 @@ class GameCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Rounded cover with the hairline border, score badge and overlay slot.
+class _CardCover extends StatelessWidget {
+  const _CardCover({
+    required this.coverUrl,
+    required this.heroTag,
+    required this.score,
+    required this.overlay,
+  });
+
+  final String? coverUrl;
+  final Object? heroTag;
+  final int? score;
+  final Widget? overlay;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.pfColors;
+
+    return DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        borderRadius: PfRadius.mdAll,
+        border: Border.all(color: colors.hairline),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          GameCover(url: coverUrl, heroTag: heroTag),
+          if (score != null)
+            Positioned(
+              top: PfSpace.sm,
+              right: PfSpace.sm,
+              child: ScoreBadge(score: score, onImage: true),
+            ),
+          if (overlay != null)
+            Positioned(top: PfSpace.sm, left: PfSpace.sm, child: overlay!),
+        ],
       ),
     );
   }
@@ -152,7 +172,6 @@ class GameTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.pfColors;
 
     return Semantics(
@@ -172,43 +191,12 @@ class GameTile extends StatelessWidget {
                 scale: 0.985,
                 semanticLabel: semanticLabel ?? title,
                 child: ExcludeSemantics(
-                  child: Padding(
-                    padding: const EdgeInsets.all(PfSpace.md),
-                    child: Row(
-                      children: [
-                        GameCover(
-                          url: coverUrl,
-                          heroTag: heroTag,
-                          width: coverWidth,
-                          height: coverWidth / kCoverAspectRatio,
-                          borderRadius: PfRadius.sm + 2,
-                        ),
-                        const SizedBox(width: PfSpace.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleMedium,
-                              ),
-                              if (meta.isNotEmpty) ...[
-                                const SizedBox(height: PfSpace.xs + 2),
-                                Wrap(
-                                  spacing: PfSpace.sm,
-                                  runSpacing: PfSpace.xs,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: meta,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _TileBody(
+                    title: title,
+                    coverUrl: coverUrl,
+                    heroTag: heroTag,
+                    meta: meta,
+                    coverWidth: coverWidth,
                   ),
                 ),
               ),
@@ -220,6 +208,67 @@ class GameTile extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Cover, title and wrapped meta line inside a [GameTile].
+class _TileBody extends StatelessWidget {
+  const _TileBody({
+    required this.title,
+    required this.coverUrl,
+    required this.heroTag,
+    required this.meta,
+    required this.coverWidth,
+  });
+
+  final String title;
+  final String? coverUrl;
+  final Object? heroTag;
+  final List<Widget> meta;
+  final double coverWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(PfSpace.md),
+      child: Row(
+        children: [
+          GameCover(
+            url: coverUrl,
+            heroTag: heroTag,
+            width: coverWidth,
+            height: coverWidth / kCoverAspectRatio,
+            borderRadius: PfRadius.sm + 2,
+          ),
+          const SizedBox(width: PfSpace.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium,
+                ),
+                if (meta.isNotEmpty) ...[
+                  const SizedBox(height: PfSpace.xs + 2),
+                  Wrap(
+                    spacing: PfSpace.sm,
+                    runSpacing: PfSpace.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: meta,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -108,57 +108,52 @@ class _CatalogFilterFieldsState extends State<CatalogFilterFields> {
     );
   }
 
+  /// Chips when there are options, else a skeleton, retry row or hint.
+  Widget _chipsOrState(BuildContext context, List<Widget> chips) {
+    final l10n = context.l10n;
+    final status = widget.options.status;
+    if (chips.isNotEmpty) {
+      return Wrap(spacing: PfSpace.sm, runSpacing: PfSpace.sm, children: chips);
+    }
+    if (status == FilterOptionsStatus.loading ||
+        status == FilterOptionsStatus.initial) {
+      return const _ChipsSkeleton();
+    }
+    if (status == FilterOptionsStatus.failure) {
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.filterOptionsFailed,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          if (widget.onRetryOptions != null)
+            TextButton(
+              onPressed: widget.onRetryOptions,
+              child: Text(l10n.browseRetry),
+            ),
+        ],
+      );
+    }
+    return Text(
+      l10n.searchFilterNoFacets,
+      style: Theme.of(context).textTheme.bodySmall,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = context.pfColors;
     final value = widget.value;
     final options = widget.options;
-    final loading =
-        options.status == FilterOptionsStatus.loading ||
-        options.status == FilterOptionsStatus.initial;
-    final failed = options.status == FilterOptionsStatus.failure;
-    final years = _years ?? _committedYears;
-    final rating = _rating ?? (value.minRating ?? 0).toDouble();
-
-    Widget chipsOrState(List<Widget> chips) {
-      if (chips.isNotEmpty) {
-        return Wrap(
-          spacing: PfSpace.sm,
-          runSpacing: PfSpace.sm,
-          children: chips,
-        );
-      }
-      if (loading) return const _ChipsSkeleton();
-      if (failed) {
-        return Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.filterOptionsFailed,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-            if (widget.onRetryOptions != null)
-              TextButton(
-                onPressed: widget.onRetryOptions,
-                child: Text(l10n.browseRetry),
-              ),
-          ],
-        );
-      }
-      return Text(
-        l10n.searchFilterNoFacets,
-        style: Theme.of(context).textTheme.bodySmall,
-      );
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilterSectionCard(
           title: l10n.searchFilterGenresLabel,
-          child: chipsOrState([
+          child: _chipsOrState(context, [
             for (final genre in options.genres)
               FilterChip(
                 label: Text(genre.name),
@@ -171,7 +166,7 @@ class _CatalogFilterFieldsState extends State<CatalogFilterFields> {
         const SizedBox(height: PfSpace.md),
         FilterSectionCard(
           title: l10n.searchFilterPlatformsLabel,
-          child: chipsOrState([
+          child: _chipsOrState(context, [
             for (final platform in options.platforms)
               FilterChip(
                 label: Text(platform.label),
@@ -183,56 +178,68 @@ class _CatalogFilterFieldsState extends State<CatalogFilterFields> {
           ]),
         ),
         const SizedBox(height: PfSpace.md),
-        FilterSectionCard(
-          title: l10n.filterReleaseYears,
-          trailing: Text(
-            l10n.filterYearRangeValue(years.start.round(), years.end.round()),
-            style: PfTypography.monoStyle(colors.textMed),
-          ),
-          child: RangeSlider(
-            values: years,
-            min: kCatalogMinYear.toDouble(),
-            max: _maxYear.toDouble(),
-            divisions: _maxYear - kCatalogMinYear,
-            labels: RangeLabels(
-              '${years.start.round()}',
-              '${years.end.round()}',
-            ),
-            semanticFormatterCallback: (v) => '${v.round()}',
-            onChanged: (v) => setState(() => _years = v),
-            onChangeEnd: (v) => widget.onChanged(
-              value.withYearRange(
-                v.start.round(),
-                v.end.round(),
-                maxYear: _maxYear,
-              ),
-            ),
-          ),
-        ),
+        _buildYearsCard(context),
         const SizedBox(height: PfSpace.md),
-        FilterSectionCard(
-          title: l10n.filterMinRating,
-          trailing: Text(
-            rating <= 0
-                ? l10n.filterAnyRating
-                : l10n.filterRatingValue(rating.round()),
-            style: PfTypography.monoStyle(colors.textMed),
-          ),
-          child: Slider(
-            value: rating,
-            min: 0,
-            max: 100,
-            divisions: 20,
-            label: '${rating.round()}',
-            onChanged: (v) => setState(() => _rating = v),
-            onChangeEnd: (v) => widget.onChanged(
-              v <= 0
-                  ? value.copyWith(clearMinRating: true)
-                  : value.copyWith(minRating: v.round()),
-            ),
+        _buildRatingCard(context),
+      ],
+    );
+  }
+
+  /// Release year range. Commits on release.
+  Widget _buildYearsCard(BuildContext context) {
+    final l10n = context.l10n;
+    final years = _years ?? _committedYears;
+    return FilterSectionCard(
+      title: l10n.filterReleaseYears,
+      trailing: Text(
+        l10n.filterYearRangeValue(years.start.round(), years.end.round()),
+        style: PfTypography.monoStyle(context.pfColors.textMed),
+      ),
+      child: RangeSlider(
+        values: years,
+        min: kCatalogMinYear.toDouble(),
+        max: _maxYear.toDouble(),
+        divisions: _maxYear - kCatalogMinYear,
+        labels: RangeLabels('${years.start.round()}', '${years.end.round()}'),
+        semanticFormatterCallback: (v) => '${v.round()}',
+        onChanged: (v) => setState(() => _years = v),
+        onChangeEnd: (v) => widget.onChanged(
+          widget.value.withYearRange(
+            v.start.round(),
+            v.end.round(),
+            maxYear: _maxYear,
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  /// Minimum rating. Zero means any rating. Commits on release.
+  Widget _buildRatingCard(BuildContext context) {
+    final l10n = context.l10n;
+    final value = widget.value;
+    final rating = _rating ?? (value.minRating ?? 0).toDouble();
+    return FilterSectionCard(
+      title: l10n.filterMinRating,
+      trailing: Text(
+        rating <= 0
+            ? l10n.filterAnyRating
+            : l10n.filterRatingValue(rating.round()),
+        style: PfTypography.monoStyle(context.pfColors.textMed),
+      ),
+      child: Slider(
+        value: rating,
+        min: 0,
+        max: 100,
+        divisions: 20,
+        label: '${rating.round()}',
+        onChanged: (v) => setState(() => _rating = v),
+        onChangeEnd: (v) => widget.onChanged(
+          v <= 0
+              ? value.copyWith(clearMinRating: true)
+              : value.copyWith(minRating: v.round()),
+        ),
+      ),
     );
   }
 }

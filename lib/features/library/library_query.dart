@@ -61,14 +61,9 @@ class LibraryFilters extends Equatable {
   final LibrarySort sort;
 
   /// True when any filter narrows the list. Sort does not count.
-  bool get hasActiveFilters =>
-      statuses.isNotEmpty ||
-      favoritesOnly ||
-      query.trim().isNotEmpty ||
-      genreIds.isNotEmpty ||
-      platformIds.isNotEmpty ||
-      minScore != null ||
-      collectionId != null;
+  /// Every filter except the search text shows a chip, so the chip count
+  /// covers them.
+  bool get hasActiveFilters => activeChipCount > 0 || query.trim().isNotEmpty;
 
   /// Number of filter chips shown (the search text is excluded).
   int get activeChipCount =>

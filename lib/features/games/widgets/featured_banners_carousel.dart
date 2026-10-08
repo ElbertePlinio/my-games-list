@@ -130,9 +130,7 @@ class _BannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.pfColors;
-    final hasSubtitle = banner.subtitle != null && banner.subtitle!.isNotEmpty;
 
     return PressScale(
       onTap: banner.game == null ? null : () => _onTap(context),
@@ -172,43 +170,56 @@ class _BannerCard extends StatelessWidget {
                 left: PfSpace.lg + 4,
                 right: PfSpace.lg + 4,
                 bottom: PfSpace.lg + 2,
-                child: ExcludeSemantics(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Eyebrow(
-                        context.l10n.featuredEyebrow,
-                        color: PicklogColors.onImage.withValues(alpha: 0.72),
-                      ),
-                      const SizedBox(height: PfSpace.xs + 2),
-                      Text(
-                        banner.title,
-                        style: theme.textTheme.headlineMedium!.copyWith(
-                          color: PicklogColors.onImage,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (hasSubtitle) ...[
-                        const SizedBox(height: PfSpace.xs),
-                        Text(
-                          banner.subtitle!,
-                          style: theme.textTheme.bodyMedium!.copyWith(
-                            color: PicklogColors.dark.textMed,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                child: ExcludeSemantics(child: _BannerCaption(banner: banner)),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Eyebrow, title and optional subtitle over the banner scrim.
+class _BannerCaption extends StatelessWidget {
+  const _BannerCaption({required this.banner});
+
+  final FeaturedBanner banner;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hasSubtitle = banner.subtitle != null && banner.subtitle!.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Eyebrow(
+          context.l10n.featuredEyebrow,
+          color: PicklogColors.onImage.withValues(alpha: 0.72),
+        ),
+        const SizedBox(height: PfSpace.xs + 2),
+        Text(
+          banner.title,
+          style: theme.textTheme.headlineMedium!.copyWith(
+            color: PicklogColors.onImage,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (hasSubtitle) ...[
+          const SizedBox(height: PfSpace.xs),
+          Text(
+            banner.subtitle!,
+            style: theme.textTheme.bodyMedium!.copyWith(
+              color: PicklogColors.dark.textMed,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
     );
   }
 }

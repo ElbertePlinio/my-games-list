@@ -316,41 +316,22 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
     }
   }
 
-  bool get _hasDetails =>
-      _totalPlaytimeMinutes != null ||
-      _startDate != null ||
-      _endDate != null ||
-      (_difficulty?.isNotEmpty ?? false) ||
-      (_notes?.isNotEmpty ?? false);
+  bool get _hasDetails => [
+    _totalPlaytimeMinutes != null,
+    _startDate != null,
+    _endDate != null,
+    _difficulty?.isNotEmpty ?? false,
+    _notes?.isNotEmpty ?? false,
+  ].contains(true);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = context.pfColors;
     final l10n = context.l10n;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return BlocListener<LibraryBloc, LibraryState>(
-      listener: (context, state) {
-        final failure = state.failure;
-        if (failure != null &&
-            (failure.action == LibraryAction.add ||
-                failure.action == LibraryAction.update)) {
-          context.showErrorMessage(l10n.librarySaveFailed);
-        }
-        if (state.gameAddedOrUpdated) {
-          final saved = isEditing
-              ? state.entries.where((e) => e.id == widget.existingEntry!.id)
-              : state.entries.where((e) => e.game.igdbId == widget.gameId);
-          if (saved.isNotEmpty) {
-            _applyCollections(context.read<LibraryBloc>(), saved.first);
-          }
-          context.showSuccessMessage(
-            isEditing ? l10n.libraryEntryUpdated : l10n.gameAddedToLibrary,
-          );
-          Navigator.of(context).pop(true);
-        }
-      },
+      listener: _onLibraryState,
       child: DraggableScrollableSheet(
         initialChildSize: 0.62,
         minChildSize: 0.3,
@@ -360,62 +341,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
           return CustomScrollView(
             controller: scrollController,
             slivers: [
-              SliverAppBar(
-                pinned: true,
-                automaticallyImplyLeading: false,
-                backgroundColor: colors.surface1,
-                toolbarHeight: 72,
-                titleSpacing: 0,
-                flexibleSpace: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: PfSpace.sm + 2),
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colors.hairlineStrong,
-                        borderRadius: PfRadius.pillAll,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        PfSpace.xs,
-                        PfSpace.xs,
-                        PfSpace.lg,
-                        0,
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            tooltip: l10n.cancel,
-                            color: colors.textMed,
-                            icon: const Icon(Icons.close),
-                          ),
-                          Expanded(
-                            child: Text(
-                              isEditing ? l10n.editEntry : l10n.addToLibrary,
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium,
-                            ),
-                          ),
-                          PfButton(
-                            label: l10n.save,
-                            size: PfButtonSize.sm,
-                            onPressed: _save,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(1),
-                  child: Divider(height: 1, color: colors.hairline),
-                ),
-              ),
+              _buildAppBar(context),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
@@ -436,120 +362,13 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
                       const SizedBox(height: PfSpace.lg),
 
                       // Step 1: the essentials.
-                      _SheetSection(
-                        title: l10n.statusLabel,
-                        child: Wrap(
-                          spacing: PfSpace.sm,
-                          runSpacing: PfSpace.sm,
-                          children: GameStatus.values.map((status) {
-                            final isSelected = _selectedStatus == status;
-                            return ChoiceChip(
-                              avatar: Icon(
-                                status.icon,
-                                size: 16,
-                                color: isSelected
-                                    ? colors.toneForeground(status.tone)
-                                    : colors.textMed,
-                              ),
-                              label: Text(status.localizedName(context)),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() => _selectedStatus = status);
-                                }
-                              },
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                      _buildStatusSection(context),
                       if (widget.platforms.isNotEmpty) ...[
                         const SizedBox(height: PfSpace.md),
-                        _SheetSection(
-                          title: l10n.platformLabel,
-                          child: DropdownButtonFormField<Platform>(
-                            initialValue: _selectedPlatform,
-                            // Long platform names ellipsize instead of
-                            // overflowing at large text sizes.
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              hintText: l10n.selectPlatformHint,
-                            ),
-                            items: [
-                              DropdownMenuItem<Platform>(
-                                value: null,
-                                child: Text(l10n.noneOption),
-                              ),
-                              ...widget.platforms.map((platform) {
-                                return DropdownMenuItem(
-                                  value: platform,
-                                  child: Text(
-                                    platform.name,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                );
-                              }),
-                            ],
-                            onChanged: (value) {
-                              setState(() => _selectedPlatform = value);
-                            },
-                          ),
-                        ),
+                        _buildPlatformSection(context),
                       ],
                       const SizedBox(height: PfSpace.md),
-                      _SheetSection(
-                        title: l10n.rating,
-                        trailing: FavoriteButton(
-                          isFavorite: _isFavorite,
-                          addLabel: l10n.addToFavorites,
-                          removeLabel: l10n.favorited,
-                          onPressed: () =>
-                              setState(() => _isFavorite = !_isFavorite),
-                        ),
-                        child: Row(
-                          children: [
-                            ScoreRing(
-                              score: _score,
-                              size: 52,
-                              semanticLabel: _score == null
-                                  ? l10n.scoreNotSet
-                                  : '${l10n.score} $_score',
-                            ),
-                            const SizedBox(width: PfSpace.md),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: PfSpace.lg,
-                                    ),
-                                    child: Text(
-                                      _score == null
-                                          ? l10n.scoreNotSet
-                                          : l10n.score,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                  ),
-                                  Slider(
-                                    value: (_score ?? 0).toDouble(),
-                                    min: 0,
-                                    max: 100,
-                                    divisions: 100,
-                                    label: _score?.toString(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _score = value > 0
-                                            ? value.toInt()
-                                            : null;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      _buildRatingSection(context),
                       if (_collections != null) ...[
                         const SizedBox(height: PfSpace.md),
                         _CollectionsSection(
@@ -563,26 +382,7 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
                       const SizedBox(height: PfSpace.md),
 
                       // Step 2: optional details, collapsed by default.
-                      _DetailsToggle(
-                        expanded: _detailsExpanded,
-                        onTap: () => setState(
-                          () => _detailsExpanded = !_detailsExpanded,
-                        ),
-                      ),
-                      AnimatedSize(
-                        duration: PfMotion.of(context, PfMotion.standard),
-                        curve: PfMotion.forge,
-                        alignment: Alignment.topCenter,
-                        child: !_detailsExpanded
-                            ? const SizedBox(width: double.infinity)
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const SizedBox(height: PfSpace.md),
-                                  _buildDetails(context),
-                                ],
-                              ),
-                      ),
+                      ..._buildOptionalDetails(context),
 
                       if (isEditing) ...[
                         const SizedBox(height: PfSpace.xl),
@@ -603,6 +403,227 @@ class _AddToLibraryBottomSheetState extends State<AddToLibraryBottomSheet> {
         },
       ),
     );
+  }
+
+  void _onLibraryState(BuildContext context, LibraryState state) {
+    final l10n = context.l10n;
+    final failure = state.failure;
+    if (failure != null &&
+        (failure.action == LibraryAction.add ||
+            failure.action == LibraryAction.update)) {
+      context.showErrorMessage(l10n.librarySaveFailed);
+    }
+    if (state.gameAddedOrUpdated) {
+      final saved = isEditing
+          ? state.entries.where((e) => e.id == widget.existingEntry!.id)
+          : state.entries.where((e) => e.game.igdbId == widget.gameId);
+      if (saved.isNotEmpty) {
+        _applyCollections(context.read<LibraryBloc>(), saved.first);
+      }
+      context.showSuccessMessage(
+        isEditing ? l10n.libraryEntryUpdated : l10n.gameAddedToLibrary,
+      );
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  /// Pinned header with the grabber, close, title and save.
+  Widget _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return SliverAppBar(
+      pinned: true,
+      automaticallyImplyLeading: false,
+      backgroundColor: colors.surface1,
+      toolbarHeight: 72,
+      titleSpacing: 0,
+      flexibleSpace: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: PfSpace.sm + 2),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colors.hairlineStrong,
+              borderRadius: PfRadius.pillAll,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.xs,
+              PfSpace.xs,
+              PfSpace.lg,
+              0,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: l10n.cancel,
+                  color: colors.textMed,
+                  icon: const Icon(Icons.close),
+                ),
+                Expanded(
+                  child: Text(
+                    isEditing ? l10n.editEntry : l10n.addToLibrary,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+                PfButton(
+                  label: l10n.save,
+                  size: PfButtonSize.sm,
+                  onPressed: _save,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(height: 1, color: colors.hairline),
+      ),
+    );
+  }
+
+  /// Status choice chips.
+  Widget _buildStatusSection(BuildContext context) {
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return _SheetSection(
+      title: l10n.statusLabel,
+      child: Wrap(
+        spacing: PfSpace.sm,
+        runSpacing: PfSpace.sm,
+        children: GameStatus.values.map((status) {
+          final isSelected = _selectedStatus == status;
+          return ChoiceChip(
+            avatar: Icon(
+              status.icon,
+              size: 16,
+              color: isSelected
+                  ? colors.toneForeground(status.tone)
+                  : colors.textMed,
+            ),
+            label: Text(status.localizedName(context)),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (selected) {
+                setState(() => _selectedStatus = status);
+              }
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// Optional platform dropdown.
+  Widget _buildPlatformSection(BuildContext context) {
+    final l10n = context.l10n;
+    return _SheetSection(
+      title: l10n.platformLabel,
+      child: DropdownButtonFormField<Platform>(
+        initialValue: _selectedPlatform,
+        // Long platform names ellipsize instead of
+        // overflowing at large text sizes.
+        isExpanded: true,
+        decoration: InputDecoration(hintText: l10n.selectPlatformHint),
+        items: [
+          DropdownMenuItem<Platform>(value: null, child: Text(l10n.noneOption)),
+          ...widget.platforms.map((platform) {
+            return DropdownMenuItem(
+              value: platform,
+              child: Text(platform.name, overflow: TextOverflow.ellipsis),
+            );
+          }),
+        ],
+        onChanged: (value) {
+          setState(() => _selectedPlatform = value);
+        },
+      ),
+    );
+  }
+
+  /// Score ring, score slider and favorite toggle.
+  Widget _buildRatingSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return _SheetSection(
+      title: l10n.rating,
+      trailing: FavoriteButton(
+        isFavorite: _isFavorite,
+        addLabel: l10n.addToFavorites,
+        removeLabel: l10n.favorited,
+        onPressed: () => setState(() => _isFavorite = !_isFavorite),
+      ),
+      child: Row(
+        children: [
+          ScoreRing(
+            score: _score,
+            size: 52,
+            semanticLabel: _score == null
+                ? l10n.scoreNotSet
+                : '${l10n.score} $_score',
+          ),
+          const SizedBox(width: PfSpace.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: PfSpace.lg),
+                  child: Text(
+                    _score == null ? l10n.scoreNotSet : l10n.score,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+                Slider(
+                  value: (_score ?? 0).toDouble(),
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  label: _score?.toString(),
+                  onChanged: (value) {
+                    setState(() {
+                      _score = value > 0 ? value.toInt() : null;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Toggle and animated body for the collapsed optional details.
+  List<Widget> _buildOptionalDetails(BuildContext context) {
+    return [
+      _DetailsToggle(
+        expanded: _detailsExpanded,
+        onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
+      ),
+      AnimatedSize(
+        duration: PfMotion.of(context, PfMotion.standard),
+        curve: PfMotion.forge,
+        alignment: Alignment.topCenter,
+        child: !_detailsExpanded
+            ? const SizedBox(width: double.infinity)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: PfSpace.md),
+                  _buildDetails(context),
+                ],
+              ),
+      ),
+    ];
   }
 
   Widget _buildDetails(BuildContext context) {

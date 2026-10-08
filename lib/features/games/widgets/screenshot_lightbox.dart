@@ -80,10 +80,14 @@ class _ScreenshotLightboxState extends State<ScreenshotLightbox> {
     }
   }
 
+  /// Arrow buttons show only on wide screens with more than one shot.
+  bool _showArrows(BuildContext context) =>
+      widget.urls.length > 1 &&
+      MediaQuery.sizeOf(context).width >= PfBreakpoints.compact;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    const dark = PicklogColors.dark;
     final total = widget.urls.length;
 
     return CallbackShortcuts(
@@ -104,78 +108,31 @@ class _ScreenshotLightboxState extends State<ScreenshotLightbox> {
                   controller: _controller,
                   itemCount: total,
                   onPageChanged: (index) => setState(() => _index = index),
-                  itemBuilder: (context, index) => Semantics(
-                    image: true,
-                    label: widget.semanticLabel,
-                    child: InteractiveViewer(
-                      maxScale: 4,
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: PfNetworkImage(
-                            url: getHighResUrl(
-                              widget.urls[index],
-                              ImageSize.hd1080,
-                            ),
-                            fit: BoxFit.contain,
-                            placeholder: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            error: const CoverPlaceholder(),
-                          ),
-                        ),
-                      ),
-                    ),
+                  itemBuilder: (context, index) => _LightboxPage(
+                    url: widget.urls[index],
+                    semanticLabel: widget.semanticLabel,
                   ),
                 ),
                 Positioned(
                   top: PfSpace.sm,
                   left: PfSpace.lg,
                   right: PfSpace.sm,
-                  child: Row(
-                    children: [
-                      Text(
-                        l10n.lightboxPosition(_index + 1, total),
-                        style: PfTypography.monoStyle(dark.textHi),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: l10n.lightboxClose,
-                        color: dark.textHi,
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.of(context).maybePop(),
-                      ),
-                    ],
+                  child: _LightboxTopBar(
+                    position: l10n.lightboxPosition(_index + 1, total),
                   ),
                 ),
-                if (total > 1 &&
-                    MediaQuery.sizeOf(context).width >=
-                        PfBreakpoints.compact) ...[
-                  Positioned(
+                if (_showArrows(context)) ...[
+                  _arrow(
                     left: PfSpace.sm,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: IconButton(
-                        tooltip: l10n.lightboxPrevious,
-                        color: dark.textHi,
-                        onPressed: _index > 0 ? () => _go(-1) : null,
-                        icon: const Icon(Icons.chevron_left, size: 32),
-                      ),
-                    ),
+                    tooltip: l10n.lightboxPrevious,
+                    icon: Icons.chevron_left,
+                    onPressed: _index > 0 ? () => _go(-1) : null,
                   ),
-                  Positioned(
+                  _arrow(
                     right: PfSpace.sm,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: IconButton(
-                        tooltip: l10n.lightboxNext,
-                        color: dark.textHi,
-                        onPressed: _index < total - 1 ? () => _go(1) : null,
-                        icon: const Icon(Icons.chevron_right, size: 32),
-                      ),
-                    ),
+                    tooltip: l10n.lightboxNext,
+                    icon: Icons.chevron_right,
+                    onPressed: _index < total - 1 ? () => _go(1) : null,
                   ),
                 ],
               ],
@@ -183,6 +140,86 @@ class _ScreenshotLightboxState extends State<ScreenshotLightbox> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Previous or next button, centred on one side edge.
+  Widget _arrow({
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback? onPressed,
+    double? left,
+    double? right,
+  }) {
+    return Positioned(
+      left: left,
+      right: right,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: IconButton(
+          tooltip: tooltip,
+          color: PicklogColors.dark.textHi,
+          onPressed: onPressed,
+          icon: Icon(icon, size: 32),
+        ),
+      ),
+    );
+  }
+}
+
+/// One zoomable screenshot.
+class _LightboxPage extends StatelessWidget {
+  const _LightboxPage({required this.url, required this.semanticLabel});
+
+  final String url;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      image: true,
+      label: semanticLabel,
+      child: InteractiveViewer(
+        maxScale: 4,
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: PfNetworkImage(
+              url: getHighResUrl(url, ImageSize.hd1080),
+              fit: BoxFit.contain,
+              placeholder: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              error: const CoverPlaceholder(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Position counter and close button.
+class _LightboxTopBar extends StatelessWidget {
+  const _LightboxTopBar({required this.position});
+
+  final String position;
+
+  @override
+  Widget build(BuildContext context) {
+    const dark = PicklogColors.dark;
+    return Row(
+      children: [
+        Text(position, style: PfTypography.monoStyle(dark.textHi)),
+        const Spacer(),
+        IconButton(
+          tooltip: context.l10n.lightboxClose,
+          color: dark.textHi,
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ],
     );
   }
 }

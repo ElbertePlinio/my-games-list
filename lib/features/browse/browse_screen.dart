@@ -100,7 +100,6 @@ class _ExploreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.pfColors;
     final l10n = context.l10n;
     return Padding(
@@ -127,40 +126,47 @@ class _ExploreCard extends StatelessWidget {
                 ],
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: colors.ember.withValues(alpha: 0.16),
-                    borderRadius: PfRadius.mdAll,
-                  ),
-                  child: Icon(Icons.travel_explore, color: colors.emberFg),
-                ),
-                const SizedBox(width: PfSpace.lg),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.browseExploreTitle,
-                        style: theme.textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.browseExploreHint,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward, color: colors.textMed),
-              ],
-            ),
+            child: const _ExploreCardContent(),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Icon, title, hint and arrow inside [_ExploreCard].
+class _ExploreCardContent extends StatelessWidget {
+  const _ExploreCardContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: colors.ember.withValues(alpha: 0.16),
+            borderRadius: PfRadius.mdAll,
+          ),
+          child: Icon(Icons.travel_explore, color: colors.emberFg),
+        ),
+        const SizedBox(width: PfSpace.lg),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.browseExploreTitle, style: theme.textTheme.titleLarge),
+              const SizedBox(height: 2),
+              Text(l10n.browseExploreHint, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+        Icon(Icons.arrow_forward, color: colors.textMed),
+      ],
     );
   }
 }

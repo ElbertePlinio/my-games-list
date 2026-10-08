@@ -163,9 +163,7 @@ class _GameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.pfColors;
-    const dark = PicklogColors.dark;
 
     return PressScale(
       onTap: () => openGameDetails(context, game.id, heroPrefix: heroTagPrefix),
@@ -216,57 +214,68 @@ class _GameCard extends StatelessWidget {
                 left: PfSpace.md + 2,
                 right: PfSpace.md + 2,
                 bottom: PfSpace.md + 2,
-                child: ExcludeSemantics(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        game.name,
-                        style: theme.textTheme.titleLarge!.copyWith(
-                          color: PicklogColors.onImage,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: PfSpace.xs),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.local_fire_department_outlined,
-                            color: dark.textMed,
-                            size: 14,
-                          ),
-                          const SizedBox(width: PfSpace.xs),
-                          Text(
-                            context.l10n.anticipatedHypes(game.hypes),
-                            style: theme.textTheme.labelSmall!.copyWith(
-                              color: dark.textHi,
-                            ),
-                          ),
-                          if (game.platforms.isNotEmpty) ...[
-                            const SizedBox(width: PfSpace.sm),
-                            Expanded(
-                              child: Text(
-                                game.platformNames,
-                                style: theme.textTheme.labelSmall!.copyWith(
-                                  color: dark.textMed,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                child: ExcludeSemantics(child: _GameCardCaption(game: game)),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Name, hype count and platforms over the card scrim.
+class _GameCardCaption extends StatelessWidget {
+  const _GameCardCaption({required this.game});
+
+  final AnticipatedGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const dark = PicklogColors.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          game.name,
+          style: theme.textTheme.titleLarge!.copyWith(
+            color: PicklogColors.onImage,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: PfSpace.xs),
+        Row(
+          children: [
+            Icon(
+              Icons.local_fire_department_outlined,
+              color: dark.textMed,
+              size: 14,
+            ),
+            const SizedBox(width: PfSpace.xs),
+            Text(
+              context.l10n.anticipatedHypes(game.hypes),
+              style: theme.textTheme.labelSmall!.copyWith(color: dark.textHi),
+            ),
+            if (game.platforms.isNotEmpty) ...[
+              const SizedBox(width: PfSpace.sm),
+              Expanded(
+                child: Text(
+                  game.platformNames,
+                  style: theme.textTheme.labelSmall!.copyWith(
+                    color: dark.textMed,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
     );
   }
 }

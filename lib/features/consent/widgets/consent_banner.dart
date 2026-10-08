@@ -191,9 +191,7 @@ class _ConsentBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.pfColors;
-    final cubit = context.read<ConsentCubit>();
     final media = MediaQuery.of(context);
     // Same breakpoint the app shell uses: compact (< 600px) shows the bottom
     // NavigationBar, wide (>= 600px) shows the side NavigationRail.
@@ -239,63 +237,70 @@ class _ConsentBannerCard extends StatelessWidget {
                     PfSpace.lg,
                     PfSpace.md,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.shield_outlined,
-                            size: 18,
-                            color: colors.textMed,
-                          ),
-                          const SizedBox(width: PfSpace.sm),
-                          Expanded(
-                            child: Text(
-                              context.l10n.consentBannerTitle,
-                              style: theme.textTheme.titleMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: PfSpace.xs + 2),
-                      Text(
-                        context.l10n.consentBannerBody,
-                        style: theme.textTheme.bodyMedium!.copyWith(
-                          color: colors.textMed,
-                        ),
-                      ),
-                      const SizedBox(height: PfSpace.md),
-                      Wrap(
-                        alignment: WrapAlignment.end,
-                        spacing: PfSpace.sm,
-                        runSpacing: PfSpace.xs,
-                        children: [
-                          TextButton(
-                            onPressed: isSaving
-                                ? null
-                                : () => _openCustomize(context, cubit),
-                            child: Text(context.l10n.consentCustomize),
-                          ),
-                          OutlinedButton(
-                            onPressed: isSaving ? null : cubit.rejectAll,
-                            child: Text(context.l10n.consentRejectAll),
-                          ),
-                          OutlinedButton(
-                            onPressed: isSaving ? null : cubit.acceptAll,
-                            child: Text(context.l10n.consentAcceptAll),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  child: _ConsentBannerContent(isSaving: isSaving),
                 ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Title, body and the three equal-weight consent actions.
+class _ConsentBannerContent extends StatelessWidget {
+  const _ConsentBannerContent({required this.isSaving});
+
+  final bool isSaving;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final cubit = context.read<ConsentCubit>();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.shield_outlined, size: 18, color: colors.textMed),
+            const SizedBox(width: PfSpace.sm),
+            Expanded(
+              child: Text(
+                context.l10n.consentBannerTitle,
+                style: theme.textTheme.titleMedium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: PfSpace.xs + 2),
+        Text(
+          context.l10n.consentBannerBody,
+          style: theme.textTheme.bodyMedium!.copyWith(color: colors.textMed),
+        ),
+        const SizedBox(height: PfSpace.md),
+        Wrap(
+          alignment: WrapAlignment.end,
+          spacing: PfSpace.sm,
+          runSpacing: PfSpace.xs,
+          children: [
+            TextButton(
+              onPressed: isSaving ? null : () => _openCustomize(context, cubit),
+              child: Text(context.l10n.consentCustomize),
+            ),
+            OutlinedButton(
+              onPressed: isSaving ? null : cubit.rejectAll,
+              child: Text(context.l10n.consentRejectAll),
+            ),
+            OutlinedButton(
+              onPressed: isSaving ? null : cubit.acceptAll,
+              child: Text(context.l10n.consentAcceptAll),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

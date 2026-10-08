@@ -180,72 +180,103 @@ class _GamesScreenState extends State<GamesScreen> {
               const SizedBox(width: PfSpace.xs),
             ],
           ),
-          body: MaxWidthBox(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    PfSpace.lg,
-                    PfSpace.xs,
-                    PfSpace.lg,
-                    PfSpace.sm,
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<LibrarySegment>(
-                      key: const Key('library_segment'),
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(
-                          value: LibrarySegment.games,
-                          icon: const Icon(Icons.sports_esports_outlined),
-                          label: Text(l10n.librarySegmentGames),
-                        ),
-                        ButtonSegment(
-                          value: LibrarySegment.collections,
-                          icon: const Icon(Icons.collections_bookmark_outlined),
-                          label: Text(l10n.librarySegmentCollections),
-                        ),
-                      ],
-                      selected: {_segment},
-                      onSelectionChanged: (s) => _setSegment(s.first),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: AnimatedStateSwitcher(
-                    stateKey: _segment,
-                    child: collections
-                        ? CollectionsView(onCreate: _createCollection)
-                        : _LibraryGamesView(
-                            scrollController: _scrollController,
-                            searchController: _searchController,
-                          ),
-                  ),
-                ),
-              ],
+          body: _buildBody(collections),
+          floatingActionButton: _buildFab(collections),
+        ),
+      ),
+    );
+  }
+
+  /// Segment switch above the games list or the collections grid.
+  Widget _buildBody(bool collections) {
+    return MaxWidthBox(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PfSpace.lg,
+              PfSpace.xs,
+              PfSpace.lg,
+              PfSpace.sm,
+            ),
+            child: _LibrarySegmentControl(
+              segment: _segment,
+              onChanged: _setSegment,
             ),
           ),
-          floatingActionButton: collections
-              ? FloatingActionButton.extended(
-                  key: const Key('library_new_collection_fab'),
-                  onPressed: _createCollection,
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.collectionNewTitle),
-                )
-              : BlocBuilder<LibraryBrowseBloc, LibraryBrowseState>(
-                  buildWhen: (p, c) => _isFirstRun(p) != _isFirstRun(c),
-                  // The empty library has its own call to action.
-                  builder: (context, state) => _isFirstRun(state)
-                      ? const SizedBox.shrink()
-                      : FloatingActionButton.extended(
-                          onPressed: () =>
-                              context.pushNamed(AppRouter.searchName),
-                          icon: const Icon(Icons.add),
-                          label: Text(l10n.addGame),
-                        ),
-                ),
-        ),
+          Expanded(
+            child: AnimatedStateSwitcher(
+              stateKey: _segment,
+              child: collections
+                  ? CollectionsView(onCreate: _createCollection)
+                  : _LibraryGamesView(
+                      scrollController: _scrollController,
+                      searchController: _searchController,
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// New collection on the collections tab. Add game on the games tab,
+  /// except on the first-run empty library, which has its own action.
+  Widget _buildFab(bool collections) {
+    final l10n = context.l10n;
+    if (collections) {
+      return FloatingActionButton.extended(
+        key: const Key('library_new_collection_fab'),
+        onPressed: _createCollection,
+        icon: const Icon(Icons.add),
+        label: Text(l10n.collectionNewTitle),
+      );
+    }
+    return BlocBuilder<LibraryBrowseBloc, LibraryBrowseState>(
+      buildWhen: (p, c) => _isFirstRun(p) != _isFirstRun(c),
+      builder: (context, state) => _isFirstRun(state)
+          ? const SizedBox.shrink()
+          : FloatingActionButton.extended(
+              onPressed: () => context.pushNamed(AppRouter.searchName),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addGame),
+            ),
+    );
+  }
+}
+
+/// Full-width games and collections switch.
+class _LibrarySegmentControl extends StatelessWidget {
+  const _LibrarySegmentControl({
+    required this.segment,
+    required this.onChanged,
+  });
+
+  final LibrarySegment segment;
+  final ValueChanged<LibrarySegment> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<LibrarySegment>(
+        key: const Key('library_segment'),
+        showSelectedIcon: false,
+        segments: [
+          ButtonSegment(
+            value: LibrarySegment.games,
+            icon: const Icon(Icons.sports_esports_outlined),
+            label: Text(l10n.librarySegmentGames),
+          ),
+          ButtonSegment(
+            value: LibrarySegment.collections,
+            icon: const Icon(Icons.collections_bookmark_outlined),
+            label: Text(l10n.librarySegmentCollections),
+          ),
+        ],
+        selected: {segment},
+        onSelectionChanged: (s) => onChanged(s.first),
       ),
     );
   }
@@ -715,36 +746,7 @@ class _EmptyLibraryView extends StatelessWidget {
     // The default (unfiltered) empty library is the user's first impression,
     // so it gets a headline, hint and a call to action. Filtered views offer
     // to clear the filters.
-    if (filters.hasActiveFilters) {
-      final onlyFavorites =
-          filters.favoritesOnly &&
-          filters.activeChipCount == 1 &&
-          filters.query.trim().isEmpty;
-      final onlyStatus =
-          filters.statuses.length == 1 &&
-          filters.activeChipCount == 1 &&
-          filters.query.trim().isEmpty;
-      return EmptyState(
-        icon: onlyFavorites
-            ? Icons.favorite_border
-            : onlyStatus
-            ? filters.statuses.first.icon
-            : Icons.filter_alt_off,
-        title: onlyFavorites
-            ? l10n.emptyFavorites
-            : onlyStatus
-            ? l10n.emptyStatusGames
-            : l10n.libraryNoMatchesTitle,
-        message: onlyFavorites || onlyStatus ? null : l10n.libraryNoMatchesHint,
-        action: OutlinedButton.icon(
-          onPressed: () => context.read<LibraryBrowseBloc>().add(
-            LibraryBrowseFiltersChanged(filters.cleared()),
-          ),
-          icon: const Icon(Icons.filter_alt_off),
-          label: Text(l10n.searchClearFilters),
-        ),
-      );
-    }
+    if (filters.hasActiveFilters) return _FilteredEmptyView(filters: filters);
     return EmptyState(
       icon: Icons.sports_esports_outlined,
       title: l10n.emptyLibraryTitle,
@@ -753,6 +755,43 @@ class _EmptyLibraryView extends StatelessWidget {
         onPressed: () => context.pushNamed(AppRouter.searchName),
         icon: const Icon(Icons.add),
         label: Text(l10n.addFirstGame),
+      ),
+    );
+  }
+}
+
+/// Empty result for a filtered library, with a way to clear the filters.
+class _FilteredEmptyView extends StatelessWidget {
+  const _FilteredEmptyView({required this.filters});
+
+  final LibraryFilters filters;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    // A single favorites or status chip gets a tailored message.
+    final singleChip =
+        filters.activeChipCount == 1 && filters.query.trim().isEmpty;
+    final onlyFavorites = singleChip && filters.favoritesOnly;
+    final onlyStatus = singleChip && filters.statuses.length == 1;
+    return EmptyState(
+      icon: onlyFavorites
+          ? Icons.favorite_border
+          : onlyStatus
+          ? filters.statuses.first.icon
+          : Icons.filter_alt_off,
+      title: onlyFavorites
+          ? l10n.emptyFavorites
+          : onlyStatus
+          ? l10n.emptyStatusGames
+          : l10n.libraryNoMatchesTitle,
+      message: onlyFavorites || onlyStatus ? null : l10n.libraryNoMatchesHint,
+      action: OutlinedButton.icon(
+        onPressed: () => context.read<LibraryBrowseBloc>().add(
+          LibraryBrowseFiltersChanged(filters.cleared()),
+        ),
+        icon: const Icon(Icons.filter_alt_off),
+        label: Text(l10n.searchClearFilters),
       ),
     );
   }

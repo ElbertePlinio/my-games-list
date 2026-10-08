@@ -107,6 +107,65 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     widget.onCompleted();
   }
 
+  /// Header, pages, page dots and the next button.
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            PfSpace.xl,
+            PfSpace.sm,
+            PfSpace.sm,
+            0,
+          ),
+          child: Row(
+            children: [
+              const Wordmark(markSize: 28),
+              const Spacer(),
+              TextButton(
+                onPressed: _finish,
+                child: Text(context.l10n.onboardingSkip),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _pages.length,
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            itemBuilder: (context, index) =>
+                _OnboardingPageView(data: _pages[index]),
+          ),
+        ),
+        PfPageIndicator(
+          count: _pages.length,
+          index: _currentPage,
+          semanticLabel: context.l10n.pageIndicatorLabel(
+            _currentPage + 1,
+            _pages.length,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            PfSpace.xl,
+            PfSpace.xl,
+            PfSpace.xl,
+            PfSpace.xxl,
+          ),
+          child: PfButton(
+            label: _isLastPage
+                ? context.l10n.onboardingGetStarted
+                : context.l10n.onboardingNext,
+            onPressed: _onNextPressed,
+            size: PfButtonSize.lg,
+            expand: true,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,62 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      PfSpace.xl,
-                      PfSpace.sm,
-                      PfSpace.sm,
-                      0,
-                    ),
-                    child: Row(
-                      children: [
-                        const Wordmark(markSize: 28),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: _finish,
-                          child: Text(context.l10n.onboardingSkip),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: _pages.length,
-                      onPageChanged: (index) =>
-                          setState(() => _currentPage = index),
-                      itemBuilder: (context, index) =>
-                          _OnboardingPageView(data: _pages[index]),
-                    ),
-                  ),
-                  PfPageIndicator(
-                    count: _pages.length,
-                    index: _currentPage,
-                    semanticLabel: context.l10n.pageIndicatorLabel(
-                      _currentPage + 1,
-                      _pages.length,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      PfSpace.xl,
-                      PfSpace.xl,
-                      PfSpace.xl,
-                      PfSpace.xxl,
-                    ),
-                    child: PfButton(
-                      label: _isLastPage
-                          ? context.l10n.onboardingGetStarted
-                          : context.l10n.onboardingNext,
-                      onPressed: _onNextPressed,
-                      size: PfButtonSize.lg,
-                      expand: true,
-                    ),
-                  ),
-                ],
-              ),
+              child: _buildContent(context),
             ),
           ),
         ),

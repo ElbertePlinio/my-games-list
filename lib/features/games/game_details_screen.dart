@@ -240,8 +240,6 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
             onOpenSheet: () => _openLibrarySheet(entry),
           );
 
-          final sections = _DetailSections(game: game);
-
           return Scaffold(
             body: CustomScrollView(
               controller: _scrollController,
@@ -267,63 +265,86 @@ class _GameDetailsContentState extends State<_GameDetailsContent> {
                   ],
                 ),
                 SliverToBoxAdapter(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxWidth: PfBreakpoints.content,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          PfSpace.lg,
-                          PfSpace.xl,
-                          PfSpace.lg,
-                          PfSpace.xxxl +
-                              MediaQuery.viewPaddingOf(context).bottom,
-                        ),
-                        child: twoPane
-                            ? Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 288,
-                                    child: _SidePane(
-                                      game: game,
-                                      cover: cover,
-                                      action: action,
-                                    ),
-                                  ),
-                                  const SizedBox(width: PfSpace.xxl),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        _TitleBlock(game: game),
-                                        ...sections.main(context),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _CompactHeader(game: game, cover: cover),
-                                  const SizedBox(height: PfSpace.xl),
-                                  action,
-                                  ...sections.tags(context),
-                                  ...sections.main(context),
-                                  ...sections.links(context),
-                                ],
-                              ),
-                      ),
-                    ),
+                  child: _DetailsBody(
+                    game: game,
+                    cover: cover,
+                    action: action,
+                    twoPane: twoPane,
                   ),
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Centered page body: side pane and sections on wide screens, one column
+/// on compact screens.
+class _DetailsBody extends StatelessWidget {
+  const _DetailsBody({
+    required this.game,
+    required this.cover,
+    required this.action,
+    required this.twoPane,
+  });
+
+  final GameDetail game;
+  final Widget cover;
+  final Widget action;
+  final bool twoPane;
+
+  @override
+  Widget build(BuildContext context) {
+    final sections = _DetailSections(game: game);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: PfBreakpoints.content),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            PfSpace.lg,
+            PfSpace.xl,
+            PfSpace.lg,
+            PfSpace.xxxl + MediaQuery.viewPaddingOf(context).bottom,
+          ),
+          child: twoPane
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 288,
+                      child: _SidePane(
+                        game: game,
+                        cover: cover,
+                        action: action,
+                      ),
+                    ),
+                    const SizedBox(width: PfSpace.xxl),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _TitleBlock(game: game),
+                          ...sections.main(context),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _CompactHeader(game: game, cover: cover),
+                    const SizedBox(height: PfSpace.xl),
+                    action,
+                    ...sections.tags(context),
+                    ...sections.main(context),
+                    ...sections.links(context),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -762,7 +783,6 @@ class _DescriptionSectionState extends State<_DescriptionSection> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.pfColors;
     final l10n = context.l10n;
     final game = widget.game;
@@ -782,34 +802,7 @@ class _DescriptionSectionState extends State<_DescriptionSection> {
             duration: PfMotion.of(context, PfMotion.standard),
             curve: PfMotion.forge,
             alignment: Alignment.topCenter,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (game.storyline != null) ...[
-                  Eyebrow(l10n.storyline, muted: true),
-                  const SizedBox(height: PfSpace.xs + 2),
-                  Text(
-                    game.storyline!,
-                    style: theme.textTheme.bodyLarge,
-                    maxLines: _expanded ? null : 3,
-                    overflow: _expanded ? null : TextOverflow.ellipsis,
-                  ),
-                  if (game.summary != null) const SizedBox(height: PfSpace.lg),
-                ],
-                if (game.summary != null) ...[
-                  Eyebrow(l10n.summary, muted: true),
-                  const SizedBox(height: PfSpace.xs + 2),
-                  Text(
-                    game.summary!,
-                    style: theme.textTheme.bodyLarge!.copyWith(
-                      color: colors.textMed,
-                    ),
-                    maxLines: _expanded ? null : 4,
-                    overflow: _expanded ? null : TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
+            child: _DescriptionTexts(game: game, expanded: _expanded),
           ),
         ),
         if (fullText.length > 200)
@@ -824,6 +817,49 @@ class _DescriptionSectionState extends State<_DescriptionSection> {
               child: Text(_expanded ? l10n.readLess : l10n.readMore),
             ),
           ),
+      ],
+    );
+  }
+}
+
+/// Storyline and summary, clamped until expanded.
+class _DescriptionTexts extends StatelessWidget {
+  const _DescriptionTexts({required this.game, required this.expanded});
+
+  final GameDetail game;
+  final bool expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.pfColors;
+    final l10n = context.l10n;
+    final overflow = expanded ? null : TextOverflow.ellipsis;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (game.storyline != null) ...[
+          Eyebrow(l10n.storyline, muted: true),
+          const SizedBox(height: PfSpace.xs + 2),
+          Text(
+            game.storyline!,
+            style: theme.textTheme.bodyLarge,
+            maxLines: expanded ? null : 3,
+            overflow: overflow,
+          ),
+          if (game.summary != null) const SizedBox(height: PfSpace.lg),
+        ],
+        if (game.summary != null) ...[
+          Eyebrow(l10n.summary, muted: true),
+          const SizedBox(height: PfSpace.xs + 2),
+          Text(
+            game.summary!,
+            style: theme.textTheme.bodyLarge!.copyWith(color: colors.textMed),
+            maxLines: expanded ? null : 4,
+            overflow: overflow,
+          ),
+        ],
       ],
     );
   }

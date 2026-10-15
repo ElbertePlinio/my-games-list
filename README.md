@@ -186,7 +186,7 @@ fvm doctor
 
    ```bash
    git clone <repository-url>
-   cd MyGamesList/app
+   cd my-games-list
    ```
 
 2. **Set up Flutter SDK version**
